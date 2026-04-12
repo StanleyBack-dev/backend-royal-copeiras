@@ -1,0 +1,177 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type GetUserResponseDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  urlAvatar: String
+  status: Boolean!
+  inactivatedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type CreateProfileResponseDto {
+  idProfiles: String!
+  idUsers: String!
+  phone: String
+  currentWeight: Float
+  currentHeight: Float
+  currentImc: Float
+  birthDate: DateTime
+  sex: String
+  activityLevel: String
+  goal: String
+  ipAddress: String
+  userAgent: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type GetProfileResponseDto {
+  idProfiles: String!
+  idUsers: String!
+  phone: String
+  currentWeight: Float
+  currentHeight: Float
+  currentImc: Float
+  birthDate: DateTime
+  sex: String
+  activityLevel: String
+  goal: String
+  ipAddress: String
+  userAgent: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UpdateProfileResponseDto {
+  idProfiles: String!
+  idUsers: String!
+  phone: String
+  currentWeight: Float
+  currentHeight: Float
+  currentImc: Float
+  birthDate: DateTime
+  sex: String
+  activityLevel: String
+  goal: String
+  ipAddress: String
+  userAgent: String
+  updatedAt: DateTime!
+}
+
+type GetHealthResponseDto {
+  idHealth: String!
+  idUsers: String!
+  heightCm: Float!
+  weightKg: Float!
+  bmi: Float!
+  bmiStatus: String!
+  observation: String
+  measurementDate: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type CreateHealthResponseDto {
+  idHealth: String!
+  idUsers: String!
+  heightCm: Float!
+  weightKg: Float!
+  bmi: Float!
+  bmiStatus: String!
+  observation: String
+  measurementDate: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UpdateHealthResponseDto {
+  idHealth: String!
+  idUsers: String!
+  heightCm: Float!
+  weightKg: Float!
+  bmi: Float!
+  bmiStatus: String!
+  observation: String
+  measurementDate: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  getUsers: [GetUserResponseDto!]!
+  getUser(input: GetUserInputDto!): GetUserResponseDto!
+  me: GetUserResponseDto!
+  getMyProfile: GetProfileResponseDto!
+  getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
+  getHealth(input: GetHealthInputDto): [GetHealthResponseDto!]!
+}
+
+input GetUserInputDto {
+  idUsers: String
+  email: String
+}
+
+input GetProfileInputDto {
+  idProfiles: String
+  idUsers: String
+}
+
+input GetHealthInputDto {
+  idHealth: String
+  startDate: String
+  endDate: String
+}
+
+type Mutation {
+  createProfile(input: CreateProfileInputDto!): CreateProfileResponseDto!
+  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileResponseDto!
+  createHealth(input: CreateHealthInputDto!): CreateHealthResponseDto!
+  updateHealth(input: UpdateHealthInputDto!): UpdateHealthResponseDto!
+}
+
+input CreateProfileInputDto {
+  idUsers: String!
+  phone: String
+  currentWeight: Float
+  currentHeight: Float
+  currentImc: Float
+  birthDate: String
+  sex: String
+  activityLevel: String
+  goal: String
+}
+
+input UpdateProfileInputDto {
+  phone: String
+  currentWeight: Float
+  currentHeight: Float
+  currentImc: Float
+  birthDate: String
+  sex: String
+  activityLevel: String
+  goal: String
+}
+
+input CreateHealthInputDto {
+  heightCm: Float!
+  weightKg: Float!
+  observation: String
+  measurementDate: DateTime!
+}
+
+input UpdateHealthInputDto {
+  idHealth: String!
+  heightCm: Float
+  weightKg: Float
+  observation: String
+  measurementDate: DateTime
+}

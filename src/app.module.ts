@@ -1,0 +1,41 @@
+// LIBS
+import { Module } from '@nestjs/common';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+
+// INTERCEPTORS
+import { RequestInfoInterceptor } from './common/interceptors/request-info.interceptors';
+
+import { UsersModule } from './modules/users/users.module';
+import { ProfilesModule } from './modules/profiles/profile.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { AppConfigModule } from './config/config.module';
+import { DatabaseModule } from './database/database.module';
+import { AppCacheModule } from './common/cache/cache.modude';
+import { MailModule } from './shared/mails/mail.module';
+
+import { RateLimitGuard } from './common/guards/rate-limit.guard';
+
+@Module({
+  imports: [
+    AppConfigModule,
+    DatabaseModule,
+    AppCacheModule,
+    MailModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      playground: true,
+      context: ({ req, res }) => ({ req, res }),
+    }),
+    UsersModule,
+    ProfilesModule,
+    CustomersModule,
+  ],
+  providers: [
+    RateLimitGuard,
+    RequestInfoInterceptor,
+  ],
+})
+
+export class AppModule { }
