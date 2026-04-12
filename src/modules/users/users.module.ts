@@ -2,7 +2,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-
 // ENTITIES
 import { UserEntity } from "./entities/user.entity";
 
@@ -20,9 +19,7 @@ import { GetUsersResolver } from "./resolvers/get/get-users.resolver";
 import { UpdateUserResolver } from "./resolvers/update/update-users.resolver";
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity]),
-  ],
+  imports: [TypeOrmModule.forFeature([UserEntity])],
   providers: [
     CreateUserService,
     GetUsersService,
@@ -30,7 +27,7 @@ import { UpdateUserResolver } from "./resolvers/update/update-users.resolver";
     UpdateUserLoginService,
     UserExistsValidator,
     GetUsersResolver,
-    UpdateUserResolver
+    UpdateUserResolver,
   ],
   exports: [
     CreateUserService,
@@ -39,5 +36,4 @@ import { UpdateUserResolver } from "./resolvers/update/update-users.resolver";
     UpdateUserLoginService,
   ],
 })
-
 export class UsersModule {}

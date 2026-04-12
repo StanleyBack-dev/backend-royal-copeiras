@@ -1,5 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from "@nestjs/common";
+import { Observable, tap } from "rxjs";
 
 @Injectable()
 export class RefreshTokenInterceptor implements NestInterceptor {
@@ -8,12 +13,14 @@ export class RefreshTokenInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap((data: unknown) => {
         const d = data as { refreshToken?: string };
-        const res = ctx.res ? (ctx.res as unknown as import('express').Response) : undefined;
+        const res = ctx.res
+          ? (ctx.res as unknown as import("express").Response)
+          : undefined;
         if (d?.refreshToken && res) {
-          res.cookie('refreshToken', d.refreshToken, {
+          res.cookie("refreshToken", d.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
             maxAge: 30 * 24 * 60 * 60 * 1000,
           });
         }

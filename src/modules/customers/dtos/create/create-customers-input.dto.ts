@@ -1,4 +1,4 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field } from "@nestjs/graphql";
 import {
   IsOptional,
   IsString,
@@ -8,7 +8,7 @@ import {
   IsDateString,
   Length,
   Matches,
-} from 'class-validator';
+} from "class-validator";
 
 @InputType()
 export class CreateCustomersInputDto {
@@ -19,12 +19,14 @@ export class CreateCustomersInputDto {
 
   @Field()
   @IsString()
-  @Matches(/^(\d{11}|\d{14})$/, { message: 'Documento deve ser CPF (11 dígitos) ou CNPJ (14 dígitos)' })
+  @Matches(/^(\d{11}|\d{14})$/, {
+    message: "Documento deve ser CPF (11 dígitos) ou CNPJ (14 dígitos)",
+  })
   document!: string;
 
   @Field(() => String)
-  @IsEnum(['individual', 'company'])
-  type!: 'individual' | 'company';
+  @IsEnum(["individual", "company"])
+  type!: "individual" | "company";
 
   @Field({ nullable: true })
   @IsOptional()

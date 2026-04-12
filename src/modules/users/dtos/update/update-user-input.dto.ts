@@ -1,5 +1,11 @@
-import { InputType, Field } from '@nestjs/graphql';
-import { IsUUID, IsOptional, IsString, IsBoolean, IsUrl } from 'class-validator';
+import { InputType, Field } from "@nestjs/graphql";
+import {
+  IsUUID,
+  IsOptional,
+  IsString,
+  IsBoolean,
+  IsUrl,
+} from "class-validator";
 
 @InputType()
 export class UpdateUserInputDto {
@@ -15,7 +21,7 @@ export class UpdateUserInputDto {
 
   @Field({ nullable: true })
   @IsOptional()
-  @IsUrl({}, { message: 'A URL do avatar deve ser válida.' })
+  @IsUrl({}, { message: "A URL do avatar deve ser válida." })
   urlAvatar?: string;
 
   @Field({ nullable: true })

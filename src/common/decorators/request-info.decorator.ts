@@ -1,5 +1,5 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { GqlExecutionContext } from '@nestjs/graphql';
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import { GqlExecutionContext } from "@nestjs/graphql";
 
 export interface IRequestInfo {
   ipAddress?: string;
@@ -8,7 +8,7 @@ export interface IRequestInfo {
 
 export const RequestInfo = createParamDecorator(
   (_: unknown, context: ExecutionContext): IRequestInfo => {
-    if (context.getType() === 'http') {
+    if (context.getType() === "http") {
       const req = context.switchToHttp().getRequest();
       return req.requestInfo;
     }

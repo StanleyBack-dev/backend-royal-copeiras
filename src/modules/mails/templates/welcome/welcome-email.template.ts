@@ -1,8 +1,8 @@
 export const getWelcomeEmailTemplate = (name: string) => {
-    const appUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const firstName = name.split(' ')[0];
+  const appUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const firstName = name.split(" ")[0];
 
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>

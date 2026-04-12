@@ -1,22 +1,21 @@
 // LIBS
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
 
 // ENTITIES
-import { CustomersEntity } from './entities/customers.entity';
-import { UserEntity } from '../users/entities/user.entity';
-import { ProfileEntity } from '../profiles/entities/profile.entity';
+import { CustomersEntity } from "./entities/customers.entity";
+import { UserEntity } from "../users/entities/user.entity";
+import { ProfileEntity } from "../profiles/entities/profile.entity";
 
 // SERVICES
-import { CreateCustomersService } from './services/create/create-customers.service';
-import { GetCustomersService } from './services/get/get-customers.service';
-import { UpdateCustomersService } from './services/update/update-customers.service';
+import { CreateCustomersService } from "./services/create/create-customers.service";
+import { GetCustomersService } from "./services/get/get-customers.service";
+import { UpdateCustomersService } from "./services/update/update-customers.service";
 
 // RESOLVERS
-import { GetCustomersResolver } from './resolvers/get/get-customers.resolver';
-import { CreateCustomersResolver } from './resolvers/create/create-customers.resolver';
-import { UpdateCustomersResolver } from './resolvers/update/update-customers.resolver';
-
+import { GetCustomersResolver } from "./resolvers/get/get-customers.resolver";
+import { CreateCustomersResolver } from "./resolvers/create/create-customers.resolver";
+import { UpdateCustomersResolver } from "./resolvers/update/update-customers.resolver";
 
 @Module({
   imports: [
@@ -32,5 +31,4 @@ import { UpdateCustomersResolver } from './resolvers/update/update-customers.res
   ],
   exports: [CreateCustomersService, GetCustomersService],
 })
-
-export class CustomersModule { }
+export class CustomersModule {}

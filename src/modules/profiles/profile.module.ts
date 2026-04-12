@@ -37,5 +37,4 @@ import { CreateProfileValidator } from "./validators/create/create-profile.valid
   ],
   exports: [CreateProfileService, GetProfileService, UpdateProfileService],
 })
-
 export class ProfilesModule {}

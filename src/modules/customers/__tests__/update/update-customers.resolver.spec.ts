@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UpdateCustomersService } from '../../services/update/update-customers.service';
-import { UpdateCustomersResolver } from '../../resolvers/update/update-customers.resolver';
+import { Test, TestingModule } from "@nestjs/testing";
+import { UpdateCustomersService } from "../../services/update/update-customers.service";
+import { UpdateCustomersResolver } from "../../resolvers/update/update-customers.resolver";
 
-describe('UpdateCustomersResolver', () => {
+describe("UpdateCustomersResolver", () => {
   let resolver: UpdateCustomersResolver;
   let service: UpdateCustomersService;
 
@@ -20,7 +20,7 @@ describe('UpdateCustomersResolver', () => {
     service = module.get<UpdateCustomersService>(UpdateCustomersService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(resolver).toBeDefined();
     expect(service).toBeDefined();
   });

@@ -1,10 +1,9 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field } from "@nestjs/graphql";
 
 @ObjectType()
 export class GetUserResponseDto {
   @Field()
   idUsers: string;
-
 
   @Field()
   name: string;
@@ -17,7 +16,6 @@ export class GetUserResponseDto {
 
   @Field()
   status: boolean;
-
 
   @Field({ nullable: true })
   inactivatedAt?: Date;

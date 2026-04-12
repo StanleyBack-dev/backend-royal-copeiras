@@ -1,25 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  UpdateDateColumn,
+} from "typeorm";
 
-@Entity('tb_users')
+@Entity("tb_users")
 export class UserEntity {
-  @PrimaryGeneratedColumn('uuid', { name: 'idtb_users' })
-  idUsers: string;
-
+  @PrimaryGeneratedColumn("uuid", { name: "idtb_users" })
+  idUsers!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
-  @Column({ name: 'url_avatar', nullable: true })
+  @Column({ name: "url_avatar", nullable: true })
   urlAvatar?: string;
 
   @Column({ default: true })
-  status: boolean;
+  status!: boolean;
 
-
-  @Column({ name: 'inactivated_at', type: 'timestamp', nullable: true })
+  @Column({ name: "inactivated_at", type: "timestamp", nullable: true })
   inactivatedAt?: Date;
 
   @Column({ name: "ip_address", nullable: true })
@@ -28,9 +31,13 @@ export class UserEntity {
   @Column({ name: "user_agent", nullable: true })
   userAgent?: string;
 
-  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  @Column({
+    name: "created_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updatedAt: Date;
+  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
+  updatedAt!: Date;
 }

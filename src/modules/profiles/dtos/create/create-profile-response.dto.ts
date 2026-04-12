@@ -1,4 +1,4 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field } from "@nestjs/graphql";
 
 @ObjectType()
 export class CreateProfileResponseDto {
@@ -12,16 +12,16 @@ export class CreateProfileResponseDto {
   birthDate?: string;
 
   @Field({ nullable: true })
-  sex?: 'male' | 'female' | 'other';
+  sex?: "male" | "female" | "other";
 
   @Field({ nullable: true })
   heightM?: number;
 
   @Field({ nullable: true })
-  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+  activityLevel?: "sedentary" | "light" | "moderate" | "active" | "very_active";
 
   @Field({ nullable: true })
-  goal?: 'lose_weight' | 'maintain' | 'gain_weight';
+  goal?: "lose_weight" | "maintain" | "gain_weight";
 
   @Field({ nullable: true })
   ipAddress?: string;
