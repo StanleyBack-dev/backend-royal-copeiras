@@ -13,7 +13,6 @@ export default [
       },
     },
     rules: {
-      // Adicione regras personalizadas aqui, se necessário
     },
   },
 ];
