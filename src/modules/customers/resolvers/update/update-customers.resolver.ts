@@ -18,6 +18,6 @@ export class UpdateCustomersResolver {
     return this.updateCustomersService.execute(
       (user as { idUsers: string }).idUsers,
       input,
-    );
+    ) as unknown as UpdateCustomersResponseDto;
   }
 }
