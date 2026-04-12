@@ -1,8 +1,10 @@
-import * as Joi from 'joi';
+import * as Joi from "joi";
 
 export const envValidationSchema = Joi.object({
   // === APP CONFIGS GERAIS ===
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string()
+    .valid("development", "production", "test")
+    .default("development"),
   PORT: Joi.number().default(4000),
   FRONTEND_URL: Joi.string().uri().required(),
 
@@ -10,15 +12,13 @@ export const envValidationSchema = Joi.object({
   DB_HOST: Joi.string().required(),
   DB_PORT: Joi.number().default(5432),
   DB_USER: Joi.string().required(),
-  DB_PASS: Joi.string().allow(''),
+  DB_PASS: Joi.string().allow(""),
   DB_NAME: Joi.string().required(),
-  DB_SSL: Joi.boolean().truthy('true').falsy('false').default(false),
-  TYPEORM_LOGGING: Joi.boolean().truthy('true').falsy('false').default(false),
-
+  DB_SSL: Joi.boolean().truthy("true").falsy("false").default(false),
+  TYPEORM_LOGGING: Joi.boolean().truthy("true").falsy("false").default(false),
 
   // === BREVO (SMTP) ===
   //BREVO_API_KEY: Joi.string().min(10).required(),
-
 
   // === JWT ===
   //JWT_SECRET: Joi.string().min(32).required(),
@@ -27,7 +27,6 @@ export const envValidationSchema = Joi.object({
   // === RATE LIMIT CONFIG ===
   RATE_LIMIT_GLOBAL_TTL: Joi.number().default(60),
   RATE_LIMIT_GLOBAL_LIMIT: Joi.number().default(100),
-
 
   RATE_LIMIT_USERS_TTL: Joi.number().default(60),
   RATE_LIMIT_USERS_LIMIT: Joi.number().default(200),

@@ -1,10 +1,9 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { GetUsersService } from '../services/get/get-users.service';
+import { Injectable, ConflictException } from "@nestjs/common";
+import { GetUsersService } from "../services/get/get-users.service";
 
 @Injectable()
 export class UserExistsValidator {
   constructor(private readonly getUsersService: GetUsersService) {}
-
 
   /**
    * Garante que o e-mail NÃO existe no banco.
@@ -13,9 +12,9 @@ export class UserExistsValidator {
    */
   async ensureUserDoesNotExistByEmail(email: string): Promise<void> {
     const existing = await this.getUsersService.findByEmail(email);
-    
+
     if (existing) {
-      throw new ConflictException('Este e-mail já está cadastrado.');
+      throw new ConflictException("Este e-mail já está cadastrado.");
     }
   }
 }

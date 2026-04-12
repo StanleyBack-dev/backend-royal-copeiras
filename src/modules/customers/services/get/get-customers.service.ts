@@ -1,24 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { CustomersEntity } from '../../entities/customers.entity';
-import { GetCustomersInputDto } from '../../dtos/get/get-customers-input.dto';
-import { GetCustomersResponseDto } from '../../dtos/get/get-customers-response.dto';
-import { GetCustomersValidator } from '../../validators/get/get-customers.validator';
+import { CustomersEntity } from "../../entities/customers.entity";
+import { GetCustomersInputDto } from "../../dtos/get/get-customers-input.dto";
+import { GetCustomersResponseDto } from "../../dtos/get/get-customers-response.dto";
+import { GetCustomersValidator } from "../../validators/get/get-customers.validator";
 
 @Injectable()
 export class GetCustomersService {
   constructor(
     @InjectRepository(CustomersEntity)
     private readonly customersRepository: Repository<CustomersEntity>,
-  ) { }
+  ) {}
 
   async findAll(
     userId: string,
     input?: GetCustomersInputDto,
   ): Promise<GetCustomersResponseDto[]> {
-    const cacheKey = `customers:list:user:${userId}`;
-
+    // const cacheKey = `customers:list:user:${userId}`;
 
     const records = await GetCustomersValidator.validateAndFetchRecords(
       userId,
@@ -30,7 +29,7 @@ export class GetCustomersService {
       idCustomers: r.idCustomers,
       name: r.name,
       document: r.document,
-      type: r.type as 'individual' | 'company',
+      type: r.type as "individual" | "company",
       email: r.email,
       phone: r.phone,
       birthDate: r.birthDate,
@@ -39,8 +38,6 @@ export class GetCustomersService {
       createdAt: new Date(r.createdAt).toISOString(),
       updatedAt: new Date(r.updatedAt).toISOString(),
     }));
-
-
 
     return formatted;
   }

@@ -1,19 +1,19 @@
 // LIBS
-import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { Module } from "@nestjs/common";
+import { GraphQLModule } from "@nestjs/graphql";
+import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 
 // INTERCEPTORS
-import { RequestInfoInterceptor } from './common/interceptors/request-info.interceptors';
+import { RequestInfoInterceptor } from "./common/interceptors/request-info.interceptors";
 
-import { UsersModule } from './modules/users/users.module';
-import { ProfilesModule } from './modules/profiles/profile.module';
-import { CustomersModule } from './modules/customers/customers.module';
-import { AppConfigModule } from './config/config.module';
-import { DatabaseModule } from './database/database.module';
-import { MailModule } from './shared/mails/mail.module';
+import { UsersModule } from "./modules/users/users.module";
+import { ProfilesModule } from "./modules/profiles/profile.module";
+import { CustomersModule } from "./modules/customers/customers.module";
+import { AppConfigModule } from "./config/config.module";
+import { DatabaseModule } from "./database/database.module";
+import { MailModule } from "./shared/mails/mail.module";
 
-import { RateLimitGuard } from './common/guards/rate-limit.guard';
+import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 
 @Module({
   imports: [
@@ -30,10 +30,6 @@ import { RateLimitGuard } from './common/guards/rate-limit.guard';
     ProfilesModule,
     CustomersModule,
   ],
-  providers: [
-    RateLimitGuard,
-    RequestInfoInterceptor,
-  ],
+  providers: [RateLimitGuard, RequestInfoInterceptor],
 })
-
-export class AppModule { }
+export class AppModule {}

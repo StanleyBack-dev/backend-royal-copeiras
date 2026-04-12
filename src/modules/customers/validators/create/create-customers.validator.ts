@@ -1,19 +1,20 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { CustomersEntity } from '../../entities/customers.entity';
-import { CustomersBaseValidator } from '../base/base-customers.validator';
-import { CreateCustomersInputDto } from '../../dtos/create/create-customers-input.dto';
+import { CustomersEntity } from "../../entities/customers.entity";
+import { CustomersBaseValidator } from "../base/base-customers.validator";
+import { CreateCustomersInputDto } from "../../dtos/create/create-customers-input.dto";
 
 export class CreateCustomersValidator extends CustomersBaseValidator {
-
   static async validateAndCreate(
     userId: string,
     input: CreateCustomersInputDto,
     customersRepo: Repository<CustomersEntity>,
   ): Promise<CustomersEntity> {
-    const existing = await customersRepo.findOne({ where: { document: input.document } });
+    const existing = await customersRepo.findOne({
+      where: { document: input.document },
+    });
     if (existing) {
-      throw new BadRequestException('Já existe um cliente com este documento.');
+      throw new BadRequestException("Já existe um cliente com este documento.");
     }
 
     const newRecord = customersRepo.create({

@@ -1,5 +1,5 @@
-import { InputType, Field } from '@nestjs/graphql';
-import { IsOptional, IsUUID, IsDateString } from 'class-validator';
+import { InputType, Field } from "@nestjs/graphql";
+import { IsOptional, IsUUID, IsDateString } from "class-validator";
 
 @InputType()
 export class GetCustomersInputDto {

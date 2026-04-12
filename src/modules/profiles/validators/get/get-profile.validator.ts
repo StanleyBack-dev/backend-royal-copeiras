@@ -1,16 +1,18 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { GetProfileInputDto } from '../../dtos/get/get-profile-input.dto';
-import { ProfileEntity } from '../../entities/profile.entity';
-import { Repository } from 'typeorm';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { GetProfileInputDto } from "../../dtos/get/get-profile-input.dto";
+import { ProfileEntity } from "../../entities/profile.entity";
+import { Repository } from "typeorm";
 
 export class GetProfileValidator {
   static ensureValidInput(input?: GetProfileInputDto): void {
     if (!input) {
-      throw new BadRequestException('Parâmetros de busca não informados.');
+      throw new BadRequestException("Parâmetros de busca não informados.");
     }
 
     if (!input.idProfiles) {
-      throw new BadRequestException('Informe o idProfiles para buscar o perfil.');
+      throw new BadRequestException(
+        "Informe o idProfiles para buscar o perfil.",
+      );
     }
   }
 
@@ -22,11 +24,11 @@ export class GetProfileValidator {
 
     const profile = await repository.findOne({
       where: { idProfiles: input.idProfiles },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     if (!profile) {
-      throw new NotFoundException('Perfil não encontrado.');
+      throw new NotFoundException("Perfil não encontrado.");
     }
 
     return profile;
@@ -38,11 +40,11 @@ export class GetProfileValidator {
   ): Promise<ProfileEntity> {
     const profile = await repository.findOne({
       where: { user: { idUsers: userId } },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     if (!profile) {
-      throw new NotFoundException('Perfil não encontrado para este usuário.');
+      throw new NotFoundException("Perfil não encontrado para este usuário.");
     }
 
     return profile;

@@ -1,17 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ProfileEntity } from '../../entities/profile.entity';
-import { UpdateProfileInputDto } from '../../dtos/update/update-profile-input.dto';
-import { UpdateProfileResponseDto } from '../../dtos/update/update-profile-response.dto';
-import { UpdateProfileValidator } from '../../validators/update/update-profile.validator';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { ProfileEntity } from "../../entities/profile.entity";
+import { UpdateProfileInputDto } from "../../dtos/update/update-profile-input.dto";
+import { UpdateProfileResponseDto } from "../../dtos/update/update-profile-response.dto";
+import { UpdateProfileValidator } from "../../validators/update/update-profile.validator";
 
 @Injectable()
 export class UpdateProfileService {
   constructor(
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
-  ) { }
+  ) {}
 
   async execute(
     userId: string,
@@ -26,9 +26,6 @@ export class UpdateProfileService {
       ipAddress,
       userAgent,
     );
-
-
-
 
     return {
       idProfiles: updated.idProfiles,

@@ -1,4 +1,7 @@
-export function calculateBMI(heightM: number, weightKg: number): { bmi: number; status: string } {
+export function calculateBMI(
+  heightM: number,
+  weightKg: number,
+): { bmi: number; status: string } {
   if (!heightM || !weightKg) {
     throw new Error("Altura e peso são obrigatórios para o cálculo do IMC.");
   }

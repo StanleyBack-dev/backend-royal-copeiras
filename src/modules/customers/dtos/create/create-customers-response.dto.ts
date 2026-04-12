@@ -1,4 +1,4 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field } from "@nestjs/graphql";
 
 @ObjectType()
 export class CreateCustomersResponseDto {
@@ -12,7 +12,7 @@ export class CreateCustomersResponseDto {
   document!: string;
 
   @Field()
-  type!: 'individual' | 'company';
+  type!: "individual" | "company";
 
   @Field({ nullable: true })
   email?: string;
