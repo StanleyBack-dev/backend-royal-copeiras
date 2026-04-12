@@ -21,20 +21,29 @@ export class CustomersEntity {
   @Column({ name: 'idtb_users', type: 'uuid' })
   idUsers!: string;
 
-  @Column({ name: 'weight_kg', type: 'float' })
-  weightKg!: number;
+  @Column({ name: 'name', type: 'varchar', length: 120 })
+  name!: string;
 
-  @Column({ name: 'bmi', type: 'float' })
-  bmi!: number;
+  @Column({ name: 'document', type: 'varchar', length: 20, unique: true })
+  document!: string;
 
-  @Column({ name: 'bmi_status', length: 50 })
-  bmiStatus!: string;
+  @Column({ name: 'type', type: 'enum', enum: ['individual', 'company'], default: 'individual' })
+  type!: 'individual' | 'company';
 
-  @Column({ name: 'observation', type: 'text', nullable: true })
-  observation?: string;
+  @Column({ name: 'email', type: 'varchar', length: 120, nullable: true })
+  email?: string;
 
-  @Column({ name: 'measurement_date', type: 'date' })
-  measurementDate!: string;
+  @Column({ name: 'phone', type: 'varchar', length: 20, nullable: true })
+  phone?: string;
+
+  @Column({ name: 'birth_date', type: 'date', nullable: true })
+  birthDate?: string;
+
+  @Column({ name: 'address', type: 'varchar', length: 255, nullable: true })
+  address?: string;
+
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

@@ -17,9 +17,19 @@ import { GetCustomersResolver } from './resolvers/get/get-customers.resolver';
 import { CreateCustomersResolver } from './resolvers/create/create-customers.resolver';
 import { UpdateCustomersResolver } from './resolvers/update/update-customers.resolver';
 
+
 @Module({
-  imports: [TypeOrmModule.forFeature([CustomersEntity, UserEntity, ProfileEntity])],
-  providers: [CreateCustomersService, CreateCustomersResolver, GetCustomersService, GetCustomersResolver, UpdateCustomersService, UpdateCustomersResolver],
+  imports: [
+    TypeOrmModule.forFeature([CustomersEntity, UserEntity, ProfileEntity]),
+  ],
+  providers: [
+    CreateCustomersService,
+    CreateCustomersResolver,
+    GetCustomersService,
+    GetCustomersResolver,
+    UpdateCustomersService,
+    UpdateCustomersResolver,
+  ],
   exports: [CreateCustomersService, GetCustomersService],
 })
 

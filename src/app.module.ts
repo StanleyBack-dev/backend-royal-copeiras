@@ -11,7 +11,6 @@ import { ProfilesModule } from './modules/profiles/profile.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
-import { AppCacheModule } from './common/cache/cache.modude';
 import { MailModule } from './shared/mails/mail.module';
 
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
@@ -20,7 +19,6 @@ import { RateLimitGuard } from './common/guards/rate-limit.guard';
   imports: [
     AppConfigModule,
     DatabaseModule,
-    AppCacheModule,
     MailModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

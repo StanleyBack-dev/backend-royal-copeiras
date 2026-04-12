@@ -1,28 +1,52 @@
-import { InputType, Field, Int, Float } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 import {
   IsOptional,
-  IsNumber,
-  Min,
-  Max,
-  IsDateString,
   IsString,
-  IsInt,
+  IsEmail,
+  IsEnum,
+  IsBoolean,
+  IsDateString,
+  Length,
+  Matches,
 } from 'class-validator';
 
 @InputType()
 export class CreateCustomersInputDto {
-  @Field(() => Float)
-  @IsNumber()
-  @Min(20)
-  @Max(300)
-  weightKg: number;
+  @Field()
+  @IsString()
+  @Length(2, 120)
+  name!: string;
+
+  @Field()
+  @IsString()
+  @Matches(/^(\d{11}|\d{14})$/, { message: 'Documento deve ser CPF (11 dígitos) ou CNPJ (14 dígitos)' })
+  document!: string;
+
+  @Field(() => String)
+  @IsEnum(['individual', 'company'])
+  type!: 'individual' | 'company';
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  observation?: string;
+  phone?: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
   @IsDateString()
-  measurementDate: string;
+  birthDate?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @Field({ defaultValue: true })
+  @IsBoolean()
+  isActive: boolean = true;
 }
