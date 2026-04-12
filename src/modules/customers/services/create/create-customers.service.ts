@@ -5,7 +5,6 @@ import { CustomersEntity } from '../../entities/customers.entity';
 import { CreateCustomersInputDto } from '../../dtos/create/create-customers-input.dto';
 import { CreateCustomersResponseDto } from '../../dtos/create/create-customers-response.dto';
 import { CreateCustomersValidator } from '../../validators/create/create-customers.validator';
-import { CacheDelProvider } from '../../../../common/cache/providers/cache-del.provider';
 import { ProfileEntity } from '../../../profiles/entities/profile.entity';
 
 @Injectable()
@@ -17,7 +16,6 @@ export class CreateCustomersService {
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
 
-    private readonly cacheDel: CacheDelProvider,
   ) { }
 
   async execute(userId: string, input: CreateCustomersInputDto): Promise<CreateCustomersResponseDto> {
@@ -25,20 +23,20 @@ export class CreateCustomersService {
       userId,
       input,
       this.customersRepository,
-      this.profileRepository,
     );
-
-    await this.cacheDel.execute(`customers:list:user:${userId}`);
 
     return {
       idCustomers: saved.idCustomers,
-      weightKg: saved.weightKg,
-      bmi: saved.bmi,
-      bmiStatus: saved.bmiStatus,
-      observation: saved.observation,
-      measurementDate: saved.measurementDate,
-      createdAt: saved.createdAt,
-      updatedAt: saved.updatedAt,
+      name: saved.name,
+      document: saved.document,
+      type: saved.type as 'individual' | 'company',
+      email: saved.email,
+      phone: saved.phone,
+      birthDate: saved.birthDate,
+      address: saved.address,
+      isActive: saved.isActive,
+      createdAt: new Date(saved.createdAt).toISOString(),
+      updatedAt: new Date(saved.updatedAt).toISOString(),
     };
   }
 }

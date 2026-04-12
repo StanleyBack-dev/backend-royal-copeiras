@@ -16,7 +16,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
           username: configService.get('DB_USER'),
           password: configService.get('DB_PASS'),
           database: configService.get('DB_NAME'),
-          synchronize: false,
+          synchronize: configService.get('NODE_ENV') === 'development',
           logging: configService.get('TYPEORM_LOGGING') === true,
           ssl: configService.get('DB_SSL')
             ? { rejectUnauthorized: false }

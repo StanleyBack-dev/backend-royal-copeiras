@@ -1,28 +1,37 @@
-import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class CreateCustomersResponseDto {
   @Field()
-  idCustomers: string;
-
-  @Field(() => Float)
-  weightKg: number;
-
-  @Field(() => Float)
-  bmi: number;
+  idCustomers!: string;
 
   @Field()
-  bmiStatus: string;
+  name!: string;
+
+  @Field()
+  document!: string;
+
+  @Field()
+  type!: 'individual' | 'company';
 
   @Field({ nullable: true })
-  observation?: string;
+  email?: string;
+
+  @Field({ nullable: true })
+  phone?: string;
+
+  @Field({ nullable: true })
+  birthDate?: string;
+
+  @Field({ nullable: true })
+  address?: string;
 
   @Field()
-  measurementDate: string;
+  isActive!: boolean;
 
   @Field()
-  createdAt: Date;
+  createdAt!: string;
 
   @Field()
-  updatedAt: Date;
+  updatedAt!: string;
 }

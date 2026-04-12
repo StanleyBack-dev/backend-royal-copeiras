@@ -5,7 +5,6 @@ import {
     Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Redis } from '@upstash/redis';
 import { rateLimitConfig } from '../../config/rate-limit.config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { TooManyRequestsException } from '../exceptions/too-many-requests.exception';
@@ -14,7 +13,6 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class RateLimitGuard implements CanActivate {
     constructor(
-        @Inject('REDIS_CLIENT') private readonly redis: Redis,
         private readonly reflector: Reflector,
         private readonly configService: ConfigService,
     ) { }
@@ -59,17 +57,7 @@ export class RateLimitGuard implements CanActivate {
         const identity = userId ? `user:${userId}` : `ip:${ip}`;
         const key = `ratelimit:${type}:${className}:${routeKey}:${identity}`;
 
-        const current = await this.redis.get<number>(key);
 
-        if (current && current >= limit) {
-            throw new TooManyRequestsException();
-        }
-
-        if (current) {
-            await this.redis.incr(key);
-        } else {
-            await this.redis.set(key, 1, { ex: ttl });
-        }
 
         return true;
     }

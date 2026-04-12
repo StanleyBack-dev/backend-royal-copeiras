@@ -1,0 +1,8 @@
+$kind: graphql-request
+name: Customers
+url: ""
+query: ""
+variables: ""
+schema:
+  source: none
+order: 1775973859986
