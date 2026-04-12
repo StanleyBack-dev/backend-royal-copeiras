@@ -1,9 +1,10 @@
 import { CustomersEntity } from '../entities/customers.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 export const customerMock: CustomersEntity = {
   idCustomers: 'mock-customer-id',
   idUsers: 'mock-user-id',
-  user: undefined as any,
+  user: { idUsers: 'mock-user-id' } as UserEntity,
   name: 'Cliente Exemplo',
   document: '12345678901',
   type: 'individual',

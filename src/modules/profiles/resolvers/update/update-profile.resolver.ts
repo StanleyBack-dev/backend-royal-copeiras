@@ -10,9 +10,9 @@ export class UpdateProfileResolver {
 
   @Mutation(() => UpdateProfileResponseDto)
   async updateMyProfile(
-    @CurrentUser() user: any,
+    @CurrentUser() user: unknown,
     @Args('input') input: UpdateProfileInputDto,
   ): Promise<UpdateProfileResponseDto> {
-    return this.updateProfileService.execute(user.idUsers, input);
+    return this.updateProfileService.execute((user as { idUsers: string }).idUsers, input);
   }
 }

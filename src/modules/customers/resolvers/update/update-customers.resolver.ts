@@ -10,9 +10,9 @@ export class UpdateCustomersResolver {
 
   @Mutation(() => UpdateCustomersResponseDto, { name: 'updateCustomers' })
   async updateCustomers(
-    @CurrentUser() user: any,
+    @CurrentUser() user: unknown,
     @Args('input') input: UpdateCustomersInputDto,
   ): Promise<UpdateCustomersResponseDto> {
-    return this.updateCustomersService.execute(user.idUsers, input);
+    return this.updateCustomersService.execute((user as { idUsers: string }).idUsers, input);
   }
 }

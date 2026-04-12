@@ -10,9 +10,9 @@ export class GetCustomersResolver {
 
   @Query(() => [GetCustomersResponseDto], { name: 'getCustomers' })
   async getCustomers(
-    @CurrentUser() user: any,
+    @CurrentUser() user: unknown,
     @Args('input', { nullable: true }) input?: GetCustomersInputDto,
   ): Promise<GetCustomersResponseDto[]> {
-    return this.getCustomersService.findAll(user.idUsers, input);
+    return this.getCustomersService.findAll((user as { idUsers: string }).idUsers, input);
   }
 }

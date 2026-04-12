@@ -14,7 +14,7 @@ export class GetProfileService {
   ) { }
 
   async findByUser(userId: string): Promise<GetProfileResponseDto> {
-    const cacheKey = `profile:user:${userId}`;
+    // const cacheKey = `profile:user:${userId}`;
 
     const profile = await GetProfileValidator.ensureProfileExistsByUser(
       userId,
@@ -24,7 +24,7 @@ export class GetProfileService {
   }
 
   async findOne(input: GetProfileInputDto): Promise<GetProfileResponseDto> {
-    const cacheKey = `profile:findOne:${input.idProfiles}`;
+    // const cacheKey = `profile:findOne:${input.idProfiles}`;
 
     const profile = await GetProfileValidator.ensureProfileExists(
       input,

@@ -10,9 +10,9 @@ export class GetProfileResolver {
 
   @Query(() => GetProfileResponseDto)
   async getMyProfile(
-    @CurrentUser() user: any,
+    @CurrentUser() user: unknown,
   ): Promise<GetProfileResponseDto> {
-    return this.getProfileService.findByUser(user.idUsers);
+    return this.getProfileService.findByUser((user as { idUsers: string }).idUsers);
   }
 
   @Query(() => GetProfileResponseDto)

@@ -17,7 +17,7 @@ export class GetCustomersService {
     userId: string,
     input?: GetCustomersInputDto,
   ): Promise<GetCustomersResponseDto[]> {
-    const cacheKey = `customers:list:user:${userId}`;
+    // const cacheKey = `customers:list:user:${userId}`;
 
 
     const records = await GetCustomersValidator.validateAndFetchRecords(

@@ -33,7 +33,7 @@ export class UpdateUserService {
 
     if (input.status !== undefined) {
       user.status = input.status;
-      user.inactivatedAt = (input.status ? null : new Date()) as any;
+      user.inactivatedAt = input.status ? undefined : new Date();
     }
 
     const updated = await this.repo.save(user);

@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { CustomersEntity } from '../../entities/customers.entity';
 import { CustomersBaseValidator } from '../base/base-customers.validator';

@@ -1,4 +1,3 @@
-import { UseGuards } from '@nestjs/common';
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { UpdateUserService } from '../../services/update/update-user.service';
 import { UpdateUserInputDto } from '../../dtos/update/update-user-input.dto';
@@ -11,9 +10,9 @@ export class UpdateUserResolver {
 
   @Mutation(() => UpdateUserResponseDto)
   async updateUser(
-    @CurrentUser() user: any,
+    @CurrentUser() user: unknown,
     @Args('input') input: UpdateUserInputDto,
   ): Promise<UpdateUserResponseDto> {
-    return this.updateUserService.execute(user.idUsers, input);
+    return this.updateUserService.execute((user as { idUsers: string }).idUsers, input);
   }
 }

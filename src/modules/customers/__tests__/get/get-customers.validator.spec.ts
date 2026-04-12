@@ -1,5 +1,4 @@
 import { GetCustomersInputDto } from '../../dtos/get/get-customers-input.dto';
-import { CustomersBaseValidator } from '../../validators/base/base-customers.validator';
 
 describe('GetCustomersInputDto', () => {
   it('should allow empty input', () => {

@@ -3,12 +3,11 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { REFRESH_TOKEN_COOKIE_NAME } from '../../config/cookie.config'; 
+// import { REFRESH_TOKEN_COOKIE_NAME } from '../../config/cookie.config'; 
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -25,7 +24,7 @@ export class AuthGuard implements CanActivate {
     if (isPublic) return true;
 
     // 2. Detecta o contexto (GraphQL ou HTTP)
-    const request = this.getRequest(context);
+    // const request = this.getRequest(context);
 
     // --- ESTRATÉGIA DE VALIDAÇÃO HÍBRIDA ---
 

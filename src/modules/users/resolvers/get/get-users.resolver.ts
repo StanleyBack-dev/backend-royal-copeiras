@@ -1,4 +1,3 @@
-import { UseGuards } from "@nestjs/common";
 import { Resolver, Query, Args } from "@nestjs/graphql";
 import { GetUsersService } from "../../services/get/get-users.service";
 import { GetUserInputDto } from "../../dtos/get/get-user-input.dto";
@@ -7,7 +6,7 @@ import { CurrentUser } from "../../../../common/decorators/current-user.decorato
 
 @Resolver()
 export class GetUsersResolver {
-  constructor(private readonly getUsersService: GetUsersService) { }
+  constructor(private readonly getUsersService: GetUsersService) {}
 
   @Query(() => [GetUserResponseDto], { name: "getUsers" })
   async getUsers(): Promise<GetUserResponseDto[]> {
@@ -26,8 +25,8 @@ export class GetUsersResolver {
   }
 
   @Query(() => GetUserResponseDto, { name: "me" })
-  async me(@CurrentUser() user: any): Promise<GetUserResponseDto> {
-    const { idUsers, name, email, urlAvatar, status, inactivatedAt, createdAt, updatedAt } = await this.getUsersService.findOne({ idUsers: user.idUsers });
+  async me(@CurrentUser() user: unknown): Promise<GetUserResponseDto> {
+    const { idUsers, name, email, urlAvatar, status, inactivatedAt, createdAt, updatedAt } = await this.getUsersService.findOne({ idUsers: (user as { idUsers: string }).idUsers });
     return { idUsers, name, email, urlAvatar, status, inactivatedAt, createdAt, updatedAt };
   }
 }

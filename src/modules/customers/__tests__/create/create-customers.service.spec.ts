@@ -25,7 +25,7 @@ describe('CreateCustomersService', () => {
     const input = {
       name: 'Cliente Exemplo',
       document: '12345678901',
-      type: 'individual' as 'individual',
+      type: 'individual' as const,
       isActive: true,
       email: 'cliente@exemplo.com',
       phone: '11999999999',
@@ -42,7 +42,7 @@ describe('CreateCustomersService', () => {
     const input = {
       name: 'Cliente Exemplo',
       document: '12345678901',
-      type: 'individual' as 'individual',
+      type: 'individual' as const,
       isActive: true,
     };
     await expect(service.execute('user-id-test', input)).rejects.toThrow('Já existe um cliente com este documento.');

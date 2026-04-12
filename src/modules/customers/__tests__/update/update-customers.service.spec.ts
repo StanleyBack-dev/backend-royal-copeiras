@@ -24,12 +24,12 @@ describe('UpdateCustomersService', () => {
   it('should update a customer', async () => {
     const input = { idCustomers: 'mock-customer-id', name: 'Novo Nome' };
     const userId = 'user-id-test';
-    const result = await service.execute(userId, input as any);
+    const result = await service.execute(userId, input);
     expect(result.name).toBe('Novo Nome');
   });
 
   it('should throw error if customer not found', async () => {
     (service.execute as jest.Mock).mockRejectedValueOnce(new Error('Cliente não encontrado.'));
-    await expect(service.execute('user-id-test', { idCustomers: 'not-exist' } as any)).rejects.toThrow('Cliente não encontrado.');
+    await expect(service.execute('user-id-test', { idCustomers: 'not-exist' })).rejects.toThrow('Cliente não encontrado.');
   });
 });

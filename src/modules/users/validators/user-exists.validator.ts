@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { GetUsersService } from '../services/get/get-users.service';
 
 @Injectable()
-export class UserExistsValidator {
+  export class UserExistsValidator {
   constructor(private readonly getUsersService: GetUsersService) {}
 
 
