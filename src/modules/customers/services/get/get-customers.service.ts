@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { CustomersEntity } from "../../entities/customers.entity";
 import { GetCustomersInputDto } from "../../dtos/get/get-customers-input.dto";
 import { GetCustomersResponseDto } from "../../dtos/get/get-customers-response.dto";
+import { ICustomer } from "../../interface/customer.interface";
 import { GetCustomersValidator } from "../../validators/get/get-customers.validator";
 
 @Injectable()
@@ -16,7 +17,7 @@ export class GetCustomersService {
   async findAll(
     userId: string,
     input?: GetCustomersInputDto,
-  ): Promise<GetCustomersResponseDto[]> {
+  ): Promise<ICustomer[]> {
     // const cacheKey = `customers:list:user:${userId}`;
 
     const records = await GetCustomersValidator.validateAndFetchRecords(
@@ -25,20 +26,6 @@ export class GetCustomersService {
       this.customersRepository,
     );
 
-    const formatted = records.map((r) => ({
-      idCustomers: r.idCustomers,
-      name: r.name,
-      document: r.document,
-      type: r.type as "individual" | "company",
-      email: r.email,
-      phone: r.phone,
-      birthDate: r.birthDate,
-      address: r.address,
-      isActive: r.isActive,
-      createdAt: new Date(r.createdAt).toISOString(),
-      updatedAt: new Date(r.updatedAt).toISOString(),
-    }));
-
-    return formatted;
+    return records.map((r) => GetCustomersResponseDto.fromEntity(r));
   }
 }

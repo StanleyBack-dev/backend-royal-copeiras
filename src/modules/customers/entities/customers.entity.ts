@@ -8,9 +8,10 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { UserEntity } from "../../users/entities/user.entity";
+import { ICustomer } from "../interface/customer.interface";
 
 @Entity("tb_customers")
-export class CustomersEntity {
+export class CustomersEntity implements ICustomer {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_customers" })
   idCustomers!: string;
 

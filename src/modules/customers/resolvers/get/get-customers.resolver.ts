@@ -16,6 +16,6 @@ export class GetCustomersResolver {
     return this.getCustomersService.findAll(
       (user as { idUsers: string }).idUsers,
       input,
-    );
+    ) as unknown as GetCustomersResponseDto[];
   }
 }
