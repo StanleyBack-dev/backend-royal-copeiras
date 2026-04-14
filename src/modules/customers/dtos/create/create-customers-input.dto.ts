@@ -5,7 +5,6 @@ import {
   IsEmail,
   IsEnum,
   IsBoolean,
-  IsDateString,
   Length,
   Matches,
 } from "class-validator";
@@ -37,11 +36,6 @@ export class CreateCustomersInputDto {
   @IsOptional()
   @IsString()
   phone?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString()
-  birthDate?: string;
 
   @Field({ nullable: true })
   @IsOptional()

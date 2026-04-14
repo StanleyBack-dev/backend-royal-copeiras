@@ -13,7 +13,6 @@ export class CreateCustomersResponseDto implements ICustomer {
     dto.type = entity.type;
     dto.email = entity.email;
     dto.phone = entity.phone;
-    dto.birthDate = entity.birthDate;
     dto.address = entity.address;
     dto.isActive = entity.isActive;
     dto.createdAt =
@@ -43,9 +42,6 @@ export class CreateCustomersResponseDto implements ICustomer {
 
   @Field({ nullable: true })
   phone?: string;
-
-  @Field({ nullable: true })
-  birthDate?: string;
 
   @Field({ nullable: true })
   address?: string;

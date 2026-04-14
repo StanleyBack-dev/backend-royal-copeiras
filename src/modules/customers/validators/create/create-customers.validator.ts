@@ -24,7 +24,6 @@ export class CreateCustomersValidator extends CustomersBaseValidator {
       type: input.type,
       email: input.email,
       phone: input.phone,
-      birthDate: input.birthDate,
       address: input.address,
       isActive: input.isActive,
     });

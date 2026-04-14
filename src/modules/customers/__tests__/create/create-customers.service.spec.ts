@@ -27,7 +27,6 @@ describe("CreateCustomersService", () => {
       isActive: true,
       email: "cliente@exemplo.com",
       phone: "11999999999",
-      birthDate: "1990-01-01",
       address: "Rua Exemplo, 123",
     };
     const userId = "user-id-test";
