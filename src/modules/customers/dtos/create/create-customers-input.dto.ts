@@ -37,7 +37,6 @@ export class CreateCustomersInputDto {
   @IsString()
   phone?: string;
 
-
   @Field({ nullable: true })
   @IsOptional()
   @IsString()

@@ -42,7 +42,6 @@ export class CustomersEntity implements ICustomer {
   @Column({ name: "phone", type: "varchar", length: 20, nullable: true })
   phone?: string;
 
-
   @Column({ name: "address", type: "varchar", length: 255, nullable: true })
   address?: string;
 

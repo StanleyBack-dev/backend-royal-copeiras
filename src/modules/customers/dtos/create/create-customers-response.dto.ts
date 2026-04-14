@@ -43,7 +43,6 @@ export class CreateCustomersResponseDto implements ICustomer {
   @Field({ nullable: true })
   phone?: string;
 
-
   @Field({ nullable: true })
   address?: string;
 
