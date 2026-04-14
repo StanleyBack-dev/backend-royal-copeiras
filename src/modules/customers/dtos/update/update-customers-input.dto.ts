@@ -46,10 +46,6 @@ export class UpdateCustomersInputDto {
   @IsString()
   phone?: string;
 
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString()
-  birthDate?: string;
 
   @Field({ nullable: true })
   @IsOptional()
