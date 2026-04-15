@@ -59,6 +59,28 @@ $ npm run test:cov
 
 ## Deployment
 
+## Release Flow
+
+Este repositório usa dois workflows no GitHub Actions:
+
+- `CI`: roda em pull requests para `master` e `beta`.
+- `Release`: roda em push para `master` e `beta`.
+
+O backend segue o mesmo padrao do frontend `frontend-royal-copeiras`:
+
+- mesmos gatilhos de pull request e push
+- mesma estrutura de workflows
+- semantic-release sem arquivo de configuracao customizado no repositório
+
+Como `master` e `beta` estao protegidas e aceitam alteracoes apenas via pull request, o fluxo atual evita commit automatico em arquivos versionados da branch protegida.
+
+Se no futuro for necessario voltar a versionar `package.json` e `CHANGELOG.md`, a estrategia recomendada e usar um fluxo baseado em pull request:
+
+1. gerar a proxima versao em uma branch temporaria de release
+2. atualizar os arquivos versionados nessa branch
+3. abrir um pull request automatico para `beta` ou `master`
+4. deixar o merge dessa PR passar pelos mesmos checks obrigatorios do repositório
+
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
