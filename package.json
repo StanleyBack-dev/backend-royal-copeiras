@@ -20,6 +20,7 @@
     "migration:run:prod": "cross-env NODE_ENV=production ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/database/datasource.ts",
     "migration:revert:prod": "cross-env NODE_ENV=production ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/database/datasource.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
