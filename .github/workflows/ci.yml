@@ -1,47 +1,39 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
-  push:
+  pull_request:
     branches:
       - master
-      - main
+      - beta
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-test:
+  lint-format:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: "npm"
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
+      - name: Run Lint
         run: npm run lint
-        continue-on-error: false
 
-      - name: Build
+      - name: Run Typecheck
+        run: npm run typecheck
+
+      - name: Run Build
         run: npm run build
-        continue-on-error: false
 
-      - name: Run tests
-        run: npm run test -- --ci --runInBand --coverage
-        continue-on-error: false
-
-      - name: Upload coverage report
-        if: success() && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-
-      # Exemplo de deploy automático (opcional)
-      # - name: Deploy
-      #   run: npm run deploy
-      #   if: github.ref == 'refs/heads/master' && success()
+      - name: Run Prettier Check
+        run: npx prettier --check .
