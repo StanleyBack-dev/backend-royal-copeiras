@@ -3,6 +3,8 @@ import { CreateCustomersService } from "../../services/create/create-customers.s
 import { CreateCustomersInputDto } from "../../dtos/create/create-customers-input.dto";
 import { CreateCustomersResponseDto } from "../../dtos/create/create-customers-response.dto";
 import { CurrentUser } from "../../../../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../../../auth/decorators/require-permissions.decorator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 
 @Resolver(() => CreateCustomersResponseDto)
 export class CreateCustomersResolver {
@@ -11,6 +13,7 @@ export class CreateCustomersResolver {
   ) {}
 
   @Mutation(() => CreateCustomersResponseDto, { name: "createCustomers" })
+  @RequirePermissions(AuthPermission.MANAGE_CUSTOMERS)
   async createCustomers(
     @CurrentUser() user: unknown,
     @Args("input") input: CreateCustomersInputDto,

@@ -1,6 +1,7 @@
 // LIBS
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "../auth/auth.module";
 
 // ENTITIES
 import { CustomersEntity } from "./entities/customers.entity";
@@ -19,6 +20,7 @@ import { UpdateCustomersResolver } from "./resolvers/update/update-customers.res
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([CustomersEntity, UserEntity, ProfileEntity]),
   ],
   providers: [

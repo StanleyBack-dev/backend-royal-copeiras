@@ -5,12 +5,15 @@ import { ProfileEntity } from "../../entities/profile.entity";
 import { UpdateProfileInputDto } from "../../dtos/update/update-profile-input.dto";
 import { UpdateProfileResponseDto } from "../../dtos/update/update-profile-response.dto";
 import { UpdateProfileValidator } from "../../validators/update/update-profile.validator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
+import { AuthorizationService } from "../../../auth/services/authorization.service";
 
 @Injectable()
 export class UpdateProfileService {
   constructor(
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   async execute(
@@ -19,6 +22,11 @@ export class UpdateProfileService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<UpdateProfileResponseDto> {
+    await this.authorizationService.assertPermissionForUserId(
+      userId,
+      AuthPermission.MANAGE_OWN_PROFILE,
+    );
+
     const updated = await UpdateProfileValidator.validateAndUpdate(
       userId,
       input,

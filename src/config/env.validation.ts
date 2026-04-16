@@ -7,6 +7,43 @@ export const envValidationSchema = Joi.object({
     .default("development"),
   PORT: Joi.number().default(4000),
   FRONTEND_URL: Joi.string().uri().required(),
+  FRONTEND_URL_WWW: Joi.string().uri().optional(),
+  COOKIE_DOMAIN: Joi.string().allow("").optional(),
+
+  // === BOOTSTRAP ADMIN MASTER ===
+  BOOTSTRAP_ADMIN_MASTER_ENABLED: Joi.boolean()
+    .truthy("true")
+    .falsy("false")
+    .default(false),
+  BOOTSTRAP_ADMIN_MASTER_NAME: Joi.string().when(
+    "BOOTSTRAP_ADMIN_MASTER_ENABLED",
+    {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    },
+  ),
+  BOOTSTRAP_ADMIN_MASTER_EMAIL: Joi.string()
+    .email()
+    .when("BOOTSTRAP_ADMIN_MASTER_ENABLED", {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
+  BOOTSTRAP_ADMIN_MASTER_USERNAME: Joi.string()
+    .min(3)
+    .when("BOOTSTRAP_ADMIN_MASTER_ENABLED", {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
+  BOOTSTRAP_ADMIN_MASTER_PASSWORD: Joi.string()
+    .min(8)
+    .when("BOOTSTRAP_ADMIN_MASTER_ENABLED", {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
 
   // === DATABASE ===
   DB_HOST: Joi.string().required(),
@@ -21,8 +58,26 @@ export const envValidationSchema = Joi.object({
   //BREVO_API_KEY: Joi.string().min(10).required(),
 
   // === JWT ===
-  //JWT_SECRET: Joi.string().min(32).required(),
-  //JWT_EXPIRES_IN: Joi.string().default('7d'),
+  JWT_ACCESS_SECRET: Joi.string()
+    .min(32)
+    .when("NODE_ENV", {
+      is: "production",
+      then: Joi.required(),
+      otherwise: Joi.string()
+        .min(32)
+        .default("dev-access-secret-change-me-2026-royal-copeiras"),
+    }),
+  JWT_REFRESH_SECRET: Joi.string()
+    .min(32)
+    .when("NODE_ENV", {
+      is: "production",
+      then: Joi.required(),
+      otherwise: Joi.string()
+        .min(32)
+        .default("dev-refresh-secret-change-me-2026-royal-copeiras"),
+    }),
+  JWT_ACCESS_EXPIRES_IN: Joi.string().default("15m"),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().default("30d"),
 
   // === RATE LIMIT CONFIG ===
   RATE_LIMIT_GLOBAL_TTL: Joi.number().default(60),

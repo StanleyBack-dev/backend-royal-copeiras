@@ -1,6 +1,7 @@
 // LIBS
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "../auth/auth.module";
 
 // ENTITIES
 import { UserEntity } from "./entities/user.entity";
@@ -15,17 +16,19 @@ import { UpdateUserLoginService } from "./services/update/update-user-login.serv
 import { CreateUserService } from "./services/create/create-user.service";
 
 // RESOLVERS
+import { CreateUserResolver } from "./resolvers/create/create-user.resolver";
 import { GetUsersResolver } from "./resolvers/get/get-users.resolver";
 import { UpdateUserResolver } from "./resolvers/update/update-users.resolver";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
   providers: [
     CreateUserService,
     GetUsersService,
     UpdateUserService,
     UpdateUserLoginService,
     UserExistsValidator,
+    CreateUserResolver,
     GetUsersResolver,
     UpdateUserResolver,
   ],

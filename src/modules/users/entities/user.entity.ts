@@ -4,6 +4,7 @@ import {
   Column,
   UpdateDateColumn,
 } from "typeorm";
+import { UserGroup } from "../enums/user-group.enum";
 
 @Entity("tb_users")
 export class UserEntity {
@@ -21,6 +22,13 @@ export class UserEntity {
 
   @Column({ default: true })
   status!: boolean;
+
+  @Column({
+    type: "enum",
+    enum: UserGroup,
+    default: UserGroup.USER,
+  })
+  group!: UserGroup;
 
   @Column({ name: "inactivated_at", type: "timestamp", nullable: true })
   inactivatedAt?: Date;

@@ -6,6 +6,7 @@ import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 // INTERCEPTORS
 import { RequestInfoInterceptor } from "./common/interceptors/request-info.interceptors";
 
+import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
 import { ProfilesModule } from "./modules/profiles/profile.module";
 import { CustomersModule } from "./modules/customers/customers.module";
@@ -27,6 +28,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
       playground: true,
       context: ({ req, res }) => ({ req, res }),
     }),
+    AuthModule,
     UsersModule,
     ProfilesModule,
     CustomersModule,
