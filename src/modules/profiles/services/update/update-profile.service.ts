@@ -40,7 +40,6 @@ export class UpdateProfileService {
       phone: updated.phone,
       birthDate: updated.birthDate,
       sex: updated.sex,
-      heightM: updated.heightM,
       activityLevel: updated.activityLevel,
       goal: updated.goal,
     };

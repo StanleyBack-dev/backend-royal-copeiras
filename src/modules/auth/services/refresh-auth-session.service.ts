@@ -1,7 +1,9 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { RefreshSessionService } from "../../sessions/services/refresh/refresh-session.service";
 import { SaveSessionService } from "../../sessions/services/save/save-session.service";
 import { ValidateSessionService } from "../../sessions/services/validate/validate-session.service";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { AuthSessionResponseDto } from "../dtos/session/auth-session-response.dto";
 import { AuthCredentialsService } from "./auth-credentials.service";
 import { AuthTokensService } from "./auth-tokens.service";
@@ -28,7 +30,10 @@ export class RefreshAuthSessionService {
     );
 
     if (!session) {
-      throw new UnauthorizedException("Sessão inválida ou revogada.");
+      throw AppException.from(
+        APP_ERRORS.auth.invalidOrRevokedSession,
+        undefined,
+      );
     }
 
     await this.refreshSessionService.execute(session);
@@ -37,8 +42,9 @@ export class RefreshAuthSessionService {
       payload.uid,
     );
     if (!credential) {
-      throw new UnauthorizedException(
-        "Credencial não encontrada para renovar sessão.",
+      throw AppException.from(
+        APP_ERRORS.auth.credentialMissingForRefresh,
+        undefined,
       );
     }
 

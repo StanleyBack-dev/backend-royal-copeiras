@@ -1,12 +1,11 @@
-import { BadRequestException } from "@nestjs/common";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { GetUserInputDto } from "../../dtos/get/get-user-input.dto";
 
 export class GetUserValidator {
   static ensureValidInput(input: GetUserInputDto): void {
     if (!input.idUsers && !input.email) {
-      throw new BadRequestException(
-        "Informe um ID ou um e-mail para buscar o usuário.",
-      );
+      throw AppException.from(APP_ERRORS.users.invalidLookupInput, undefined);
     }
   }
 }

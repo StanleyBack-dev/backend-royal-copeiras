@@ -1,5 +1,7 @@
+import { HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { BadRequestException, UnauthorizedException } from "@nestjs/common";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { ChangePasswordService } from "../../services/change-password.service";
 import { AuthCredentialsService } from "../../services/auth-credentials.service";
 import { AuthorizationService } from "../../services/authorization.service";
@@ -63,22 +65,46 @@ describe("ChangePasswordService", () => {
   });
 
   it("should reject same password", async () => {
-    await expect(
-      service.execute(authCredentialMock.idUsers, {
+    let thrownError: unknown;
+
+    try {
+      await service.execute(authCredentialMock.idUsers, {
         currentPassword: "same-password",
         newPassword: "same-password",
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+      });
+    } catch (error) {
+      thrownError = error;
+    }
+
+    expect(thrownError).toBeInstanceOf(AppException);
+    expect(thrownError).toMatchObject({
+      status: HttpStatus.BAD_REQUEST,
+      response: {
+        code: APP_ERRORS.auth.newPasswordMustDiffer.code,
+      },
+    });
   });
 
   it("should reject invalid current password", async () => {
     passwordHasherService.verifyPassword.mockResolvedValueOnce(false);
 
-    await expect(
-      service.execute(authCredentialMock.idUsers, {
+    let thrownError: unknown;
+
+    try {
+      await service.execute(authCredentialMock.idUsers, {
         currentPassword: "wrong-password",
         newPassword: "NewPassword456",
-      }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+      });
+    } catch (error) {
+      thrownError = error;
+    }
+
+    expect(thrownError).toBeInstanceOf(AppException);
+    expect(thrownError).toMatchObject({
+      status: HttpStatus.UNAUTHORIZED,
+      response: {
+        code: APP_ERRORS.auth.invalidCurrentPassword.code,
+      },
+    });
   });
 });

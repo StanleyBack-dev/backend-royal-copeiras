@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { CreateUserInputDto } from "../../dtos/create/create-user-input.dto";
 import { CreateUserResponseDto } from "../../dtos/create/create-user-response.dto";
 import { UserEntity } from "../../entities/user.entity";
-import { ConflictException } from "@nestjs/common";
 import { UserExistsValidator } from "../../validators/user-exists.validator";
 import { AuthCredentialEntity } from "../../../auth/entities/auth-credential.entity";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
@@ -50,7 +51,7 @@ export class CreateUserService {
       });
 
       if (existingUsername) {
-        throw new ConflictException("Username já está em uso.");
+        throw AppException.from(APP_ERRORS.auth.duplicateUsername, undefined);
       }
 
       const user = userRepository.create({

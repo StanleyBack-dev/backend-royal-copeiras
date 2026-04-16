@@ -1,4 +1,5 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { GetProfileInputDto } from "../../dtos/get/get-profile-input.dto";
 import { ProfileEntity } from "../../entities/profile.entity";
 import { Repository } from "typeorm";
@@ -6,12 +7,16 @@ import { Repository } from "typeorm";
 export class GetProfileValidator {
   static ensureValidInput(input?: GetProfileInputDto): void {
     if (!input) {
-      throw new BadRequestException("Parâmetros de busca não informados.");
+      throw AppException.from(
+        APP_ERRORS.profiles.searchParamsMissing,
+        undefined,
+      );
     }
 
     if (!input.idProfiles) {
-      throw new BadRequestException(
-        "Informe o idProfiles para buscar o perfil.",
+      throw AppException.from(
+        APP_ERRORS.profiles.idProfilesRequired,
+        undefined,
       );
     }
   }
@@ -28,7 +33,7 @@ export class GetProfileValidator {
     });
 
     if (!profile) {
-      throw new NotFoundException("Perfil não encontrado.");
+      throw AppException.from(APP_ERRORS.profiles.notFound, undefined);
     }
 
     return profile;
@@ -44,7 +49,7 @@ export class GetProfileValidator {
     });
 
     if (!profile) {
-      throw new NotFoundException("Perfil não encontrado para este usuário.");
+      throw AppException.from(APP_ERRORS.profiles.notFoundForUser, undefined);
     }
 
     return profile;

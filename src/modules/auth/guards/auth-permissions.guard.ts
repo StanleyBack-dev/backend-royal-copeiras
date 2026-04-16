@@ -1,11 +1,8 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { GqlExecutionContext } from "@nestjs/graphql";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { AUTH_PERMISSIONS_KEY } from "../decorators/require-permissions.decorator";
 import { AuthPermission } from "../enums/auth-permission.enum";
 import { AuthenticatedUser } from "../interfaces/auth-token-payload.interface";
@@ -32,7 +29,7 @@ export class AuthPermissionsGuard implements CanActivate {
     const user = request.user as AuthenticatedUser | undefined;
 
     if (!user) {
-      throw new UnauthorizedException("Usuário não autenticado.");
+      throw AppException.from(APP_ERRORS.auth.userUnauthenticated, undefined);
     }
 
     this.authorizationService.assertPermissionsForGroup(

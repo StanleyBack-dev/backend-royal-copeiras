@@ -1,6 +1,8 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { UserEntity } from "../../users/entities/user.entity";
 import { AuthTokenPayload } from "../interfaces/auth-token-payload.interface";
 import { parseDurationToMs } from "../utils/duration.util";
@@ -56,7 +58,7 @@ export class AuthTokensService {
         | (JwtPayload & AuthTokenPayload);
 
       if (typeof payload === "string" || payload.type !== expectedType) {
-        throw new UnauthorizedException("Token inválido.");
+        throw AppException.from(APP_ERRORS.auth.invalidToken, undefined);
       }
 
       return {
@@ -67,7 +69,7 @@ export class AuthTokensService {
         type: payload.type,
       };
     } catch {
-      throw new UnauthorizedException("Token inválido ou expirado.");
+      throw AppException.from(APP_ERRORS.auth.invalidOrExpiredToken, undefined);
     }
   }
 

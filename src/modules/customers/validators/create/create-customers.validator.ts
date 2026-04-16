@@ -1,5 +1,6 @@
-import { BadRequestException } from "@nestjs/common";
 import { Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { CustomersEntity } from "../../entities/customers.entity";
 import { CustomersBaseValidator } from "../base/base-customers.validator";
 import { CreateCustomersInputDto } from "../../dtos/create/create-customers-input.dto";
@@ -14,7 +15,10 @@ export class CreateCustomersValidator extends CustomersBaseValidator {
       where: { document: input.document },
     });
     if (existing) {
-      throw new BadRequestException("Já existe um cliente com este documento.");
+      throw AppException.from(
+        APP_ERRORS.customers.duplicateDocument,
+        undefined,
+      );
     }
 
     const newRecord = customersRepo.create({

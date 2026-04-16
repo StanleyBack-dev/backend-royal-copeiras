@@ -55,7 +55,6 @@ export class GetProfileService {
       phone: profile.phone,
       birthDate: profile.birthDate,
       sex: profile.sex,
-      heightM: profile.heightM,
       activityLevel: profile.activityLevel,
       goal: profile.goal,
     };

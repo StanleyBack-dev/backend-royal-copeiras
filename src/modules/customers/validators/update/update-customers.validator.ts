@@ -1,9 +1,6 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
 import { Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { CustomersEntity } from "../../entities/customers.entity";
 import { UpdateCustomersInputDto } from "../../dtos/update/update-customers-input.dto";
 import { CustomersBaseValidator } from "../base/base-customers.validator";
@@ -15,20 +12,18 @@ export class UpdateCustomersValidator extends CustomersBaseValidator {
     customersRepo: Repository<CustomersEntity>,
   ): Promise<CustomersEntity> {
     if (!input.idCustomers) {
-      throw new BadRequestException("O campo idCustomers é obrigatório.");
+      throw AppException.from(APP_ERRORS.customers.idRequired, undefined);
     }
 
     const record = await customersRepo.findOne({
       where: { idCustomers: input.idCustomers, idUsers: userId },
     });
     if (!record) {
-      throw new NotFoundException("Cliente não encontrado.");
+      throw AppException.from(APP_ERRORS.customers.notFound, undefined);
     }
 
     if (record.idUsers !== userId) {
-      throw new ForbiddenException(
-        "Você não tem permissão para editar este cliente.",
-      );
+      throw AppException.from(APP_ERRORS.customers.editForbidden, undefined);
     }
 
     Object.assign(record, input);

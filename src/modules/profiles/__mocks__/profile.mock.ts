@@ -8,7 +8,6 @@ export const profileMock: ProfileEntity = {
   phone: "11999999999",
   birthDate: "1990-01-01",
   sex: "male",
-  heightM: 1.75,
   activityLevel: "active",
   createdAt: new Date("2024-04-12T00:00:00Z"),
   updatedAt: new Date("2024-04-12T00:00:00Z"),

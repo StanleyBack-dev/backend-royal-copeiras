@@ -1,5 +1,6 @@
-import { BadRequestException } from "@nestjs/common";
 import { Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { EmployeesEntity } from "../../entities/employees.entity";
 import { EmployeesBaseValidator } from "../base/base-employees.validator";
 import { CreateEmployeesInputDto } from "../../dtos/create/create-employees-input.dto";
@@ -17,8 +18,9 @@ export class CreateEmployeesValidator extends EmployeesBaseValidator {
     });
 
     if (existing) {
-      throw new BadRequestException(
-        "Ja existe um funcionario com este documento.",
+      throw AppException.from(
+        APP_ERRORS.employees.duplicateDocument,
+        undefined,
       );
     }
 

@@ -1,7 +1,9 @@
+import { ForbiddenException, HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { ForbiddenException, ConflictException } from "@nestjs/common";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { CreateUserService } from "../../services/create/create-user.service";
 import { UserEntity } from "../../entities/user.entity";
 import { UserGroup } from "../../enums/user-group.enum";
@@ -167,13 +169,25 @@ describe("CreateUserService", () => {
       return callback(manager as never);
     });
 
-    await expect(
-      service.execute("admin-id", {
+    let thrownError: unknown;
+
+    try {
+      await service.execute("admin-id", {
         name: "Novo Usuario",
         email: "novo.usuario@example.com",
         username: "novo.usuario",
         group: UserGroup.USER,
-      }),
-    ).rejects.toBeInstanceOf(ConflictException);
+      });
+    } catch (error) {
+      thrownError = error;
+    }
+
+    expect(thrownError).toBeInstanceOf(AppException);
+    expect(thrownError).toMatchObject({
+      status: HttpStatus.CONFLICT,
+      response: {
+        code: APP_ERRORS.auth.duplicateUsername.code,
+      },
+    });
   });
 });

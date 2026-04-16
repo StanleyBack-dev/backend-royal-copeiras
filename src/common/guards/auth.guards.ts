@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { GqlExecutionContext } from "@nestjs/graphql";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
+import { AppException } from "../exceptions/app-exception";
+import { APP_ERRORS } from "../exceptions/app-errors.catalog";
 import { ACCESS_TOKEN_COOKIE_NAME } from "../../config/cookie.config";
 import { AuthTokensService } from "../../modules/auth/services/auth-tokens.service";
 
@@ -30,7 +27,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractAccessToken(request);
 
     if (!token) {
-      throw new UnauthorizedException("Token de acesso não informado.");
+      throw AppException.from(APP_ERRORS.auth.accessTokenMissing, undefined);
     }
 
     const payload = this.authTokensService.verifyAccessToken(token);
