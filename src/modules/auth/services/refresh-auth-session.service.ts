@@ -16,9 +16,7 @@ export class RefreshAuthSessionService {
     private readonly authCredentialsService: AuthCredentialsService,
   ) {}
 
-  async execute(
-    refreshToken: string,
-  ): Promise<{
+  async execute(refreshToken: string): Promise<{
     accessToken: string;
     refreshToken: string;
     response: AuthSessionResponseDto;
