@@ -3,12 +3,15 @@ import { GetEmployeesService } from "../../services/get/get-employees.service";
 import { GetEmployeesInputDto } from "../../dtos/get/get-employees-input.dto";
 import { GetEmployeesResponseDto } from "../../dtos/get/get-employees-response.dto";
 import { CurrentUser } from "../../../../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../../../auth/decorators/require-permissions.decorator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 
 @Resolver(() => GetEmployeesResponseDto)
 export class GetEmployeesResolver {
   constructor(private readonly getEmployeesService: GetEmployeesService) {}
 
   @Query(() => [GetEmployeesResponseDto], { name: "getEmployees" })
+  @RequirePermissions(AuthPermission.READ_EMPLOYEES)
   async getEmployees(
     @CurrentUser() user: unknown,
     @Args("input", { nullable: true }) input?: GetEmployeesInputDto,

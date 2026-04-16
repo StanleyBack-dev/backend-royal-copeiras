@@ -3,12 +3,15 @@ import { GetCustomersService } from "../../services/get/get-customers.service";
 import { GetCustomersInputDto } from "../../dtos/get/get-customers-input.dto";
 import { GetCustomersResponseDto } from "../../dtos/get/get-customers-response.dto";
 import { CurrentUser } from "../../../../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../../../auth/decorators/require-permissions.decorator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 
 @Resolver(() => GetCustomersResponseDto)
 export class GetCustomersResolver {
   constructor(private readonly getCustomersService: GetCustomersService) {}
 
   @Query(() => [GetCustomersResponseDto], { name: "getCustomers" })
+  @RequirePermissions(AuthPermission.READ_CUSTOMERS)
   async getCustomers(
     @CurrentUser() user: unknown,
     @Args("input", { nullable: true }) input?: GetCustomersInputDto,

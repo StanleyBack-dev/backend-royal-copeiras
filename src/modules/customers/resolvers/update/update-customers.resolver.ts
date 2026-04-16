@@ -3,6 +3,8 @@ import { UpdateCustomersService } from "../../services/update/update-customers.s
 import { UpdateCustomersInputDto } from "../../dtos/update/update-customers-input.dto";
 import { UpdateCustomersResponseDto } from "../../dtos/update/update-customers-response.dto";
 import { CurrentUser } from "../../../../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../../../auth/decorators/require-permissions.decorator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 
 @Resolver(() => UpdateCustomersResponseDto)
 export class UpdateCustomersResolver {
@@ -11,6 +13,7 @@ export class UpdateCustomersResolver {
   ) {}
 
   @Mutation(() => UpdateCustomersResponseDto, { name: "updateCustomers" })
+  @RequirePermissions(AuthPermission.MANAGE_CUSTOMERS)
   async updateCustomers(
     @CurrentUser() user: unknown,
     @Args("input") input: UpdateCustomersInputDto,

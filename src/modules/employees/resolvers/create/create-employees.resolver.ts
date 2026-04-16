@@ -3,6 +3,8 @@ import { CreateEmployeesService } from "../../services/create/create-employees.s
 import { CreateEmployeesInputDto } from "../../dtos/create/create-employees-input.dto";
 import { CreateEmployeesResponseDto } from "../../dtos/create/create-employees-response.dto";
 import { CurrentUser } from "../../../../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../../../auth/decorators/require-permissions.decorator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 
 @Resolver(() => CreateEmployeesResponseDto)
 export class CreateEmployeesResolver {
@@ -11,6 +13,7 @@ export class CreateEmployeesResolver {
   ) {}
 
   @Mutation(() => CreateEmployeesResponseDto, { name: "createEmployees" })
+  @RequirePermissions(AuthPermission.MANAGE_EMPLOYEES)
   async createEmployees(
     @CurrentUser() user: unknown,
     @Args("input") input: CreateEmployeesInputDto,

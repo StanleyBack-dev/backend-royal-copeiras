@@ -27,6 +27,7 @@ import { SaveSessionService } from "./services/save/save-session.service";
     ValidateSessionService,
     RefreshSessionService,
     RevokeSessionService,
+    SaveSessionService,
   ],
 })
 export class SessionsModule {}
