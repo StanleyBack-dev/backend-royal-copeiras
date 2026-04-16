@@ -2,6 +2,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { forwardRef } from "@nestjs/common";
+import { AuthModule } from "../auth/auth.module";
 
 // MODULES
 import { UsersModule } from "../users/users.module";
@@ -24,6 +25,7 @@ import { CreateProfileValidator } from "./validators/create/create-profile.valid
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([ProfileEntity, UserEntity]),
     forwardRef(() => UsersModule),
   ],

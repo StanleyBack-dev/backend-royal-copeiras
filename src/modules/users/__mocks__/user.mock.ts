@@ -1,4 +1,5 @@
 import { UserEntity } from "../entities/user.entity";
+import { UserGroup } from "../enums/user-group.enum";
 
 export const userMock: UserEntity = {
   idUsers: "mock-user-id",
@@ -6,6 +7,7 @@ export const userMock: UserEntity = {
   email: "mock@example.com",
   urlAvatar: "http://mock.com/avatar.png",
   status: true,
+  group: UserGroup.USER,
   inactivatedAt: undefined,
   ipAddress: "127.0.0.1",
   userAgent: "jest",

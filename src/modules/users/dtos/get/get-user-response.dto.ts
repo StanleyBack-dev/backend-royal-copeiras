@@ -1,4 +1,5 @@
 import { ObjectType, Field } from "@nestjs/graphql";
+import { UserGroup } from "../../enums/user-group.enum";
 
 @ObjectType()
 export class GetUserResponseDto {
@@ -16,6 +17,9 @@ export class GetUserResponseDto {
 
   @Field()
   status: boolean;
+
+  @Field(() => UserGroup)
+  group: UserGroup;
 
   @Field({ nullable: true })
   inactivatedAt?: Date;

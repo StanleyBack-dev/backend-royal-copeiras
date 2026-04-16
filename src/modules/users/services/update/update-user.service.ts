@@ -5,18 +5,26 @@ import { UserEntity } from "../../entities/user.entity";
 import { UpdateUserInputDto } from "../../dtos/update/update-user-input.dto";
 import { UpdateUserResponseDto } from "../../dtos/update/update-user-response.dto";
 import { UpdateUserValidator } from "../../validators/update/update-user-validator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
+import { AuthorizationService } from "../../../auth/services/authorization.service";
 
 @Injectable()
 export class UpdateUserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   async execute(
     userId: string,
     input: UpdateUserInputDto,
   ): Promise<UpdateUserResponseDto> {
+    await this.authorizationService.assertPermissionForUserId(
+      userId,
+      AuthPermission.MANAGE_OWN_USER,
+    );
+
     UpdateUserValidator.ensureValidUpdate(input);
 
     const user = await this.repo.findOne({

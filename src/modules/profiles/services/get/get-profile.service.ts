@@ -5,15 +5,23 @@ import { ProfileEntity } from "../../entities/profile.entity";
 import { GetProfileInputDto } from "../../dtos/get/get-profile-input.dto";
 import { GetProfileResponseDto } from "../../dtos/get/get-profile-response.dto";
 import { GetProfileValidator } from "../../validators/get/get-profile.validator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
+import { AuthorizationService } from "../../../auth/services/authorization.service";
 
 @Injectable()
 export class GetProfileService {
   constructor(
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   async findByUser(userId: string): Promise<GetProfileResponseDto> {
+    await this.authorizationService.assertPermissionForUserId(
+      userId,
+      AuthPermission.READ_OWN_PROFILE,
+    );
+
     // const cacheKey = `profile:user:${userId}`;
 
     const profile = await GetProfileValidator.ensureProfileExistsByUser(
@@ -23,7 +31,15 @@ export class GetProfileService {
     return this.mapToResponse(profile);
   }
 
-  async findOne(input: GetProfileInputDto): Promise<GetProfileResponseDto> {
+  async findOne(
+    userId: string,
+    input: GetProfileInputDto,
+  ): Promise<GetProfileResponseDto> {
+    await this.authorizationService.assertPermissionForUserId(
+      userId,
+      AuthPermission.READ_PROFILES,
+    );
+
     // const cacheKey = `profile:findOne:${input.idProfiles}`;
 
     const profile = await GetProfileValidator.ensureProfileExists(

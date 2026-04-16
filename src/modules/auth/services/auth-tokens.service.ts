@@ -1,0 +1,103 @@
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtPayload, sign, verify } from "jsonwebtoken";
+import { UserEntity } from "../../users/entities/user.entity";
+import { AuthTokenPayload } from "../interfaces/auth-token-payload.interface";
+import { parseDurationToMs } from "../utils/duration.util";
+
+@Injectable()
+export class AuthTokensService {
+  constructor(private readonly configService: ConfigService) {}
+
+  signAccessToken(user: UserEntity, username: string): string {
+    return sign(
+      this.buildPayload(user, username, "access"),
+      this.getAccessSecret(),
+      {
+        expiresIn: Math.floor(this.getAccessTokenMaxAgeMs() / 1000),
+      },
+    );
+  }
+
+  signRefreshToken(user: UserEntity, username: string): string {
+    return sign(
+      this.buildPayload(user, username, "refresh"),
+      this.getRefreshSecret(),
+      {
+        expiresIn: Math.floor(this.getRefreshTokenMaxAgeMs() / 1000),
+      },
+    );
+  }
+
+  verifyAccessToken(token: string): AuthTokenPayload {
+    return this.verifyToken(token, this.getAccessSecret(), "access");
+  }
+
+  verifyRefreshToken(token: string): AuthTokenPayload {
+    return this.verifyToken(token, this.getRefreshSecret(), "refresh");
+  }
+
+  getAccessTokenMaxAgeMs(): number {
+    return parseDurationToMs(this.getAccessExpiresIn());
+  }
+
+  getRefreshTokenMaxAgeMs(): number {
+    return parseDurationToMs(this.getRefreshExpiresIn());
+  }
+
+  private verifyToken(
+    token: string,
+    secret: string,
+    expectedType: AuthTokenPayload["type"],
+  ): AuthTokenPayload {
+    try {
+      const payload = verify(token, secret) as
+        | string
+        | (JwtPayload & AuthTokenPayload);
+
+      if (typeof payload === "string" || payload.type !== expectedType) {
+        throw new UnauthorizedException("Token inválido.");
+      }
+
+      return {
+        sub: payload.sub,
+        uid: payload.uid,
+        username: payload.username,
+        group: payload.group,
+        type: payload.type,
+      };
+    } catch {
+      throw new UnauthorizedException("Token inválido ou expirado.");
+    }
+  }
+
+  private buildPayload(
+    user: UserEntity,
+    username: string,
+    type: AuthTokenPayload["type"],
+  ): AuthTokenPayload {
+    return {
+      sub: user.idUsers,
+      uid: user.idUsers,
+      username,
+      group: user.group,
+      type,
+    };
+  }
+
+  private getAccessSecret(): string {
+    return this.configService.get<string>("JWT_ACCESS_SECRET") ?? "";
+  }
+
+  private getRefreshSecret(): string {
+    return this.configService.get<string>("JWT_REFRESH_SECRET") ?? "";
+  }
+
+  private getAccessExpiresIn(): string {
+    return this.configService.get<string>("JWT_ACCESS_EXPIRES_IN") ?? "15m";
+  }
+
+  private getRefreshExpiresIn(): string {
+    return this.configService.get<string>("JWT_REFRESH_EXPIRES_IN") ?? "30d";
+  }
+}

@@ -3,6 +3,8 @@ import { UpdateEmployeesService } from "../../services/update/update-employees.s
 import { UpdateEmployeesInputDto } from "../../dtos/update/update-employees-input.dto";
 import { UpdateEmployeesResponseDto } from "../../dtos/update/update-employees-response.dto";
 import { CurrentUser } from "../../../../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../../../auth/decorators/require-permissions.decorator";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 
 @Resolver(() => UpdateEmployeesResponseDto)
 export class UpdateEmployeesResolver {
@@ -11,6 +13,7 @@ export class UpdateEmployeesResolver {
   ) {}
 
   @Mutation(() => UpdateEmployeesResponseDto, { name: "updateEmployees" })
+  @RequirePermissions(AuthPermission.MANAGE_EMPLOYEES)
   async updateEmployees(
     @CurrentUser() user: unknown,
     @Args("input") input: UpdateEmployeesInputDto,

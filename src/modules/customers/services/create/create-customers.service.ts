@@ -7,6 +7,8 @@ import { CreateCustomersResponseDto } from "../../dtos/create/create-customers-r
 import { ICustomer } from "../../interface/customer.interface";
 import { CreateCustomersValidator } from "../../validators/create/create-customers.validator";
 import { ProfileEntity } from "../../../profiles/entities/profile.entity";
+import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
+import { AuthorizationService } from "../../../auth/services/authorization.service";
 
 @Injectable()
 export class CreateCustomersService {
@@ -16,12 +18,18 @@ export class CreateCustomersService {
 
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   async execute(
     userId: string,
     input: CreateCustomersInputDto,
   ): Promise<ICustomer> {
+    await this.authorizationService.assertPermissionForUserId(
+      userId,
+      AuthPermission.MANAGE_CUSTOMERS,
+    );
+
     const saved = await CreateCustomersValidator.validateAndCreate(
       userId,
       input,

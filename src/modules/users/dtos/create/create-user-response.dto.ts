@@ -1,0 +1,35 @@
+import { Field, ObjectType } from "@nestjs/graphql";
+import { UserGroup } from "../../enums/user-group.enum";
+
+@ObjectType()
+export class CreateUserResponseDto {
+  @Field()
+  idUsers!: string;
+
+  @Field()
+  name!: string;
+
+  @Field()
+  email!: string;
+
+  @Field()
+  username!: string;
+
+  @Field(() => UserGroup)
+  group!: UserGroup;
+
+  @Field()
+  temporaryPassword!: string;
+
+  @Field()
+  mustChangePassword!: boolean;
+
+  @Field({ nullable: true })
+  urlAvatar?: string;
+
+  @Field()
+  status!: boolean;
+
+  @Field()
+  createdAt!: Date;
+}

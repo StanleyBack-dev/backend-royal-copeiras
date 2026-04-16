@@ -59,6 +59,38 @@ $ npm run test:cov
 
 ## Deployment
 
+## Authorization Architecture
+
+O projeto usa autenticacao por JWT em cookie HttpOnly e autorizacao por permissao.
+
+- O token carrega apenas a identidade autenticada e o grupo atual do usuario.
+- A decisao de acesso nao fica espalhada em comparacoes manuais por grupo nos modulos.
+- Os resolvers declaram capacidades com `RequirePermissions(...)`.
+- Os servicos reforcam a mesma regra via `AuthorizationService`, evitando bypass caso um fluxo futuro reutilize o servico.
+- O mapeamento central entre grupo e permissoes fica em `src/modules/auth/constants/group-permissions.constant.ts`.
+
+### Sobre seguranca em repositório publico
+
+O fato de o repositorio ser publico nao torna esse modelo vulneravel por si so. Seguranca aqui depende de:
+
+- assinatura e expiracao corretas do JWT
+- armazenamento do token em cookie HttpOnly
+- validacao server-side das permissoes
+- controle de mudanca de grupo e bootstrap administrativo
+
+Como a autorizacao e sempre decidida no servidor, um cliente ver o enum de grupos ou o mapa de permissoes nao concede acesso adicional.
+
+### Quando usar tabela de grupos e permissoes
+
+Uma modelagem com tabelas como `users_groups`, `groups` e `group_permissions` faz sentido quando houver necessidade de:
+
+- criar grupos dinamicamente sem deploy
+- delegar administracao de perfis a backoffice
+- auditar historico de concessao e revogacao de acesso
+- suportar multiplos grupos por usuario
+
+Hoje, com tres grupos fixos e permissoes centralizadas no backend, manter o mapa em codigo e seguro e mais simples. Se o produto passar a exigir administracao dinamica de RBAC, a evolucao natural e mover esse mapeamento para tabelas mantendo a checagem central no `AuthorizationService`.
+
 ## Release Flow
 
 Este repositório usa dois workflows no GitHub Actions:
