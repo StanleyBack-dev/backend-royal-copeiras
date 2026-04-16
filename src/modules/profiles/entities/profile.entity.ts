@@ -30,9 +30,6 @@ export class ProfileEntity {
   @Column({ type: "enum", enum: ["male", "female", "other"], nullable: true })
   sex?: "male" | "female" | "other";
 
-  @Column({ name: "height_m", type: "float", nullable: true })
-  heightM?: number;
-
   @Column({
     type: "enum",
     enum: ["sedentary", "light", "moderate", "active", "very_active"],

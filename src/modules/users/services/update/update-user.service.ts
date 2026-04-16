@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { UserEntity } from "../../entities/user.entity";
 import { UpdateUserInputDto } from "../../dtos/update/update-user-input.dto";
 import { UpdateUserResponseDto } from "../../dtos/update/update-user-response.dto";
@@ -32,7 +34,7 @@ export class UpdateUserService {
     });
 
     if (!user) {
-      throw new NotFoundException("Usuário não encontrado.");
+      throw AppException.from(APP_ERRORS.users.notFound, undefined);
     }
 
     user.name = input.name ?? user.name;

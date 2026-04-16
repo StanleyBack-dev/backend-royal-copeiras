@@ -1,3 +1,6 @@
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
+
 const DURATION_PATTERN = /^(\d+)(ms|s|m|h|d)$/i;
 
 const DURATION_MULTIPLIERS: Record<string, number> = {
@@ -15,7 +18,7 @@ export function parseDurationToMs(value: string): number {
 
   const match = DURATION_PATTERN.exec(value.trim());
   if (!match) {
-    throw new Error(`Formato de duração inválido: ${value}`);
+    throw AppException.from(APP_ERRORS.validation.invalidFormat, { value });
   }
 
   const [, amount, unit] = match;

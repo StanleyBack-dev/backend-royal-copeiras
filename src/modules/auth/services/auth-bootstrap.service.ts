@@ -2,6 +2,8 @@ import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { UserEntity } from "../../users/entities/user.entity";
 import { UserGroup } from "../../users/enums/user-group.enum";
 import { AuthCredentialEntity } from "../entities/auth-credential.entity";
@@ -43,19 +45,17 @@ export class AuthBootstrapService implements OnApplicationBootstrap {
     const existingEmail = await this.userRepository.findOne({
       where: { email: config.email },
     });
-    if (existingEmail) {
-      throw new Error(
-        "Nao foi possivel criar o ADMIN_MASTER inicial: e-mail ja esta em uso.",
-      );
-    }
-
     const existingUsername = await this.authCredentialRepository.findOne({
       where: { username: config.username },
     });
-    if (existingUsername) {
-      throw new Error(
-        "Nao foi possivel criar o ADMIN_MASTER inicial: username ja esta em uso.",
+
+    if (existingEmail || existingUsername) {
+      await this.reconcileBootstrapAdminMaster(
+        config,
+        existingEmail,
+        existingUsername,
       );
+      return;
     }
 
     const passwordHash = await this.passwordHasherService.hashPassword(
@@ -93,6 +93,112 @@ export class AuthBootstrapService implements OnApplicationBootstrap {
     );
   }
 
+  private async reconcileBootstrapAdminMaster(
+    config: {
+      name: string;
+      email: string;
+      username: string;
+      password: string;
+    },
+    existingEmail: UserEntity | null,
+    existingUsername: AuthCredentialEntity | null,
+  ): Promise<void> {
+    if (
+      existingEmail &&
+      existingUsername &&
+      existingUsername.idUsers !== existingEmail.idUsers
+    ) {
+      this.logger.error(
+        [
+          "Bootstrap do ADMIN_MASTER ignorado por conflito entre email e username.",
+          `email=${config.email}`,
+          `username=${config.username}`,
+        ].join(" "),
+      );
+      return;
+    }
+
+    const targetUser = existingEmail
+      ? existingEmail
+      : await this.userRepository.findOne({
+          where: { idUsers: existingUsername?.idUsers },
+        });
+
+    if (!targetUser) {
+      this.logger.error(
+        `Bootstrap do ADMIN_MASTER ignorado: credencial ${config.username} sem usuário associado.`,
+      );
+      return;
+    }
+
+    targetUser.name = config.name;
+    targetUser.email = config.email;
+    targetUser.status = true;
+    targetUser.group = UserGroup.ADMIN_MASTER;
+    targetUser.inactivatedAt = undefined;
+
+    await this.userRepository.save(targetUser);
+
+    const credentialByUser = await this.authCredentialRepository.findOne({
+      where: { idUsers: targetUser.idUsers },
+    });
+
+    if (credentialByUser) {
+      if (
+        credentialByUser.username !== config.username &&
+        existingUsername &&
+        existingUsername.idUsers !== targetUser.idUsers
+      ) {
+        this.logger.error(
+          [
+            "Bootstrap do ADMIN_MASTER reconciliou o usuário, mas manteve username atual por conflito.",
+            `userId=${targetUser.idUsers}`,
+            `currentUsername=${credentialByUser.username}`,
+            `desiredUsername=${config.username}`,
+          ].join(" "),
+        );
+      } else {
+        credentialByUser.username = config.username;
+      }
+
+      await this.authCredentialRepository.save(credentialByUser);
+      this.logger.warn(
+        `ADMIN_MASTER inicial reconciliado para o usuário existente ${config.email}.`,
+      );
+      return;
+    }
+
+    if (existingUsername && existingUsername.idUsers !== targetUser.idUsers) {
+      this.logger.error(
+        [
+          "Bootstrap do ADMIN_MASTER ignorou a criação da credencial por conflito de username.",
+          `userId=${targetUser.idUsers}`,
+          `desiredUsername=${config.username}`,
+        ].join(" "),
+      );
+      return;
+    }
+
+    const passwordHash = await this.passwordHasherService.hashPassword(
+      config.password,
+    );
+
+    const credential = this.authCredentialRepository.create({
+      idUsers: targetUser.idUsers,
+      username: config.username,
+      passwordHash,
+      mustChangePassword: false,
+      passwordChangedAt: new Date(),
+      failedLoginAttempts: 0,
+    });
+
+    await this.authCredentialRepository.save(credential);
+
+    this.logger.warn(
+      `ADMIN_MASTER inicial reconciliado com nova credencial para ${config.email}.`,
+    );
+  }
+
   private isBootstrapEnabled(): boolean {
     return (
       this.configService.get<boolean>("BOOTSTRAP_ADMIN_MASTER_ENABLED") === true
@@ -112,8 +218,9 @@ export class AuthBootstrapService implements OnApplicationBootstrap {
     );
 
     if (!name || !email || !username || !password) {
-      throw new Error(
-        "Configuracao incompleta para bootstrap do ADMIN_MASTER inicial.",
+      throw AppException.from(
+        APP_ERRORS.auth.bootstrapIncompleteConfig,
+        undefined,
       );
     }
 

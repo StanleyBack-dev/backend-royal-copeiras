@@ -10,12 +10,29 @@ import { UserGroup } from "../../../users/enums/user-group.enum";
 
 describe("AuthBootstrapService", () => {
   let service: AuthBootstrapService;
-  let userRepository: { findOne: jest.Mock };
+  let userRepository: { findOne: jest.Mock; save: jest.Mock };
+  let authCredentialRepository: {
+    findOne: jest.Mock;
+    save: jest.Mock;
+    create: jest.Mock;
+  };
   let dataSource: { transaction: jest.Mock };
+  let passwordHasherService: { hashPassword: jest.Mock };
 
   beforeEach(async () => {
     userRepository = {
       findOne: jest.fn().mockResolvedValue(null),
+      save: jest.fn().mockImplementation(async (value) => value),
+    };
+
+    passwordHasherService = {
+      hashPassword: jest.fn().mockResolvedValue("bootstrap-hash"),
+    };
+
+    authCredentialRepository = {
+      findOne: jest.fn().mockResolvedValue(null),
+      save: jest.fn().mockImplementation(async (value) => value),
+      create: jest.fn((value) => value),
     };
 
     dataSource = {
@@ -70,9 +87,7 @@ describe("AuthBootstrapService", () => {
         },
         {
           provide: PasswordHasherService,
-          useValue: {
-            hashPassword: jest.fn().mockResolvedValue("bootstrap-hash"),
-          },
+          useValue: passwordHasherService,
         },
         {
           provide: getRepositoryToken(UserEntity),
@@ -80,9 +95,7 @@ describe("AuthBootstrapService", () => {
         },
         {
           provide: getRepositoryToken(AuthCredentialEntity),
-          useValue: {
-            findOne: jest.fn().mockResolvedValue(null),
-          },
+          useValue: authCredentialRepository,
         },
       ],
     }).compile();
@@ -110,6 +123,59 @@ describe("AuthBootstrapService", () => {
 
     await service.bootstrapAdminMaster();
 
+    expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it("should reconcile bootstrap when email already exists", async () => {
+    userRepository.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        idUsers: "existing-user-id",
+        name: "Existing User",
+        email: "admin.master@royalcopeiras.com",
+        status: false,
+        group: UserGroup.ADMIN,
+      })
+      .mockResolvedValueOnce(null);
+
+    authCredentialRepository.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null);
+
+    await service.bootstrapAdminMaster();
+
+    expect(userRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idUsers: "existing-user-id",
+        email: "admin.master@royalcopeiras.com",
+        group: UserGroup.ADMIN_MASTER,
+        status: true,
+      }),
+    );
+    expect(authCredentialRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idUsers: "existing-user-id",
+        username: "admin.master",
+        passwordHash: "bootstrap-hash",
+      }),
+    );
+    expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it("should not throw when email and username point to different records", async () => {
+    userRepository.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      idUsers: "email-user-id",
+      email: "admin.master@royalcopeiras.com",
+      group: UserGroup.ADMIN,
+    });
+
+    authCredentialRepository.findOne.mockResolvedValueOnce({
+      idUsers: "username-user-id",
+      username: "admin.master",
+    });
+
+    await expect(service.bootstrapAdminMaster()).resolves.toBeUndefined();
+    expect(userRepository.save).not.toHaveBeenCalled();
     expect(dataSource.transaction).not.toHaveBeenCalled();
   });
 });

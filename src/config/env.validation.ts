@@ -89,9 +89,6 @@ export const envValidationSchema = Joi.object({
   RATE_LIMIT_MAILS_TTL: Joi.number().default(3600),
   RATE_LIMIT_MAILS_LIMIT: Joi.number().default(5),
 
-  RATE_LIMIT_HEALTH_TTL: Joi.number().default(30),
-  RATE_LIMIT_HEALTH_LIMIT: Joi.number().default(30),
-
   RATE_LIMIT_CUSTOMERS_TTL: Joi.number().default(30),
   RATE_LIMIT_CUSTOMERS_LIMIT: Joi.number().default(30),
 

@@ -91,6 +91,118 @@ Uma modelagem com tabelas como `users_groups`, `groups` e `group_permissions` fa
 
 Hoje, com tres grupos fixos e permissoes centralizadas no backend, manter o mapa em codigo e seguro e mais simples. Se o produto passar a exigir administracao dinamica de RBAC, a evolucao natural e mover esse mapeamento para tabelas mantendo a checagem central no `AuthorizationService`.
 
+## Exception Architecture
+
+O projeto agora usa um padrão global de exceptions para evitar mensagens, tipos e formatos espalhados em services, guards, validators e utils.
+
+### Estrutura base
+
+- A exportação agregada do catálogo fica em `src/common/exceptions/app-errors.catalog.ts`.
+- Os catálogos por domínio ficam em `src/common/exceptions/catalogs/`.
+- A exception reutilizável fica em `src/common/exceptions/app-exception.ts`.
+- O contrato tipado dos erros fica em `src/common/exceptions/app-error-definition.type.ts`.
+- A padronização da saída GraphQL fica em `src/common/exceptions/graphql-error.formatter.ts`.
+
+### Como criar um novo erro
+
+Adicione o erro dentro do domínio correto no catálogo central.
+
+```ts
+export const APP_ERRORS = {
+  orders: {
+    notFound: {
+      code: "ORDERS_NOT_FOUND",
+      status: HttpStatus.NOT_FOUND,
+      message: "Pedido não encontrado.",
+    },
+  },
+};
+```
+
+Se a mensagem precisar de parâmetros dinâmicos, use função:
+
+```ts
+invalidStatusTransition: {
+  code: "ORDERS_INVALID_STATUS_TRANSITION",
+  status: HttpStatus.BAD_REQUEST,
+  message: ({ from, to }: { from: string; to: string }) =>
+    `Não é possível mudar o status de ${from} para ${to}.`,
+}
+```
+
+### Como lançar no código
+
+Em vez de lançar `BadRequestException`, `NotFoundException`, `ForbiddenException` ou `Error` diretamente, use:
+
+```ts
+throw AppException.from(APP_ERRORS.orders.notFound, undefined);
+```
+
+Com parâmetros:
+
+```ts
+throw AppException.from(APP_ERRORS.orders.invalidStatusTransition, {
+  from: "pending",
+  to: "delivered",
+});
+```
+
+Com detalhes extras:
+
+```ts
+throw AppException.from(
+  APP_ERRORS.orders.invalidStatusTransition,
+  { from: "pending", to: "delivered" },
+  { orderId },
+);
+```
+
+### Regra de uso no projeto
+
+- Novo módulo deve registrar seus erros no catálogo central antes de lançar exceptions.
+- Validators devem preferir `AppException.from(...)` em vez de exceptions inline.
+- Guards e services devem usar o mesmo catálogo para evitar mensagens divergentes.
+- `Error` cru deve ser evitado para fluxos de domínio e validação.
+
+### Saída padronizada no GraphQL
+
+Os erros GraphQL agora saem com shape uniforme em `extensions`:
+
+```json
+{
+  "errors": [
+    {
+      "message": "Usuário não encontrado.",
+      "extensions": {
+        "code": "USERS_NOT_FOUND",
+        "statusCode": 404,
+        "details": null
+      }
+    }
+  ]
+}
+```
+
+Isso permite tratar erros no frontend por `code`, sem depender de texto fixo.
+
+### Fluxo recomendado para módulos novos
+
+1. Criar o domínio de erros no `APP_ERRORS`.
+2. Usar `AppException.from(...)` em validators, guards e services.
+3. Reaproveitar mensagens existentes quando o comportamento for o mesmo.
+4. Só criar um novo código quando o erro tiver significado funcional diferente.
+
+### Organização atual
+
+O catálogo já está separado por domínio, por exemplo:
+
+- `src/common/exceptions/catalogs/auth-errors.catalog.ts`
+- `src/common/exceptions/catalogs/users-errors.catalog.ts`
+- `src/common/exceptions/catalogs/customers-errors.catalog.ts`
+- `src/common/exceptions/catalogs/profiles-errors.catalog.ts`
+
+O restante da aplicação continua importando apenas a agregação em `src/common/exceptions/app-errors.catalog.ts`.
+
 ## Release Flow
 
 Este repositório usa dois workflows no GitHub Actions:

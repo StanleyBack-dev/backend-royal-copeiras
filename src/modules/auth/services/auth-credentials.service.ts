@@ -1,11 +1,8 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { AuthCredentialEntity } from "../entities/auth-credential.entity";
 import { UserEntity } from "../../users/entities/user.entity";
 
@@ -42,8 +39,9 @@ export class AuthCredentialsService {
     const credential = await this.findByUserId(idUsers);
 
     if (!credential) {
-      throw new NotFoundException(
-        "Credencial de autenticação não encontrada para este usuário.",
+      throw AppException.from(
+        APP_ERRORS.auth.credentialNotFoundForUser,
+        undefined,
       );
     }
 
@@ -58,15 +56,17 @@ export class AuthCredentialsService {
     });
 
     if (!user) {
-      throw new NotFoundException(
-        "Usuário não encontrado para provisionar credencial.",
+      throw AppException.from(
+        APP_ERRORS.auth.credentialProvisionUserNotFound,
+        undefined,
       );
     }
 
     const existingUserCredential = await this.findByUserId(input.idUsers);
     if (existingUserCredential) {
-      throw new ConflictException(
-        "Este usuário já possui credencial de autenticação.",
+      throw AppException.from(
+        APP_ERRORS.auth.credentialAlreadyExistsForUser,
+        undefined,
       );
     }
 
@@ -74,7 +74,7 @@ export class AuthCredentialsService {
       where: { username: input.username },
     });
     if (existingUsername) {
-      throw new ConflictException("Username já está em uso.");
+      throw AppException.from(APP_ERRORS.auth.duplicateUsername, undefined);
     }
 
     const credential = this.authCredentialRepository.create({
@@ -93,11 +93,11 @@ export class AuthCredentialsService {
     credential: AuthCredentialEntity,
   ): Promise<void> {
     if (!credential.user.status || credential.user.inactivatedAt) {
-      throw new UnauthorizedException("Usuário inativo.");
+      throw AppException.from(APP_ERRORS.auth.inactiveUser, undefined);
     }
 
     if (credential.lockUntil && credential.lockUntil > new Date()) {
-      throw new UnauthorizedException("Credencial temporariamente bloqueada.");
+      throw AppException.from(APP_ERRORS.auth.credentialLocked, undefined);
     }
   }
 

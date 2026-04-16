@@ -1,9 +1,6 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
 import { Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { EmployeesEntity } from "../../entities/employees.entity";
 import { UpdateEmployeesInputDto } from "../../dtos/update/update-employees-input.dto";
 import { EmployeesBaseValidator } from "../base/base-employees.validator";
@@ -15,7 +12,7 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
     employeesRepo: Repository<EmployeesEntity>,
   ): Promise<EmployeesEntity> {
     if (!input.idEmployees) {
-      throw new BadRequestException("O campo idEmployees e obrigatorio.");
+      throw AppException.from(APP_ERRORS.employees.idRequired, undefined);
     }
 
     const record = await employeesRepo.findOne({
@@ -23,13 +20,11 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
     });
 
     if (!record) {
-      throw new NotFoundException("Funcionario nao encontrado.");
+      throw AppException.from(APP_ERRORS.employees.notFound, undefined);
     }
 
     if (record.idUsers !== userId) {
-      throw new ForbiddenException(
-        "Voce nao tem permissao para editar este funcionario.",
-      );
+      throw AppException.from(APP_ERRORS.employees.editForbidden, undefined);
     }
 
     if (input.document && input.document !== record.document) {
@@ -38,8 +33,9 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
       });
 
       if (existing) {
-        throw new BadRequestException(
-          "Ja existe um funcionario com este documento.",
+        throw AppException.from(
+          APP_ERRORS.employees.duplicateDocument,
+          undefined,
         );
       }
 

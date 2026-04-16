@@ -16,11 +16,6 @@ export const rateLimitConfig = (configService: ConfigService) => ({
     limit: configService.get<number>("RATE_LIMIT_MAILS_LIMIT"), // MAX 5 EMAILS PER HOUR
   },
 
-  health: {
-    ttl: configService.get<number>("RATE_LIMIT_HEALTH_TTL"), // 30 SECONDS WINDOW
-    limit: configService.get<number>("RATE_LIMIT_HEALTH_LIMIT"), // UP TO 10 CHECKS PER 30 SECONDS
-  },
-
   customers: {
     ttl: configService.get<number>("RATE_LIMIT_CUSTOMERS_TTL"), // 30 SECONDS WINDOW
     limit: configService.get<number>("RATE_LIMIT_CUSTOMERS_LIMIT"), // UP TO 10 CHECKS PER 30 SECONDS

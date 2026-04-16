@@ -1,10 +1,8 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { UserEntity } from "../../users/entities/user.entity";
 import { UserGroup } from "../../users/enums/user-group.enum";
 import { GROUP_PERMISSIONS } from "../constants/group-permissions.constant";
@@ -33,7 +31,10 @@ export class AuthorizationService {
     });
 
     if (!user) {
-      throw new NotFoundException("Usuário autenticado não encontrado.");
+      throw AppException.from(
+        APP_ERRORS.authorization.authenticatedUserNotFound,
+        undefined,
+      );
     }
 
     this.assertPermissionsForGroup(user.group, permissions);
@@ -49,9 +50,10 @@ export class AuthorizationService {
     );
 
     if (missingPermission) {
-      throw new ForbiddenException(
-        `O grupo ${group} não possui a permissão ${missingPermission}.`,
-      );
+      throw AppException.from(APP_ERRORS.authorization.missingPermission, {
+        group,
+        permission: missingPermission,
+      });
     }
   }
 }
