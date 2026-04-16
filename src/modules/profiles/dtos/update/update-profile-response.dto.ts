@@ -15,9 +15,6 @@ export class UpdateProfileResponseDto {
   sex?: "male" | "female" | "other";
 
   @Field({ nullable: true })
-  heightM?: number;
-
-  @Field({ nullable: true })
   activityLevel?: "sedentary" | "light" | "moderate" | "active" | "very_active";
 
   @Field({ nullable: true })

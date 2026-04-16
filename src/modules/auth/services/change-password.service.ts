@@ -1,8 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { AuthPermission } from "../enums/auth-permission.enum";
 import { ChangePasswordInputDto } from "../dtos/password/change-password-input.dto";
 import { AuthCredentialsService } from "./auth-credentials.service";
@@ -24,9 +22,7 @@ export class ChangePasswordService {
     );
 
     if (input.currentPassword === input.newPassword) {
-      throw new BadRequestException(
-        "A nova senha deve ser diferente da senha atual.",
-      );
+      throw AppException.from(APP_ERRORS.auth.newPasswordMustDiffer, undefined);
     }
 
     const credential =
@@ -37,7 +33,10 @@ export class ChangePasswordService {
     );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException("Senha atual inválida.");
+      throw AppException.from(
+        APP_ERRORS.auth.invalidCurrentPassword,
+        undefined,
+      );
     }
 
     const nextPasswordHash = await this.passwordHasherService.hashPassword(

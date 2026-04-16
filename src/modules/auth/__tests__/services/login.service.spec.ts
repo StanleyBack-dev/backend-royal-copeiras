@@ -1,10 +1,12 @@
+import { HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { UnauthorizedException } from "@nestjs/common";
+import { AppException } from "../../../../common/exceptions/app-exception";
 import { LoginService } from "../../services/login.service";
 import { AuthCredentialsService } from "../../services/auth-credentials.service";
 import { PasswordHasherService } from "../../services/password-hasher.service";
 import { AuthTokensService } from "../../services/auth-tokens.service";
 import { CreateSessionService } from "../../../sessions/services/create/create-session.service";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { authCredentialMock } from "../../__mocks__/auth-credential.mock";
 
 describe("LoginService", () => {
@@ -81,12 +83,24 @@ describe("LoginService", () => {
   it("should reject invalid password", async () => {
     passwordHasherService.verifyPassword.mockResolvedValueOnce(false);
 
-    await expect(
-      service.execute(
+    let thrownError: unknown;
+
+    try {
+      await service.execute(
         { username: "mock.user", password: "wrong-password" },
         { ipAddress: "127.0.0.1", userAgent: "jest" },
-      ),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+      );
+    } catch (error) {
+      thrownError = error;
+    }
+
+    expect(thrownError).toBeInstanceOf(AppException);
+    expect(thrownError).toMatchObject({
+      status: HttpStatus.UNAUTHORIZED,
+      response: {
+        code: APP_ERRORS.auth.invalidCredentials.code,
+      },
+    });
 
     expect(authCredentialsService.registerFailedLogin).toHaveBeenCalledWith(
       authCredentialMock,

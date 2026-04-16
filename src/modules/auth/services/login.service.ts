@@ -1,5 +1,7 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CreateSessionService } from "../../sessions/services/create/create-session.service";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { LoginInputDto } from "../dtos/login/login-input.dto";
 import { AuthSessionResponseDto } from "../dtos/session/auth-session-response.dto";
 import { AuthCredentialsService } from "./auth-credentials.service";
@@ -33,7 +35,7 @@ export class LoginService {
     );
 
     if (!credential) {
-      throw new UnauthorizedException("Username ou senha inválidos.");
+      throw AppException.from(APP_ERRORS.auth.invalidCredentials, undefined);
     }
 
     await this.authCredentialsService.ensureCredentialCanAuthenticate(
@@ -47,7 +49,7 @@ export class LoginService {
 
     if (!passwordMatches) {
       await this.authCredentialsService.registerFailedLogin(credential);
-      throw new UnauthorizedException("Username ou senha inválidos.");
+      throw AppException.from(APP_ERRORS.auth.invalidCredentials, undefined);
     }
 
     const accessToken = this.authTokensService.signAccessToken(

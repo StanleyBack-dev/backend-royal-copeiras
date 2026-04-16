@@ -1,10 +1,8 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { ProfileEntity } from "../../entities/profile.entity";
 import { UserEntity } from "../../../users/entities/user.entity";
 import { CreateProfileInputDto } from "../../dtos/create/create-profile-input.dto";
@@ -23,8 +21,9 @@ export class CreateProfileValidator {
     input: Partial<CreateProfileInputDto> & { idUsers?: string },
   ): void {
     if (!input.idUsers) {
-      throw new BadRequestException(
-        "O ID do usuário é obrigatório para criar um perfil.",
+      throw AppException.from(
+        APP_ERRORS.profiles.userIdRequiredForCreate,
+        undefined,
       );
     }
   }
@@ -32,7 +31,7 @@ export class CreateProfileValidator {
   async ensureUserExists(idUsers: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({ where: { idUsers } });
     if (!user) {
-      throw new NotFoundException("Usuário não encontrado.");
+      throw AppException.from(APP_ERRORS.users.notFound, undefined);
     }
     return user;
   }
@@ -42,21 +41,10 @@ export class CreateProfileValidator {
       where: { idUsers },
     });
     if (existing) {
-      throw new BadRequestException(
-        "Este usuário já possui um perfil cadastrado.",
+      throw AppException.from(
+        APP_ERRORS.profiles.alreadyExistsForUser,
+        undefined,
       );
-    }
-  }
-
-  private validateHeight(heightM?: number): void {
-    if (heightM === undefined || heightM === null) return;
-
-    if (typeof heightM !== "number" || isNaN(heightM)) {
-      throw new BadRequestException("A altura deve ser um número.");
-    }
-
-    if (heightM < 0.5 || heightM > 3.0) {
-      throw new BadRequestException("Altura deve estar entre 0,5 m e 3,0 m.");
     }
   }
 
@@ -72,15 +60,12 @@ export class CreateProfileValidator {
     const user = await this.ensureUserExists(idUsers);
     await this.ensureUserHasNoProfile(idUsers);
 
-    this.validateHeight(input.heightM);
-
     const profile = repo.create({
       user,
       idUsers,
       phone: input.phone,
       birthDate: input.birthDate,
       sex: input.sex,
-      heightM: input.heightM,
       activityLevel: input.activityLevel,
       goal: input.goal,
       ipAddress,

@@ -1,12 +1,9 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { GqlExecutionContext } from "@nestjs/graphql";
 import { IS_PUBLIC_KEY } from "../../../common/decorators/public.decorator";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { ALLOW_FIRST_ACCESS_KEY } from "../decorators/allow-first-access.decorator";
 import { AuthCredentialsService } from "../services/auth-credentials.service";
 
@@ -49,9 +46,7 @@ export class FirstAccessGuard implements CanActivate {
       return true;
     }
 
-    throw new ForbiddenException(
-      "Primeiro acesso pendente. Altere sua senha para continuar.",
-    );
+    throw AppException.from(APP_ERRORS.auth.firstAccessPending, undefined);
   }
 
   private getRequest(context: ExecutionContext) {

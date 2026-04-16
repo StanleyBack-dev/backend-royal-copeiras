@@ -1,4 +1,3 @@
-import { NotFoundException } from "@nestjs/common";
 import {
   Between,
   FindOptionsWhere,
@@ -6,6 +5,8 @@ import {
   MoreThanOrEqual,
   Repository,
 } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { EmployeesEntity } from "../../entities/employees.entity";
 import { GetEmployeesInputDto } from "../../dtos/get/get-employees-input.dto";
 
@@ -21,7 +22,7 @@ export class GetEmployeesValidator {
       });
 
       if (!record) {
-        throw new NotFoundException("Funcionario nao encontrado.");
+        throw AppException.from(APP_ERRORS.employees.notFound, undefined);
       }
 
       return [record];
@@ -46,7 +47,7 @@ export class GetEmployeesValidator {
     });
 
     if (!records.length) {
-      throw new NotFoundException("Nenhum funcionario encontrado.");
+      throw AppException.from(APP_ERRORS.employees.noneFound, undefined);
     }
 
     return records;

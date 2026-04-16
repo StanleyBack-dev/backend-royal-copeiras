@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { UserEntity } from "../../entities/user.entity";
 import { GetUserInputDto } from "../../dtos/get/get-user-input.dto";
 import { GetUserValidator } from "../../validators/get/get-user.validator";
@@ -30,7 +32,7 @@ export class GetUsersService {
     const user = await this.repo.findOne({ where });
 
     if (!user) {
-      throw new NotFoundException("Usuário não encontrado.");
+      throw AppException.from(APP_ERRORS.users.notFound, undefined);
     }
 
     return user;
@@ -62,7 +64,7 @@ export class GetUsersService {
     const user = await this.findById(idUsers);
 
     if (!user) {
-      throw new NotFoundException("Usuário não encontrado.");
+      throw AppException.from(APP_ERRORS.users.notFound, undefined);
     }
 
     return user;

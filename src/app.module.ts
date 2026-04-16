@@ -2,8 +2,10 @@
 import { Module } from "@nestjs/common";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
+import { join } from "path";
 
 // INTERCEPTORS
+import { formatGraphqlError } from "./common/exceptions/graphql-error.formatter";
 import { RequestInfoInterceptor } from "./common/interceptors/request-info.interceptors";
 
 import { AuthModule } from "./modules/auth/auth.module";
@@ -24,9 +26,10 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     MailModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
+      autoSchemaFile: join(process.cwd(), "src/graphql/schema.gql"),
       playground: true,
       context: ({ req, res }) => ({ req, res }),
+      formatError: formatGraphqlError,
     }),
     AuthModule,
     UsersModule,

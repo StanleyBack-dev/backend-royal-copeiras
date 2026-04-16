@@ -2,15 +2,43 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type GetUserResponseDto {
+type LogoutResponseDto {
+  success: Boolean!
+}
+
+type AuthUserDto {
   idUsers: String!
   name: String!
   email: String!
+  username: String!
+  group: UserGroup!
+  status: Boolean!
+  urlAvatar: String
+}
+
+enum UserGroup {
+  USER
+  ADMIN
+  ADMIN_MASTER
+}
+
+type AuthSessionResponseDto {
+  authenticated: Boolean!
+  mustChangePassword: Boolean!
+  user: AuthUserDto!
+}
+
+type CreateUserResponseDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  username: String!
+  group: UserGroup!
+  temporaryPassword: String!
+  mustChangePassword: Boolean!
   urlAvatar: String
   status: Boolean!
-  inactivatedAt: DateTime
   createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 """
@@ -18,92 +46,118 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type CreateProfileResponseDto {
-  idProfiles: String!
+type GetUserResponseDto {
   idUsers: String!
-  phone: String
-  currentWeight: Float
-  currentHeight: Float
-  currentImc: Float
-  birthDate: DateTime
-  sex: String
-  activityLevel: String
-  goal: String
-  ipAddress: String
-  userAgent: String
+  name: String!
+  email: String!
+  urlAvatar: String
+  status: Boolean!
+  group: UserGroup!
+  inactivatedAt: DateTime
   createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UpdateUserResponseDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  urlAvatar: String
+  status: Boolean!
   updatedAt: DateTime!
 }
 
 type GetProfileResponseDto {
   idProfiles: String!
-  idUsers: String!
   phone: String
-  currentWeight: Float
-  currentHeight: Float
-  currentImc: Float
-  birthDate: DateTime
+  birthDate: String
   sex: String
   activityLevel: String
   goal: String
-  ipAddress: String
-  userAgent: String
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 type UpdateProfileResponseDto {
   idProfiles: String!
-  idUsers: String!
   phone: String
-  currentWeight: Float
-  currentHeight: Float
-  currentImc: Float
-  birthDate: DateTime
+  birthDate: String
   sex: String
   activityLevel: String
   goal: String
-  ipAddress: String
-  userAgent: String
-  updatedAt: DateTime!
 }
 
-type GetHealthResponseDto {
-  idHealth: String!
-  idUsers: String!
-  heightCm: Float!
-  weightKg: Float!
-  bmi: Float!
-  bmiStatus: String!
-  observation: String
-  measurementDate: DateTime!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+type CreateCustomersResponseDto {
+  idCustomers: String!
+  name: String!
+  document: String!
+  type: String!
+  email: String
+  phone: String
+  address: String
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
 }
 
-type CreateHealthResponseDto {
-  idHealth: String!
-  idUsers: String!
-  heightCm: Float!
-  weightKg: Float!
-  bmi: Float!
-  bmiStatus: String!
-  observation: String
-  measurementDate: DateTime!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+type GetCustomersResponseDto {
+  idCustomers: String!
+  name: String!
+  document: String!
+  type: String!
+  email: String
+  phone: String
+  address: String
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
 }
 
-type UpdateHealthResponseDto {
-  idHealth: String!
-  idUsers: String!
-  heightCm: Float!
-  weightKg: Float!
-  bmi: Float!
-  bmiStatus: String!
-  observation: String
-  measurementDate: DateTime!
-  updatedAt: DateTime!
+type UpdateCustomersResponseDto {
+  idCustomers: String!
+  name: String!
+  document: String!
+  type: String!
+  email: String
+  phone: String
+  address: String
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateEmployeesResponseDto {
+  idEmployees: String!
+  name: String!
+  document: String!
+  email: String
+  phone: String
+  position: String!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetEmployeesResponseDto {
+  idEmployees: String!
+  name: String!
+  document: String!
+  email: String
+  phone: String
+  position: String!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UpdateEmployeesResponseDto {
+  idEmployees: String!
+  name: String!
+  document: String!
+  email: String
+  phone: String
+  position: String!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
 }
 
 type Query {
@@ -112,7 +166,8 @@ type Query {
   me: GetUserResponseDto!
   getMyProfile: GetProfileResponseDto!
   getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
-  getHealth(input: GetHealthInputDto): [GetHealthResponseDto!]!
+  getCustomers(input: GetCustomersInputDto): [GetCustomersResponseDto!]!
+  getEmployees(input: GetEmployeesInputDto): [GetEmployeesResponseDto!]!
 }
 
 input GetUserInputDto {
@@ -122,56 +177,103 @@ input GetUserInputDto {
 
 input GetProfileInputDto {
   idProfiles: String
-  idUsers: String
 }
 
-input GetHealthInputDto {
-  idHealth: String
+input GetCustomersInputDto {
+  idCustomers: String
+  startDate: String
+  endDate: String
+}
+
+input GetEmployeesInputDto {
+  idEmployees: String
   startDate: String
   endDate: String
 }
 
 type Mutation {
-  createProfile(input: CreateProfileInputDto!): CreateProfileResponseDto!
+  login(input: LoginInputDto!): AuthSessionResponseDto!
+  refreshAuthSession: AuthSessionResponseDto!
+  logout: LogoutResponseDto!
+  changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
+  createUser(input: CreateUserInputDto!): CreateUserResponseDto!
+  updateUser(input: UpdateUserInputDto!): UpdateUserResponseDto!
   updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileResponseDto!
-  createHealth(input: CreateHealthInputDto!): CreateHealthResponseDto!
-  updateHealth(input: UpdateHealthInputDto!): UpdateHealthResponseDto!
+  createCustomers(input: CreateCustomersInputDto!): CreateCustomersResponseDto!
+  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersResponseDto!
+  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesResponseDto!
+  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesResponseDto!
 }
 
-input CreateProfileInputDto {
-  idUsers: String!
-  phone: String
-  currentWeight: Float
-  currentHeight: Float
-  currentImc: Float
-  birthDate: String
-  sex: String
-  activityLevel: String
-  goal: String
+input LoginInputDto {
+  username: String!
+  password: String!
+}
+
+input ChangePasswordInputDto {
+  currentPassword: String!
+  newPassword: String!
+}
+
+input CreateUserInputDto {
+  name: String!
+  email: String!
+  username: String!
+  group: UserGroup! = USER
+  urlAvatar: String
+}
+
+input UpdateUserInputDto {
+  idUsers: String
+  name: String
+  urlAvatar: String
+  status: Boolean
 }
 
 input UpdateProfileInputDto {
   phone: String
-  currentWeight: Float
-  currentHeight: Float
-  currentImc: Float
   birthDate: String
   sex: String
   activityLevel: String
   goal: String
 }
 
-input CreateHealthInputDto {
-  heightCm: Float!
-  weightKg: Float!
-  observation: String
-  measurementDate: DateTime!
+input CreateCustomersInputDto {
+  name: String!
+  document: String!
+  type: String!
+  email: String
+  phone: String
+  address: String
+  isActive: Boolean! = true
 }
 
-input UpdateHealthInputDto {
-  idHealth: String!
-  heightCm: Float
-  weightKg: Float
-  observation: String
-  measurementDate: DateTime
+input UpdateCustomersInputDto {
+  idCustomers: String!
+  name: String
+  document: String
+  type: String
+  email: String
+  phone: String
+  address: String
+  isActive: Boolean
+}
+
+input CreateEmployeesInputDto {
+  name: String!
+  document: String!
+  email: String
+  phone: String
+  position: String!
+  isActive: Boolean! = true
+}
+
+input UpdateEmployeesInputDto {
+  idEmployees: String!
+  name: String
+  document: String
+  email: String
+  phone: String
+  position: String
+  isActive: Boolean
 }
