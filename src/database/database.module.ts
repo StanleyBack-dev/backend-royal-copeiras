@@ -21,6 +21,9 @@ import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConne
           ssl: configService.get("DB_SSL")
             ? { rejectUnauthorized: false }
             : false,
+          extra: {
+            options: `-c timezone=${configService.get<string>("DB_TIMEZONE") ?? "America/Sao_Paulo"}`,
+          },
           autoLoadEntities: true,
         }) as PostgresConnectionOptions,
     }),

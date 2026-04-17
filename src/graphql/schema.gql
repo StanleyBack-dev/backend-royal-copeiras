@@ -4,6 +4,8 @@
 
 type LogoutResponseDto {
   success: Boolean!
+  message: String
+  code: String
 }
 
 type AuthUserDto {
@@ -28,6 +30,23 @@ type AuthSessionResponseDto {
   user: AuthUserDto!
 }
 
+type GetUserResponseDto {
+  idUsers: String!
+  name: String!
+  email: String!
+  urlAvatar: String
+  status: Boolean!
+  group: UserGroup!
+  inactivatedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type CreateUserResponseDto {
   idUsers: String!
   name: String!
@@ -41,21 +60,23 @@ type CreateUserResponseDto {
   createdAt: DateTime!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
+type CreateUserMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateUserResponseDto!
+}
 
-type GetUserResponseDto {
-  idUsers: String!
-  name: String!
-  email: String!
-  urlAvatar: String
-  status: Boolean!
-  group: UserGroup!
-  inactivatedAt: DateTime
-  createdAt: DateTime!
-  updatedAt: DateTime!
+type GetUsersListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetUserResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
 }
 
 type UpdateUserResponseDto {
@@ -65,6 +86,13 @@ type UpdateUserResponseDto {
   urlAvatar: String
   status: Boolean!
   updatedAt: DateTime!
+}
+
+type UpdateUserMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateUserResponseDto!
 }
 
 type GetProfileResponseDto {
@@ -83,6 +111,13 @@ type UpdateProfileResponseDto {
   sex: String
   activityLevel: String
   goal: String
+}
+
+type UpdateProfileMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateProfileResponseDto!
 }
 
 type CreateCustomersResponseDto {
@@ -124,6 +159,32 @@ type UpdateCustomersResponseDto {
   updatedAt: String!
 }
 
+type GetCustomersListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetCustomersResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type CreateCustomersMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateCustomersResponseDto!
+}
+
+type UpdateCustomersMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateCustomersResponseDto!
+}
+
 type CreateEmployeesResponseDto {
   idEmployees: String!
   name: String!
@@ -160,14 +221,45 @@ type UpdateEmployeesResponseDto {
   updatedAt: String!
 }
 
+type CreateEmployeesMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateEmployeesResponseDto!
+}
+
+type GetEmployeesListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetEmployeesResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateEmployeesMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateEmployeesResponseDto!
+}
+
 type Query {
-  getUsers: [GetUserResponseDto!]!
+  getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
   getMyProfile: GetProfileResponseDto!
   getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
-  getCustomers(input: GetCustomersInputDto): [GetCustomersResponseDto!]!
-  getEmployees(input: GetEmployeesInputDto): [GetEmployeesResponseDto!]!
+  getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
+  getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
+}
+
+input GetUsersInputDto {
+  page: Int = 1
+  limit: Int = 10
 }
 
 input GetUserInputDto {
@@ -180,12 +272,16 @@ input GetProfileInputDto {
 }
 
 input GetCustomersInputDto {
+  page: Int = 1
+  limit: Int = 10
   idCustomers: String
   startDate: String
   endDate: String
 }
 
 input GetEmployeesInputDto {
+  page: Int = 1
+  limit: Int = 10
   idEmployees: String
   startDate: String
   endDate: String
@@ -196,13 +292,13 @@ type Mutation {
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
-  createUser(input: CreateUserInputDto!): CreateUserResponseDto!
-  updateUser(input: UpdateUserInputDto!): UpdateUserResponseDto!
-  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileResponseDto!
-  createCustomers(input: CreateCustomersInputDto!): CreateCustomersResponseDto!
-  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersResponseDto!
-  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesResponseDto!
-  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesResponseDto!
+  createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
+  updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
+  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileMutationResponseDto!
+  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
+  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
+  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
+  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
 }
 
 input LoginInputDto {

@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { EmployeesEntity } from "../../entities/employees.entity";
 import { GetEmployeesInputDto } from "../../dtos/get/get-employees-input.dto";
 import { GetEmployeesResponseDto } from "../../dtos/get/get-employees-response.dto";
-import { IEmployee } from "../../interface/employee.interface";
+import { PaginatedResult } from "../../../../common/responses/interfaces/response.interface";
 import { GetEmployeesValidator } from "../../validators/get/get-employees.validator";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
@@ -20,7 +20,7 @@ export class GetEmployeesService {
   async findAll(
     userId: string,
     input?: GetEmployeesInputDto,
-  ): Promise<IEmployee[]> {
+  ): Promise<PaginatedResult<GetEmployeesResponseDto>> {
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.READ_EMPLOYEES,
@@ -32,6 +32,9 @@ export class GetEmployeesService {
       this.employeesRepository,
     );
 
-    return records.map((record) => GetEmployeesResponseDto.fromEntity(record));
+    return {
+      ...records,
+      items: records.items.map((record) => GetEmployeesResponseDto.fromEntity(record)),
+    };
   }
 }
