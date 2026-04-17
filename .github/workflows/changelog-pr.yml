@@ -29,11 +29,11 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'docs(changelog): update changelog [skip ci]'
-          title: 'docs(changelog): update changelog'
+          commit-message: "docs(changelog): update changelog [skip ci]"
+          title: "docs(changelog): update changelog"
           body: |
             Atualiza automaticamente o CHANGELOG.md com base no historico de commits.
-            
+
             Este PR foi criado automaticamente para respeitar a protecao da branch master.
           branch: chore/changelog-update
           base: master
