@@ -35,11 +35,9 @@ export class GetUsersResolver {
     @CurrentUser() user: unknown,
     @Args("input") input: GetUserInputDto,
   ): Promise<GetUserResponseDto> {
-    return GetUserResponseDto.fromEntity(
-      await this.getUsersService.findOne(
-        (user as { idUsers: string }).idUsers,
-        input,
-      ),
+    return this.getUsersService.findOne(
+      (user as { idUsers: string }).idUsers,
+      input,
     );
   }
 
@@ -47,10 +45,8 @@ export class GetUsersResolver {
   @AllowFirstAccess()
   @RequirePermissions(AuthPermission.READ_OWN_USER)
   async me(@CurrentUser() user: unknown): Promise<GetUserResponseDto> {
-    return GetUserResponseDto.fromEntity(
-      await this.getUsersService.findByIdOrFail(
-        (user as { idUsers: string }).idUsers,
-      ),
+    return this.getUsersService.findByIdOrFail(
+      (user as { idUsers: string }).idUsers,
     );
   }
 }

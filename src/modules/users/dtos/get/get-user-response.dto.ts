@@ -1,9 +1,13 @@
-import { ObjectType, Field } from "@nestjs/graphql";
+import { Int, ObjectType, Field } from "@nestjs/graphql";
 import { UserGroup } from "../../enums/user-group.enum";
+import { AuthCredentialEntity } from "../../../auth/entities/auth-credential.entity";
 
 @ObjectType()
 export class GetUserResponseDto {
-  static fromEntity(entity: import("../../entities/user.entity").UserEntity) {
+  static fromEntity(
+    entity: import("../../entities/user.entity").UserEntity,
+    credential?: AuthCredentialEntity | null,
+  ) {
     const dto = new GetUserResponseDto();
     dto.idUsers = entity.idUsers;
     dto.name = entity.name;
@@ -14,6 +18,11 @@ export class GetUserResponseDto {
     dto.inactivatedAt = entity.inactivatedAt;
     dto.createdAt = entity.createdAt;
     dto.updatedAt = entity.updatedAt;
+    dto.username = credential?.username;
+    dto.mustChangePassword = credential?.mustChangePassword;
+    dto.lastLoginAt = credential?.lastLoginAt;
+    dto.failedLoginAttempts = credential?.failedLoginAttempts;
+    dto.lockedUntil = credential?.lockUntil;
     return dto;
   }
 
@@ -27,6 +36,9 @@ export class GetUserResponseDto {
   email: string;
 
   @Field({ nullable: true })
+  username?: string;
+
+  @Field({ nullable: true })
   urlAvatar?: string;
 
   @Field()
@@ -37,6 +49,18 @@ export class GetUserResponseDto {
 
   @Field({ nullable: true })
   inactivatedAt?: Date;
+
+  @Field({ nullable: true })
+  mustChangePassword?: boolean;
+
+  @Field({ nullable: true })
+  lastLoginAt?: Date;
+
+  @Field(() => Int, { nullable: true })
+  failedLoginAttempts?: number;
+
+  @Field({ nullable: true })
+  lockedUntil?: Date;
 
   @Field()
   createdAt: Date;
