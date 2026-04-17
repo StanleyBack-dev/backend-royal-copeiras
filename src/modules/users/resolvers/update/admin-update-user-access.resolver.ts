@@ -25,6 +25,9 @@ export class AdminUpdateUserAccessResolver {
       input,
     );
 
-    return buildDataResponse(updatedUser, RESPONSE_MESSAGES.users.accessUpdated);
+    return buildDataResponse(
+      updatedUser,
+      RESPONSE_MESSAGES.users.accessUpdated,
+    );
   }
 }

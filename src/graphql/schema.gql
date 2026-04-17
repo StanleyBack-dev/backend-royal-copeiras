@@ -314,12 +314,24 @@ type Mutation {
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
-  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileMutationResponseDto!
-  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
-  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
-  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
-  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
+  adminUpdateUserAccess(
+    input: AdminUpdateUserAccessInputDto!
+  ): AdminUpdateUserAccessMutationResponseDto!
+  updateMyProfile(
+    input: UpdateProfileInputDto!
+  ): UpdateProfileMutationResponseDto!
+  createCustomers(
+    input: CreateCustomersInputDto!
+  ): CreateCustomersMutationResponseDto!
+  updateCustomers(
+    input: UpdateCustomersInputDto!
+  ): UpdateCustomersMutationResponseDto!
+  createEmployees(
+    input: CreateEmployeesInputDto!
+  ): CreateEmployeesMutationResponseDto!
+  updateEmployees(
+    input: UpdateEmployeesInputDto!
+  ): UpdateEmployeesMutationResponseDto!
 }
 
 input LoginInputDto {

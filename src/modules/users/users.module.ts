@@ -24,7 +24,10 @@ import { AdminUpdateUserAccessResolver } from "./resolvers/update/admin-update-u
 import { AdminUpdateUserAccessService } from "./services/update/admin-update-user-access.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, AuthCredentialEntity]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity, AuthCredentialEntity]),
+    AuthModule,
+  ],
   providers: [
     CreateUserService,
     GetUsersService,

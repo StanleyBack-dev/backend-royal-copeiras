@@ -37,7 +37,9 @@ export class GetUsersService {
       where: { idUsers: In(userIds) },
     });
 
-    return new Map(credentials.map((credential) => [credential.idUsers, credential]));
+    return new Map(
+      credentials.map((credential) => [credential.idUsers, credential]),
+    );
   }
 
   async findOne(userId: string, input: GetUserInputDto) {
