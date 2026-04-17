@@ -35,10 +35,8 @@ export function formatGraphqlError(
     const normalized = normalizeHttpException(originalError);
 
     return {
-      ...formattedError,
       message: normalized.message,
       extensions: {
-        ...formattedError.extensions,
         code: normalized.code,
         details: normalized.details,
         statusCode: normalized.statusCode,
@@ -47,10 +45,8 @@ export function formatGraphqlError(
   }
 
   return {
-    ...formattedError,
     message: formattedError.message,
     extensions: {
-      ...formattedError.extensions,
       code:
         typeof formattedError.extensions?.code === "string"
           ? formattedError.extensions.code
