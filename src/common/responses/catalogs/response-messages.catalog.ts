@@ -18,6 +18,10 @@ export const RESPONSE_MESSAGES = {
       code: "USER_UPDATED",
       message: "Usuário atualizado com sucesso.",
     },
+    accessUpdated: {
+      code: "USER_ACCESS_UPDATED",
+      message: "Acesso do usuário atualizado com sucesso.",
+    },
     listed: {
       code: "USERS_LISTED",
       message: "Usuários carregados com sucesso.",

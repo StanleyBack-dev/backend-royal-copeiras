@@ -34,10 +34,15 @@ type GetUserResponseDto {
   idUsers: String!
   name: String!
   email: String!
+  username: String
   urlAvatar: String
   status: Boolean!
   group: UserGroup!
   inactivatedAt: DateTime
+  mustChangePassword: Boolean
+  lastLoginAt: DateTime
+  failedLoginAttempts: Int
+  lockedUntil: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -93,6 +98,21 @@ type UpdateUserMutationResponseDto {
   message: String
   code: String
   data: UpdateUserResponseDto!
+}
+
+type AdminUpdateUserAccessResponseDto {
+  idUsers: String!
+  group: UserGroup!
+  status: Boolean!
+  inactivatedAt: DateTime
+  updatedAt: DateTime!
+}
+
+type AdminUpdateUserAccessMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: AdminUpdateUserAccessResponseDto!
 }
 
 type GetProfileResponseDto {
@@ -294,21 +314,12 @@ type Mutation {
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  updateMyProfile(
-    input: UpdateProfileInputDto!
-  ): UpdateProfileMutationResponseDto!
-  createCustomers(
-    input: CreateCustomersInputDto!
-  ): CreateCustomersMutationResponseDto!
-  updateCustomers(
-    input: UpdateCustomersInputDto!
-  ): UpdateCustomersMutationResponseDto!
-  createEmployees(
-    input: CreateEmployeesInputDto!
-  ): CreateEmployeesMutationResponseDto!
-  updateEmployees(
-    input: UpdateEmployeesInputDto!
-  ): UpdateEmployeesMutationResponseDto!
+  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
+  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileMutationResponseDto!
+  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
+  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
+  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
+  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -333,6 +344,12 @@ input UpdateUserInputDto {
   idUsers: String
   name: String
   urlAvatar: String
+  status: Boolean
+}
+
+input AdminUpdateUserAccessInputDto {
+  idUsers: String!
+  group: UserGroup
   status: Boolean
 }
 
