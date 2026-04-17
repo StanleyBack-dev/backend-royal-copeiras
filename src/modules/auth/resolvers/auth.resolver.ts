@@ -2,6 +2,8 @@ import { Resolver, Mutation, Args, Context } from "@nestjs/graphql";
 import { Request, Response } from "express";
 import { Public } from "../../../common/decorators/public.decorator";
 import { CurrentUser } from "../../../common/decorators/current-user.decorator";
+import { RESPONSE_MESSAGES } from "../../../common/responses/catalogs/response-messages.catalog";
+import { buildSuccessResponse } from "../../../common/responses/helpers/response.helper";
 import { AllowFirstAccess } from "../decorators/allow-first-access.decorator";
 import { RequirePermissions } from "../decorators/require-permissions.decorator";
 import { REFRESH_TOKEN_COOKIE_NAME } from "../../../config/cookie.config";
@@ -93,7 +95,9 @@ export class AuthResolver {
     await this.logoutService.execute(refreshToken);
     this.authCookieService.clearAuthCookies(context.res);
 
-    return { success: true };
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.logout,
+    ) as LogoutResponseDto;
   }
 
   @Mutation(() => LogoutResponseDto, { name: "changeMyPassword" })
@@ -105,7 +109,9 @@ export class AuthResolver {
   ): Promise<LogoutResponseDto> {
     await this.changePasswordService.execute(user.idUsers, input);
 
-    return { success: true };
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.passwordChanged,
+    ) as LogoutResponseDto;
   }
 
   private extractRequestInfo(request: Request): RequestInfo {

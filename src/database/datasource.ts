@@ -12,6 +12,9 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   ssl: process.env.DB_SSL ? { rejectUnauthorized: false } : false,
+  extra: {
+    options: `-c timezone=${process.env.DB_TIMEZONE || "America/Sao_Paulo"}`,
+  },
   synchronize: false,
   logging: process.env.TYPEORM_LOGGING === "true",
   entities: [join(__dirname, "../modules/**/*.entity.{ts,js}")],
