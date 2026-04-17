@@ -52,6 +52,7 @@ export const envValidationSchema = Joi.object({
   DB_PASS: Joi.string().allow(""),
   DB_NAME: Joi.string().required(),
   DB_SSL: Joi.boolean().truthy("true").falsy("false").default(false),
+  DB_TIMEZONE: Joi.string().default("America/Sao_Paulo"),
   TYPEORM_LOGGING: Joi.boolean().truthy("true").falsy("false").default(false),
 
   // === BREVO (SMTP) ===
