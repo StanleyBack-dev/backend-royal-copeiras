@@ -95,7 +95,9 @@ export class AuthResolver {
     await this.logoutService.execute(refreshToken);
     this.authCookieService.clearAuthCookies(context.res);
 
-    return buildSuccessResponse(RESPONSE_MESSAGES.auth.logout) as LogoutResponseDto;
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.logout,
+    ) as LogoutResponseDto;
   }
 
   @Mutation(() => LogoutResponseDto, { name: "changeMyPassword" })

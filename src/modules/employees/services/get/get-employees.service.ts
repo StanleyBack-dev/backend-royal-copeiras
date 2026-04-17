@@ -34,7 +34,9 @@ export class GetEmployeesService {
 
     return {
       ...records,
-      items: records.items.map((record) => GetEmployeesResponseDto.fromEntity(record)),
+      items: records.items.map((record) =>
+        GetEmployeesResponseDto.fromEntity(record),
+      ),
     };
   }
 }

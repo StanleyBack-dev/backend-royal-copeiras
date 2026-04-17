@@ -14,7 +14,9 @@ export class CreateEmployeesResolver {
     private readonly createEmployeesService: CreateEmployeesService,
   ) {}
 
-  @Mutation(() => CreateEmployeesMutationResponseDto, { name: "createEmployees" })
+  @Mutation(() => CreateEmployeesMutationResponseDto, {
+    name: "createEmployees",
+  })
   @RequirePermissions(AuthPermission.MANAGE_EMPLOYEES)
   async createEmployees(
     @CurrentUser() user: unknown,
@@ -25,9 +27,6 @@ export class CreateEmployeesResolver {
       input,
     );
 
-    return buildDataResponse(
-      employee,
-      RESPONSE_MESSAGES.employees.created,
-    );
+    return buildDataResponse(employee, RESPONSE_MESSAGES.employees.created);
   }
 }

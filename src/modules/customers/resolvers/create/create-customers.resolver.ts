@@ -14,7 +14,9 @@ export class CreateCustomersResolver {
     private readonly createCustomersService: CreateCustomersService,
   ) {}
 
-  @Mutation(() => CreateCustomersMutationResponseDto, { name: "createCustomers" })
+  @Mutation(() => CreateCustomersMutationResponseDto, {
+    name: "createCustomers",
+  })
   @RequirePermissions(AuthPermission.MANAGE_CUSTOMERS)
   async createCustomers(
     @CurrentUser() user: unknown,
@@ -25,9 +27,6 @@ export class CreateCustomersResolver {
       input,
     );
 
-    return buildDataResponse(
-      customer,
-      RESPONSE_MESSAGES.customers.created,
-    );
+    return buildDataResponse(customer, RESPONSE_MESSAGES.customers.created);
   }
 }

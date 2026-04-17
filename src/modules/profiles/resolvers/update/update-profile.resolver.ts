@@ -23,9 +23,6 @@ export class UpdateProfileResolver {
       input,
     );
 
-    return buildDataResponse(
-      profile,
-      RESPONSE_MESSAGES.profiles.updated,
-    );
+    return buildDataResponse(profile, RESPONSE_MESSAGES.profiles.updated);
   }
 }

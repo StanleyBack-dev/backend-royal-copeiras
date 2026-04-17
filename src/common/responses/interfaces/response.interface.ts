@@ -23,8 +23,7 @@ export interface PaginatedResult<TItem> {
 }
 
 export interface ListResponse<TItem>
-  extends BaseResponse,
-    PaginatedResult<TItem> {}
+  extends BaseResponse, PaginatedResult<TItem> {}
 
 export interface SuccessResponse extends BaseResponse {
   success: true;

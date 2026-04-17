@@ -29,9 +29,6 @@ export class CreateUserResolver {
       requestInfo,
     );
 
-    return buildDataResponse(
-      createdUser,
-      RESPONSE_MESSAGES.users.created,
-    );
+    return buildDataResponse(createdUser, RESPONSE_MESSAGES.users.created);
   }
 }

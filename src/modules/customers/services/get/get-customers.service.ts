@@ -36,7 +36,9 @@ export class GetCustomersService {
 
     return {
       ...records,
-      items: records.items.map((record) => GetCustomersResponseDto.fromEntity(record)),
+      items: records.items.map((record) =>
+        GetCustomersResponseDto.fromEntity(record),
+      ),
     };
   }
 }

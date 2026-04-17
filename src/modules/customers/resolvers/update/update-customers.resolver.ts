@@ -14,7 +14,9 @@ export class UpdateCustomersResolver {
     private readonly updateCustomersService: UpdateCustomersService,
   ) {}
 
-  @Mutation(() => UpdateCustomersMutationResponseDto, { name: "updateCustomers" })
+  @Mutation(() => UpdateCustomersMutationResponseDto, {
+    name: "updateCustomers",
+  })
   @RequirePermissions(AuthPermission.MANAGE_CUSTOMERS)
   async updateCustomers(
     @CurrentUser() user: unknown,
@@ -25,9 +27,6 @@ export class UpdateCustomersResolver {
       input,
     );
 
-    return buildDataResponse(
-      customer,
-      RESPONSE_MESSAGES.customers.updated,
-    );
+    return buildDataResponse(customer, RESPONSE_MESSAGES.customers.updated);
   }
 }

@@ -14,7 +14,9 @@ export class UpdateEmployeesResolver {
     private readonly updateEmployeesService: UpdateEmployeesService,
   ) {}
 
-  @Mutation(() => UpdateEmployeesMutationResponseDto, { name: "updateEmployees" })
+  @Mutation(() => UpdateEmployeesMutationResponseDto, {
+    name: "updateEmployees",
+  })
   @RequirePermissions(AuthPermission.MANAGE_EMPLOYEES)
   async updateEmployees(
     @CurrentUser() user: unknown,
@@ -25,9 +27,6 @@ export class UpdateEmployeesResolver {
       input,
     );
 
-    return buildDataResponse(
-      employee,
-      RESPONSE_MESSAGES.employees.updated,
-    );
+    return buildDataResponse(employee, RESPONSE_MESSAGES.employees.updated);
   }
 }

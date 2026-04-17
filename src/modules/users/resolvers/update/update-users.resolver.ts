@@ -23,9 +23,6 @@ export class UpdateUserResolver {
       input,
     );
 
-    return buildDataResponse(
-      updatedUser,
-      RESPONSE_MESSAGES.users.updated,
-    );
+    return buildDataResponse(updatedUser, RESPONSE_MESSAGES.users.updated);
   }
 }
