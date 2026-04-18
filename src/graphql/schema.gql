@@ -532,6 +532,50 @@ type UpdateBudgetsMutationResponseDto {
   data: UpdateBudgetsResponseDto!
 }
 
+type GenerateBudgetPreviewResponseDto {
+  fileName: String!
+  mimeType: String!
+  base64Content: String!
+  snapshotHash: String!
+}
+
+type GenerateBudgetPreviewMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: GenerateBudgetPreviewResponseDto!
+}
+
+type FreezeBudgetPdfResponseDto {
+  fileName: String!
+  mimeType: String!
+  base64Content: String!
+  snapshotHash: String!
+  frozenAt: String!
+}
+
+type FreezeBudgetPdfMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: FreezeBudgetPdfResponseDto!
+}
+
+type DownloadBudgetPdfResponseDto {
+  fileName: String!
+  mimeType: String!
+  base64Content: String!
+  snapshotHash: String!
+  frozenAt: String!
+}
+
+type DownloadBudgetPdfQueryResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: DownloadBudgetPdfResponseDto!
+}
+
 type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
@@ -546,6 +590,9 @@ type Query {
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
+  downloadBudgetPdf(
+    input: DownloadBudgetPdfInputDto!
+  ): DownloadBudgetPdfQueryResponseDto!
 }
 
 input GetUsersInputDto {
@@ -601,6 +648,10 @@ input GetBudgetsInputDto {
   endDate: String
 }
 
+input DownloadBudgetPdfInputDto {
+  idBudgets: String!
+}
+
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
@@ -649,6 +700,12 @@ type Mutation {
   updateBudgets(
     input: UpdateBudgetsInputDto!
   ): UpdateBudgetsMutationResponseDto!
+  generateBudgetPreviewPdf(
+    input: GenerateBudgetPreviewInputDto!
+  ): GenerateBudgetPreviewMutationResponseDto!
+  freezeBudgetPdf(
+    input: FreezeBudgetPdfInputDto!
+  ): FreezeBudgetPdfMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -827,4 +884,14 @@ input UpdateBudgetItemInputDto {
   unitPrice: Float!
   notes: String
   sortOrder: Int = 0
+}
+
+input GenerateBudgetPreviewInputDto {
+  idBudgets: String
+  budgetNumber: String
+  draft: CreateBudgetsInputDto
+}
+
+input FreezeBudgetPdfInputDto {
+  idBudgets: String!
 }

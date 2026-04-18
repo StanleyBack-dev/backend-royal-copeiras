@@ -119,6 +119,12 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   @Column({ name: "pdf_hash", type: "varchar", length: 128, nullable: true })
   pdfHash?: string;
 
+  @Column({ name: "pdf_snapshot", type: "jsonb", nullable: true })
+  pdfSnapshot?: unknown;
+
+  @Column({ name: "pdf_frozen_at", type: "timestamptz", nullable: true })
+  pdfFrozenAt?: Date;
+
   @OneToMany(
     () => BudgetItemsEntity,
     (item: BudgetItemsEntity) => item.budget,
