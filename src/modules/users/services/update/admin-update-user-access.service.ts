@@ -8,6 +8,7 @@ import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { AdminUpdateUserAccessInputDto } from "../../dtos/update/admin-update-user-access-input.dto";
 import { AdminUpdateUserAccessResponseDto } from "../../dtos/update/admin-update-user-access-response.dto";
+import { UserPageAccessService } from "../permissions/user-page-access.service";
 
 @Injectable()
 export class AdminUpdateUserAccessService {
@@ -15,6 +16,7 @@ export class AdminUpdateUserAccessService {
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
     private readonly authorizationService: AuthorizationService,
+    private readonly userPageAccessService: UserPageAccessService,
   ) {}
 
   async execute(
@@ -26,7 +28,12 @@ export class AdminUpdateUserAccessService {
       AuthPermission.MANAGE_USERS,
     );
 
-    if (input.group === undefined && input.status === undefined) {
+    if (
+      input.group === undefined &&
+      input.status === undefined &&
+      input.pagePermissions === undefined &&
+      input.useGroupDefaults === undefined
+    ) {
       throw AppException.from(APP_ERRORS.users.invalidUpdateInput, undefined);
     }
 
@@ -48,6 +55,17 @@ export class AdminUpdateUserAccessService {
     }
 
     const updated = await this.repo.save(user);
+
+    if (
+      input.pagePermissions !== undefined ||
+      input.useGroupDefaults !== undefined
+    ) {
+      await this.userPageAccessService.setForUser(currentUserId, {
+        idUsers: input.idUsers,
+        pagePermissions: input.pagePermissions,
+        useGroupDefaults: input.useGroupDefaults ?? false,
+      });
+    }
 
     return {
       idUsers: updated.idUsers,

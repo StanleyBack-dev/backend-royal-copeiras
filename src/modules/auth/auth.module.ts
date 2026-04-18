@@ -10,6 +10,7 @@ import { AuthPermissionsGuard } from "./guards/auth-permissions.guard";
 import { FirstAccessGuard } from "./guards/first-access.guard";
 import { AuthCredentialEntity } from "./entities/auth-credential.entity";
 import { AuthVerificationCodeEntity } from "./entities/auth-verification-code.entity";
+import { UserPageAccessEntity } from "./entities/user-page-access.entity";
 import { AuthCookieService } from "./services/auth-cookie.service";
 import { AuthCredentialsService } from "./services/auth-credentials.service";
 import { AuthTokensService } from "./services/auth-tokens.service";
@@ -31,6 +32,7 @@ import { VerifyPasswordRecoveryCodeService } from "./services/password-recovery/
     TypeOrmModule.forFeature([
       AuthCredentialEntity,
       AuthVerificationCodeEntity,
+      UserPageAccessEntity,
       UserEntity,
     ]),
     MailModule,

@@ -13,4 +13,10 @@ export const authorizationErrors = {
     message: ({ group, permission }: PermissionParams) =>
       `O grupo ${group} não possui a permissão ${permission}.`,
   },
+  onlyAdminMasterCanManagePermissions: {
+    code: "AUTHZ_ONLY_ADMIN_MASTER_CAN_MANAGE_PERMISSIONS",
+    status: HttpStatus.FORBIDDEN,
+    message:
+      "Somente ADMIN_MASTER pode gerenciar permissões de páginas dos usuários.",
+  },
 } as const;
