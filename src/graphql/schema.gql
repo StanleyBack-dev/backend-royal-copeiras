@@ -335,18 +335,38 @@ type Mutation {
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
-  requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
-  verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
-  resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
+  requestPasswordRecovery(
+    input: RequestPasswordRecoveryInputDto!
+  ): LogoutResponseDto!
+  verifyPasswordRecoveryCode(
+    input: VerifyPasswordRecoveryCodeInputDto!
+  ): VerifyPasswordRecoveryCodeMutationResponseDto!
+  resetPasswordWithRecovery(
+    input: ResetPasswordWithRecoveryInputDto!
+  ): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
-  unlockUserCredential(input: UnlockUserCredentialInputDto!): UnlockUserCredentialMutationResponseDto!
-  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileMutationResponseDto!
-  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
-  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
-  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
-  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
+  adminUpdateUserAccess(
+    input: AdminUpdateUserAccessInputDto!
+  ): AdminUpdateUserAccessMutationResponseDto!
+  unlockUserCredential(
+    input: UnlockUserCredentialInputDto!
+  ): UnlockUserCredentialMutationResponseDto!
+  updateMyProfile(
+    input: UpdateProfileInputDto!
+  ): UpdateProfileMutationResponseDto!
+  createCustomers(
+    input: CreateCustomersInputDto!
+  ): CreateCustomersMutationResponseDto!
+  updateCustomers(
+    input: UpdateCustomersInputDto!
+  ): UpdateCustomersMutationResponseDto!
+  createEmployees(
+    input: CreateEmployeesInputDto!
+  ): CreateEmployeesMutationResponseDto!
+  updateEmployees(
+    input: UpdateEmployeesInputDto!
+  ): UpdateEmployeesMutationResponseDto!
 }
 
 input LoginInputDto {
