@@ -14,6 +14,7 @@ import { PasswordHasherService } from "../../../auth/services/password-hasher.se
 import type { IRequestInfo } from "../../../../common/decorators/request-info.decorator";
 import { UserOnboardingEmailService } from "../../../mails/services/user-onboarding-email.service";
 import { sanitizeSensitiveData } from "../../../../common/security/sanitize-sensitive-data";
+import { UserPageAccessService } from "../permissions/user-page-access.service";
 
 @Injectable()
 export class CreateUserService {
@@ -27,6 +28,7 @@ export class CreateUserService {
     private readonly passwordHasherService: PasswordHasherService,
     private readonly dataSource: DataSource,
     private readonly userOnboardingEmailService: UserOnboardingEmailService,
+    private readonly userPageAccessService: UserPageAccessService,
   ) {}
 
   async execute(
@@ -85,6 +87,13 @@ export class CreateUserService {
       });
 
       await authCredentialRepository.save(credential);
+
+      await this.userPageAccessService.setDuringUserCreation(
+        currentUserId,
+        savedUser.idUsers,
+        savedUser.group,
+        input.pagePermissions,
+      );
 
       return {
         idUsers: savedUser.idUsers,

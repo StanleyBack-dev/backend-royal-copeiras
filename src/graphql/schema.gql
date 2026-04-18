@@ -138,6 +138,33 @@ type UnlockUserCredentialMutationResponseDto {
   data: UnlockUserCredentialResponseDto!
 }
 
+type UserPagePermissionsResponseDto {
+  idUsers: String!
+  group: UserGroup!
+  effectivePermissions: [PageAccessKey!]!
+  defaultPermissions: [PageAccessKey!]!
+  useGroupDefaults: Boolean!
+  updatedAt: DateTime
+}
+
+enum PageAccessKey {
+  DASHBOARD
+  CLIENTS
+  EMPLOYEES
+  USERS
+  EVENTS
+  FINANCES
+  DEBTS
+  INVESTMENTS
+}
+
+type SetUserPagePermissionsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UserPagePermissionsResponseDto!
+}
+
 type GetProfileResponseDto {
   idProfiles: String!
   phone: String
@@ -294,6 +321,10 @@ type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
+  getUserPagePermissions(
+    input: GetUserPagePermissionsInputDto!
+  ): UserPagePermissionsResponseDto!
+  getMyPagePermissions: UserPagePermissionsResponseDto!
   getMyProfile: GetProfileResponseDto!
   getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
   getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
@@ -308,6 +339,10 @@ input GetUsersInputDto {
 input GetUserInputDto {
   idUsers: String
   email: String
+}
+
+input GetUserPagePermissionsInputDto {
+  idUsers: String!
 }
 
 input GetProfileInputDto {
@@ -349,6 +384,9 @@ type Mutation {
   adminUpdateUserAccess(
     input: AdminUpdateUserAccessInputDto!
   ): AdminUpdateUserAccessMutationResponseDto!
+  setUserPagePermissions(
+    input: SetUserPagePermissionsInputDto!
+  ): SetUserPagePermissionsMutationResponseDto!
   unlockUserCredential(
     input: UnlockUserCredentialInputDto!
   ): UnlockUserCredentialMutationResponseDto!
@@ -399,6 +437,7 @@ input CreateUserInputDto {
   username: String!
   group: UserGroup! = USER
   urlAvatar: String
+  pagePermissions: [PageAccessKey!]
 }
 
 input UpdateUserInputDto {
@@ -412,6 +451,14 @@ input AdminUpdateUserAccessInputDto {
   idUsers: String!
   group: UserGroup
   status: Boolean
+  pagePermissions: [PageAccessKey!]
+  useGroupDefaults: Boolean
+}
+
+input SetUserPagePermissionsInputDto {
+  idUsers: String!
+  useGroupDefaults: Boolean!
+  pagePermissions: [PageAccessKey!]
 }
 
 input UnlockUserCredentialInputDto {

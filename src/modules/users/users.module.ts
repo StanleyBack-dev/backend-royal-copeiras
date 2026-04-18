@@ -25,10 +25,17 @@ import { AdminUpdateUserAccessResolver } from "./resolvers/update/admin-update-u
 import { AdminUpdateUserAccessService } from "./services/update/admin-update-user-access.service";
 import { UnlockUserCredentialService } from "./services/update/unlock-user-credential.service";
 import { UnlockUserCredentialResolver } from "./resolvers/update/unlock-user-credential.resolver";
+import { UserPageAccessEntity } from "../auth/entities/user-page-access.entity";
+import { UserPagePermissionsResolver } from "./resolvers/permissions/user-page-permissions.resolver";
+import { UserPageAccessService } from "./services/permissions/user-page-access.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AuthCredentialEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      AuthCredentialEntity,
+      UserPageAccessEntity,
+    ]),
     AuthModule,
     MailModule,
   ],
@@ -37,6 +44,7 @@ import { UnlockUserCredentialResolver } from "./resolvers/update/unlock-user-cre
     GetUsersService,
     UpdateUserService,
     AdminUpdateUserAccessService,
+    UserPageAccessService,
     UnlockUserCredentialService,
     UpdateUserLoginService,
     UserExistsValidator,
@@ -44,6 +52,7 @@ import { UnlockUserCredentialResolver } from "./resolvers/update/unlock-user-cre
     GetUsersResolver,
     UpdateUserResolver,
     AdminUpdateUserAccessResolver,
+    UserPagePermissionsResolver,
     UnlockUserCredentialResolver,
   ],
   exports: [
