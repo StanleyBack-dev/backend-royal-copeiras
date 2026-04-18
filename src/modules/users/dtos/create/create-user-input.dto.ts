@@ -1,13 +1,16 @@
 import { Field, InputType } from "@nestjs/graphql";
 import {
   IsEmail,
+  IsArray,
   IsEnum,
+  IsOptional,
   IsString,
   IsUrl,
   Length,
   Matches,
 } from "class-validator";
 import { UserGroup } from "../../enums/user-group.enum";
+import { PageAccessKey } from "../../../auth/enums/page-access-key.enum";
 
 @InputType()
 export class CreateUserInputDto {
@@ -36,4 +39,10 @@ export class CreateUserInputDto {
   @Field({ nullable: true })
   @IsUrl({}, { message: "A URL do avatar deve ser válida." })
   urlAvatar?: string;
+
+  @Field(() => [PageAccessKey], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(PageAccessKey, { each: true })
+  pagePermissions?: PageAccessKey[];
 }

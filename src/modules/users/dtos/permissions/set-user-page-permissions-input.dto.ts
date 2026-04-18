@@ -6,33 +6,21 @@ import {
   IsOptional,
   IsUUID,
 } from "class-validator";
-import { UserGroup } from "../../enums/user-group.enum";
 import { PageAccessKey } from "../../../auth/enums/page-access-key.enum";
 
 @InputType()
-export class AdminUpdateUserAccessInputDto {
+export class SetUserPagePermissionsInputDto {
   @Field()
   @IsUUID()
   idUsers!: string;
 
-  @Field(() => UserGroup, { nullable: true })
-  @IsOptional()
-  @IsEnum(UserGroup)
-  group?: UserGroup;
-
-  @Field({ nullable: true })
-  @IsOptional()
+  @Field(() => Boolean)
   @IsBoolean()
-  status?: boolean;
+  useGroupDefaults!: boolean;
 
   @Field(() => [PageAccessKey], { nullable: true })
   @IsOptional()
   @IsArray()
   @IsEnum(PageAccessKey, { each: true })
   pagePermissions?: PageAccessKey[];
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  useGroupDefaults?: boolean;
 }

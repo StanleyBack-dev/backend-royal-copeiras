@@ -39,6 +39,10 @@ export const RESPONSE_MESSAGES = {
       code: "USER_UNLOCKED",
       message: "Usuário desbloqueado com sucesso.",
     },
+    permissionsUpdated: {
+      code: "USER_PAGE_PERMISSIONS_UPDATED",
+      message: "Permissões de páginas do usuário atualizadas com sucesso.",
+    },
     listed: {
       code: "USERS_LISTED",
       message: "Usuários carregados com sucesso.",
