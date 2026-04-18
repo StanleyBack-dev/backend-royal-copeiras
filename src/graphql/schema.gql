@@ -317,6 +317,158 @@ type UpdateEmployeesMutationResponseDto {
   data: UpdateEmployeesResponseDto!
 }
 
+type CreateLeadsResponseDto {
+  idLeads: String!
+  name: String!
+  email: String
+  phone: String
+  document: String
+  source: String
+  notes: String
+  status: LeadStatus!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  WON
+  LOST
+}
+
+type GetLeadsResponseDto {
+  idLeads: String!
+  name: String!
+  email: String
+  phone: String
+  document: String
+  source: String
+  notes: String
+  status: LeadStatus!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateLeadsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateLeadsResponseDto!
+}
+
+type GetLeadsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetLeadsResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type CreateBudgetItemResponseDto {
+  idBudgetItems: String!
+  description: String!
+  quantity: Float!
+  unitPrice: Float!
+  totalPrice: Float!
+  notes: String
+  sortOrder: Float!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateBudgetsResponseDto {
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  status: BudgetStatus!
+  issueDate: String!
+  validUntil: String!
+  eventDates: [String!]!
+  eventLocation: String
+  guestCount: Float
+  durationHours: Float
+  paymentMethod: String
+  advancePercentage: Float
+  notes: String
+  subtotal: Float!
+  totalAmount: Float!
+  pdfUrl: String
+  pdfHash: String
+  items: [CreateBudgetItemResponseDto!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum BudgetStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+type GetBudgetItemResponseDto {
+  idBudgetItems: String!
+  description: String!
+  quantity: Float!
+  unitPrice: Float!
+  totalPrice: Float!
+  notes: String
+  sortOrder: Float!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetBudgetsResponseDto {
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  status: BudgetStatus!
+  issueDate: String!
+  validUntil: String!
+  eventDates: [String!]!
+  eventLocation: String
+  guestCount: Float
+  durationHours: Float
+  paymentMethod: String
+  advancePercentage: Float
+  notes: String
+  subtotal: Float!
+  totalAmount: Float!
+  pdfUrl: String
+  pdfHash: String
+  items: [GetBudgetItemResponseDto!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateBudgetsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateBudgetsResponseDto!
+}
+
+type GetBudgetsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetBudgetsResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
@@ -329,6 +481,8 @@ type Query {
   getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
   getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
+  getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
+  getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
 }
 
 input GetUsersInputDto {
@@ -361,6 +515,25 @@ input GetEmployeesInputDto {
   page: Int = 1
   limit: Int = 10
   idEmployees: String
+  startDate: String
+  endDate: String
+}
+
+input GetLeadsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idLeads: String
+  status: LeadStatus
+  startDate: String
+  endDate: String
+}
+
+input GetBudgetsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idBudgets: String
+  idLeads: String
+  status: BudgetStatus
   startDate: String
   endDate: String
 }
@@ -405,6 +578,10 @@ type Mutation {
   updateEmployees(
     input: UpdateEmployeesInputDto!
   ): UpdateEmployeesMutationResponseDto!
+  createLeads(input: CreateLeadsInputDto!): CreateLeadsMutationResponseDto!
+  createBudgets(
+    input: CreateBudgetsInputDto!
+  ): CreateBudgetsMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -511,4 +688,39 @@ input UpdateEmployeesInputDto {
   phone: String
   position: String
   isActive: Boolean
+}
+
+input CreateLeadsInputDto {
+  name: String!
+  email: String
+  phone: String
+  document: String
+  source: String
+  notes: String
+  status: LeadStatus! = NEW
+  isActive: Boolean! = true
+}
+
+input CreateBudgetsInputDto {
+  idLeads: String
+  status: BudgetStatus! = DRAFT
+  issueDate: String
+  validUntil: String!
+  eventDates: [String!]
+  eventLocation: String
+  guestCount: Int
+  durationHours: Int
+  paymentMethod: String
+  advancePercentage: Float
+  notes: String
+  totalAmount: Float
+  items: [CreateBudgetItemInputDto!]!
+}
+
+input CreateBudgetItemInputDto {
+  description: String!
+  quantity: Int!
+  unitPrice: Float!
+  notes: String
+  sortOrder: Int = 0
 }

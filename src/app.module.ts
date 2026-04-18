@@ -13,9 +13,11 @@ import { UsersModule } from "./modules/users/users.module";
 import { ProfilesModule } from "./modules/profiles/profile.module";
 import { CustomersModule } from "./modules/customers/customers.module";
 import { EmployeesModule } from "./modules/employees/employees.module";
+import { LeadsModule } from "./modules/leads/leads.module";
 import { MailModule } from "./modules/mails/mail.module";
 import { AppConfigModule } from "./config/config.module";
 import { DatabaseModule } from "./database/database.module";
+import { BudgetsModule } from "./modules/budgets/budgets.module";
 
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 
@@ -36,6 +38,8 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     ProfilesModule,
     CustomersModule,
     EmployeesModule,
+    LeadsModule,
+    BudgetsModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })
