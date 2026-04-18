@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, ILike, Repository } from "typeorm";
 import { AppException } from "../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { UserEntity } from "../../users/entities/user.entity";
@@ -43,7 +43,7 @@ export class AuthBootstrapService implements OnApplicationBootstrap {
     const config = this.getBootstrapConfig();
 
     const existingEmail = await this.userRepository.findOne({
-      where: { email: config.email },
+      where: { email: ILike(config.email) },
     });
     const existingUsername = await this.authCredentialRepository.findOne({
       where: { username: config.username },
@@ -226,7 +226,7 @@ export class AuthBootstrapService implements OnApplicationBootstrap {
 
     return {
       name,
-      email,
+      email: email.trim().toLowerCase(),
       username,
       password,
     };

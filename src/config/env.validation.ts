@@ -61,6 +61,16 @@ export const envValidationSchema = Joi.object({
   MAIL_FROM_NAME: Joi.string().min(2).required(),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
+  PASSWORD_RECOVERY_CODE_TTL_MINUTES: Joi.number().integer().min(1).default(10),
+  PASSWORD_RECOVERY_RESET_TTL_MINUTES: Joi.number()
+    .integer()
+    .min(1)
+    .default(15),
+  PASSWORD_RECOVERY_MAX_ATTEMPTS: Joi.number()
+    .integer()
+    .min(1)
+    .max(10)
+    .default(5),
 
   // === JWT ===
   JWT_ACCESS_SECRET: Joi.string()

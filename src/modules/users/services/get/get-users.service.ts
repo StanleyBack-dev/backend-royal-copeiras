@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
+import { ILike, In, Repository } from "typeorm";
 import { AppException } from "../../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { PaginatedResult } from "../../../../common/responses/interfaces/response.interface";
@@ -52,7 +52,7 @@ export class GetUsersService {
 
     const where = input.idUsers
       ? { idUsers: input.idUsers }
-      : { email: input.email };
+      : { email: ILike((input.email || "").trim().toLowerCase()) };
 
     const user = await this.repo.findOne({ where });
 
@@ -103,7 +103,8 @@ export class GetUsersService {
   }
 
   async findByEmail(email: string) {
-    return this.repo.findOne({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    return this.repo.findOne({ where: { email: ILike(normalizedEmail) } });
   }
 
   async findById(idUsers: string) {

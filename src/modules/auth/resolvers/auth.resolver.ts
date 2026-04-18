@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { Public } from "../../../common/decorators/public.decorator";
 import { CurrentUser } from "../../../common/decorators/current-user.decorator";
 import { RESPONSE_MESSAGES } from "../../../common/responses/catalogs/response-messages.catalog";
+import { buildDataResponse } from "../../../common/responses/helpers/response.helper";
 import { buildSuccessResponse } from "../../../common/responses/helpers/response.helper";
 import { AllowFirstAccess } from "../decorators/allow-first-access.decorator";
 import { RequirePermissions } from "../decorators/require-permissions.decorator";
@@ -11,12 +12,19 @@ import { AuthPermission } from "../enums/auth-permission.enum";
 import { ChangePasswordInputDto } from "../dtos/password/change-password-input.dto";
 import { LoginInputDto } from "../dtos/login/login-input.dto";
 import { LogoutResponseDto } from "../dtos/logout/logout-response.dto";
+import { RequestPasswordRecoveryInputDto } from "../dtos/password-recovery/request-password-recovery-input.dto";
+import { ResetPasswordWithRecoveryInputDto } from "../dtos/password-recovery/reset-password-with-recovery-input.dto";
 import { AuthSessionResponseDto } from "../dtos/session/auth-session-response.dto";
+import { VerifyPasswordRecoveryCodeInputDto } from "../dtos/password-recovery/verify-password-recovery-code-input.dto";
+import { VerifyPasswordRecoveryCodeMutationResponseDto } from "../dtos/password-recovery/verify-password-recovery-code-mutation-response.dto";
 import type { AuthenticatedUser } from "../interfaces/auth-token-payload.interface";
 import { AuthCookieService } from "../services/auth-cookie.service";
 import { ChangePasswordService } from "../services/change-password.service";
 import { LoginService } from "../services/login.service";
 import { LogoutService } from "../services/logout.service";
+import { RequestPasswordRecoveryService } from "../services/password-recovery/request-password-recovery.service";
+import { ResetPasswordWithRecoveryService } from "../services/password-recovery/reset-password-with-recovery.service";
+import { VerifyPasswordRecoveryCodeService } from "../services/password-recovery/verify-password-recovery-code.service";
 import { RefreshAuthSessionService } from "../services/refresh-auth-session.service";
 
 interface GraphqlContext {
@@ -36,6 +44,9 @@ export class AuthResolver {
     private readonly refreshAuthSessionService: RefreshAuthSessionService,
     private readonly logoutService: LogoutService,
     private readonly changePasswordService: ChangePasswordService,
+    private readonly requestPasswordRecoveryService: RequestPasswordRecoveryService,
+    private readonly verifyPasswordRecoveryCodeService: VerifyPasswordRecoveryCodeService,
+    private readonly resetPasswordWithRecoveryService: ResetPasswordWithRecoveryService,
     private readonly authCookieService: AuthCookieService,
   ) {}
 
@@ -111,6 +122,51 @@ export class AuthResolver {
 
     return buildSuccessResponse(
       RESPONSE_MESSAGES.auth.passwordChanged,
+    ) as LogoutResponseDto;
+  }
+
+  @Public()
+  @Mutation(() => LogoutResponseDto, { name: "requestPasswordRecovery" })
+  async requestPasswordRecovery(
+    @Args("input") input: RequestPasswordRecoveryInputDto,
+  ): Promise<LogoutResponseDto> {
+    await this.requestPasswordRecoveryService.execute(input.email);
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.passwordRecoveryRequested,
+    ) as LogoutResponseDto;
+  }
+
+  @Public()
+  @Mutation(() => VerifyPasswordRecoveryCodeMutationResponseDto, {
+    name: "verifyPasswordRecoveryCode",
+  })
+  async verifyPasswordRecoveryCode(
+    @Args("input") input: VerifyPasswordRecoveryCodeInputDto,
+  ) {
+    const result = await this.verifyPasswordRecoveryCodeService.execute(
+      input.email,
+      input.code,
+    );
+
+    return buildDataResponse(
+      result,
+      RESPONSE_MESSAGES.auth.passwordRecoveryCodeValidated,
+    );
+  }
+
+  @Public()
+  @Mutation(() => LogoutResponseDto, { name: "resetPasswordWithRecovery" })
+  async resetPasswordWithRecovery(
+    @Args("input") input: ResetPasswordWithRecoveryInputDto,
+  ): Promise<LogoutResponseDto> {
+    await this.resetPasswordWithRecoveryService.execute(
+      input.recoveryToken,
+      input.newPassword,
+    );
+
+    return buildSuccessResponse(
+      RESPONSE_MESSAGES.auth.passwordRecovered,
     ) as LogoutResponseDto;
   }
 

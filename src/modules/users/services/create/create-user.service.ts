@@ -39,7 +39,11 @@ export class CreateUserService {
       AuthPermission.MANAGE_USERS,
     );
 
-    await this.userExistsValidator.ensureUserDoesNotExistByEmail(input.email);
+    const normalizedEmail = input.email.trim().toLowerCase();
+
+    await this.userExistsValidator.ensureUserDoesNotExistByEmail(
+      normalizedEmail,
+    );
 
     const temporaryPassword =
       this.passwordHasherService.generateTemporaryPassword();
@@ -61,7 +65,7 @@ export class CreateUserService {
 
       const user = userRepository.create({
         name: input.name,
-        email: input.email,
+        email: normalizedEmail,
         urlAvatar: input.urlAvatar,
         status: true,
         group: input.group,
