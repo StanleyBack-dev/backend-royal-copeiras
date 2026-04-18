@@ -11,6 +11,7 @@ import { UserExistsValidator } from "../../validators/user-exists.validator";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { PasswordHasherService } from "../../../auth/services/password-hasher.service";
 import { UserOnboardingEmailService } from "../../../mails/services/user-onboarding-email.service";
+import { UserPageAccessService } from "../../services/permissions/user-page-access.service";
 
 describe("CreateUserService", () => {
   let service: CreateUserService;
@@ -18,6 +19,7 @@ describe("CreateUserService", () => {
   let userExistsValidator: jest.Mocked<UserExistsValidator>;
   let authorizationService: jest.Mocked<AuthorizationService>;
   let passwordHasherService: jest.Mocked<PasswordHasherService>;
+  let userPageAccessService: jest.Mocked<UserPageAccessService>;
   let userOnboardingEmailService: {
     send: jest.Mock<Promise<void>, [unknown]>;
   };
@@ -105,6 +107,12 @@ describe("CreateUserService", () => {
             send: jest.fn().mockResolvedValue(undefined),
           }),
         },
+        {
+          provide: UserPageAccessService,
+          useValue: {
+            setDuringUserCreation: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -112,6 +120,7 @@ describe("CreateUserService", () => {
     userExistsValidator = module.get(UserExistsValidator);
     authorizationService = module.get(AuthorizationService);
     passwordHasherService = module.get(PasswordHasherService);
+    userPageAccessService = module.get(UserPageAccessService);
   });
 
   it("should be defined", () => {
@@ -141,6 +150,7 @@ describe("CreateUserService", () => {
       username: "novo.usuario",
       temporaryPassword: "TempPass123",
     });
+    expect(userPageAccessService.setDuringUserCreation).toHaveBeenCalled();
     expect(
       userExistsValidator.ensureUserDoesNotExistByEmail,
     ).toHaveBeenCalledWith("novo.usuario@example.com");
