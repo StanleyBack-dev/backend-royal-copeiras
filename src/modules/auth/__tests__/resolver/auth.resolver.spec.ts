@@ -4,6 +4,9 @@ import { LoginService } from "../../services/login.service";
 import { RefreshAuthSessionService } from "../../services/refresh-auth-session.service";
 import { LogoutService } from "../../services/logout.service";
 import { ChangePasswordService } from "../../services/change-password.service";
+import { RequestPasswordRecoveryService } from "../../services/password-recovery/request-password-recovery.service";
+import { VerifyPasswordRecoveryCodeService } from "../../services/password-recovery/verify-password-recovery-code.service";
+import { ResetPasswordWithRecoveryService } from "../../services/password-recovery/reset-password-with-recovery.service";
 import { AuthCookieService } from "../../services/auth-cookie.service";
 import { authCredentialMock } from "../../__mocks__/auth-credential.mock";
 
@@ -48,6 +51,18 @@ describe("AuthResolver", () => {
         },
         {
           provide: ChangePasswordService,
+          useValue: { execute: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: RequestPasswordRecoveryService,
+          useValue: { execute: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: VerifyPasswordRecoveryCodeService,
+          useValue: { execute: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: ResetPasswordWithRecoveryService,
           useValue: { execute: jest.fn().mockResolvedValue(undefined) },
         },
         {

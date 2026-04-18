@@ -42,4 +42,21 @@ export const budgetsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Transição de status do orçamento não permitida.",
   },
+  previewSourceRequired: {
+    code: "BUDGETS_PREVIEW_SOURCE_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe idBudgets ou draft para gerar o preview do orçamento.",
+  },
+  alreadyFrozen: {
+    code: "BUDGETS_ALREADY_FROZEN",
+    status: HttpStatus.CONFLICT,
+    message:
+      "Este orçamento já possui uma versão oficial gerada e não pode ser congelado novamente.",
+  },
+  notFrozen: {
+    code: "BUDGETS_NOT_FROZEN",
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    message:
+      "Este orçamento ainda não possui uma versão oficial de PDF gerada.",
+  },
 };

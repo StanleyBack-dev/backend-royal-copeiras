@@ -9,6 +9,8 @@ import { CreateBudgetsValidator } from "../../validators/create/create-budgets.v
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
+import { BuildBudgetPdfSnapshotService } from "../pdf/build-budget-pdf-snapshot.service";
+import { PdfSnapshotHashService } from "../../../pdf-generator/services/pdf-snapshot-hash.service";
 
 @Injectable()
 export class CreateBudgetsService {
@@ -18,6 +20,8 @@ export class CreateBudgetsService {
     @InjectRepository(LeadsEntity)
     private readonly leadsRepository: Repository<LeadsEntity>,
     private readonly authorizationService: AuthorizationService,
+    private readonly buildBudgetPdfSnapshotService: BuildBudgetPdfSnapshotService,
+    private readonly pdfSnapshotHashService: PdfSnapshotHashService,
   ) {}
 
   async execute(
@@ -35,6 +39,19 @@ export class CreateBudgetsService {
       this.budgetsRepository,
       this.leadsRepository,
     );
+
+    const snapshot = this.buildBudgetPdfSnapshotService.buildFromEntity(
+      saved.budget,
+    );
+    const snapshotHash = this.pdfSnapshotHashService.hashSnapshot(snapshot);
+
+    await this.budgetsRepository.update(saved.budget.idBudgets, {
+      pdfSnapshot: snapshot,
+      pdfHash: snapshotHash,
+    });
+
+    saved.budget.pdfSnapshot = snapshot;
+    saved.budget.pdfHash = snapshotHash;
 
     return CreateBudgetsResponseDto.fromEntity(saved.budget);
   }

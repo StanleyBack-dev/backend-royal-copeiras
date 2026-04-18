@@ -18,6 +18,7 @@ import { MailModule } from "./modules/mails/mail.module";
 import { AppConfigModule } from "./config/config.module";
 import { DatabaseModule } from "./database/database.module";
 import { BudgetsModule } from "./modules/budgets/budgets.module";
+import { PdfGeneratorModule } from "./modules/pdf-generator/pdf-generator.module";
 
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 
@@ -40,6 +41,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     EmployeesModule,
     LeadsModule,
     BudgetsModule,
+    PdfGeneratorModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })
