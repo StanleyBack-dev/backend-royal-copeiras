@@ -41,6 +41,16 @@ export const authErrors = {
     status: HttpStatus.UNAUTHORIZED,
     message: "Credencial temporariamente bloqueada.",
   },
+  passwordRecoveryCodeInvalidOrExpired: {
+    code: "AUTH_PASSWORD_RECOVERY_CODE_INVALID_OR_EXPIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Codigo de recuperacao invalido ou expirado.",
+  },
+  passwordRecoveryNotAllowed: {
+    code: "AUTH_PASSWORD_RECOVERY_NOT_ALLOWED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Nao foi possivel autorizar a redefinicao da senha.",
+  },
   invalidOrRevokedSession: {
     code: "AUTH_INVALID_OR_REVOKED_SESSION",
     status: HttpStatus.UNAUTHORIZED,

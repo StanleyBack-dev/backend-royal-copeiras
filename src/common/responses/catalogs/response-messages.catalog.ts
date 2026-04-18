@@ -8,6 +8,19 @@ export const RESPONSE_MESSAGES = {
       code: "AUTH_PASSWORD_CHANGED",
       message: "Senha alterada com sucesso.",
     },
+    passwordRecoveryRequested: {
+      code: "AUTH_PASSWORD_RECOVERY_REQUESTED",
+      message:
+        "Se o e-mail estiver cadastrado, voce recebera um codigo para recuperar a senha.",
+    },
+    passwordRecoveryCodeValidated: {
+      code: "AUTH_PASSWORD_RECOVERY_CODE_VALIDATED",
+      message: "Codigo validado com sucesso.",
+    },
+    passwordRecovered: {
+      code: "AUTH_PASSWORD_RECOVERED",
+      message: "Senha redefinida com sucesso.",
+    },
   },
   users: {
     created: {
