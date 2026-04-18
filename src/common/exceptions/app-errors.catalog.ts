@@ -19,4 +19,4 @@ export const APP_ERRORS = {
   customers: customersErrors,
   employees: employeesErrors,
   validation: validationErrors,
-} as const satisfies Record<string, Record<string, AppErrorDefinition<any>>>;
+} as const satisfies Record<string, Record<string, AppErrorDefinition<never>>>;
