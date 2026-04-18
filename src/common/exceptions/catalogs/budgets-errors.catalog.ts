@@ -27,4 +27,19 @@ export const budgetsErrors = {
     message:
       "A validade do orçamento deve ser maior ou igual à data de emissão.",
   },
+  noUpdateData: {
+    code: "BUDGETS_NO_UPDATE_DATA",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Nenhum dado foi fornecido para atualização do orçamento.",
+  },
+  editForbidden: {
+    code: "BUDGETS_EDIT_FORBIDDEN",
+    status: HttpStatus.FORBIDDEN,
+    message: "Somente orçamentos em rascunho podem ter dados editados.",
+  },
+  invalidStatusTransition: {
+    code: "BUDGETS_INVALID_STATUS_TRANSITION",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Transição de status do orçamento não permitida.",
+  },
 };
