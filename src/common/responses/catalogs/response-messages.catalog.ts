@@ -62,6 +62,26 @@ export const RESPONSE_MESSAGES = {
       message: "Clientes carregados com sucesso.",
     },
   },
+  leads: {
+    created: {
+      code: "LEAD_CREATED",
+      message: "Lead criado com sucesso.",
+    },
+    listed: {
+      code: "LEADS_LISTED",
+      message: "Leads carregados com sucesso.",
+    },
+  },
+  budgets: {
+    created: {
+      code: "BUDGET_CREATED",
+      message: "Orçamento criado com sucesso.",
+    },
+    listed: {
+      code: "BUDGETS_LISTED",
+      message: "Orçamentos carregados com sucesso.",
+    },
+  },
   employees: {
     created: {
       code: "EMPLOYEE_CREATED",
