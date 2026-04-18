@@ -67,6 +67,10 @@ export const RESPONSE_MESSAGES = {
       code: "LEAD_CREATED",
       message: "Lead criado com sucesso.",
     },
+    updated: {
+      code: "LEAD_UPDATED",
+      message: "Lead atualizado com sucesso.",
+    },
     listed: {
       code: "LEADS_LISTED",
       message: "Leads carregados com sucesso.",
@@ -76,6 +80,10 @@ export const RESPONSE_MESSAGES = {
     created: {
       code: "BUDGET_CREATED",
       message: "Orçamento criado com sucesso.",
+    },
+    updated: {
+      code: "BUDGET_UPDATED",
+      message: "Orçamento atualizado com sucesso.",
     },
     listed: {
       code: "BUDGETS_LISTED",
