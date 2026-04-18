@@ -10,6 +10,7 @@ import { UserGroup } from "../../enums/user-group.enum";
 import { UserExistsValidator } from "../../validators/user-exists.validator";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { PasswordHasherService } from "../../../auth/services/password-hasher.service";
+import { UserOnboardingEmailService } from "../../../mails/services/user-onboarding-email.service";
 
 describe("CreateUserService", () => {
   let service: CreateUserService;
@@ -17,6 +18,9 @@ describe("CreateUserService", () => {
   let userExistsValidator: jest.Mocked<UserExistsValidator>;
   let authorizationService: jest.Mocked<AuthorizationService>;
   let passwordHasherService: jest.Mocked<PasswordHasherService>;
+  let userOnboardingEmailService: {
+    send: jest.Mock<Promise<void>, [unknown]>;
+  };
   let dataSource: { transaction: jest.Mock };
 
   beforeEach(async () => {
@@ -95,6 +99,12 @@ describe("CreateUserService", () => {
           provide: DataSource,
           useValue: dataSource,
         },
+        {
+          provide: UserOnboardingEmailService,
+          useValue: (userOnboardingEmailService = {
+            send: jest.fn().mockResolvedValue(undefined),
+          }),
+        },
       ],
     }).compile();
 
@@ -108,7 +118,7 @@ describe("CreateUserService", () => {
     expect(service).toBeDefined();
   });
 
-  it("should create a user with temporary password", async () => {
+  it("should create a user and send temporary password by email", async () => {
     const result = await service.execute(
       "admin-id",
       {
@@ -121,10 +131,16 @@ describe("CreateUserService", () => {
     );
 
     expect(result.username).toBe("novo.usuario");
-    expect(result.temporaryPassword).toBe("TempPass123");
+    expect(result).not.toHaveProperty("temporaryPassword");
     expect(passwordHasherService.hashPassword).toHaveBeenCalledWith(
       "TempPass123",
     );
+    expect(userOnboardingEmailService.send).toHaveBeenCalledWith({
+      to: "novo.usuario@example.com",
+      name: "Novo Usuario",
+      username: "novo.usuario",
+      temporaryPassword: "TempPass123",
+    });
     expect(
       userExistsValidator.ensureUserDoesNotExistByEmail,
     ).toHaveBeenCalledWith("novo.usuario@example.com");

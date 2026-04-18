@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { AppException } from "../../../../common/exceptions/app-exception";
@@ -12,9 +12,13 @@ import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { PasswordHasherService } from "../../../auth/services/password-hasher.service";
 import type { IRequestInfo } from "../../../../common/decorators/request-info.decorator";
+import { UserOnboardingEmailService } from "../../../mails/services/user-onboarding-email.service";
+import { sanitizeSensitiveData } from "../../../../common/security/sanitize-sensitive-data";
 
 @Injectable()
 export class CreateUserService {
+  private readonly logger = new Logger(CreateUserService.name);
+
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
@@ -22,6 +26,7 @@ export class CreateUserService {
     private readonly userExistsValidator: UserExistsValidator,
     private readonly passwordHasherService: PasswordHasherService,
     private readonly dataSource: DataSource,
+    private readonly userOnboardingEmailService: UserOnboardingEmailService,
   ) {}
 
   async execute(
@@ -41,7 +46,7 @@ export class CreateUserService {
     const passwordHash =
       await this.passwordHasherService.hashPassword(temporaryPassword);
 
-    return this.dataSource.transaction(async (manager) => {
+    const createdUser = await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(UserEntity);
       const authCredentialRepository =
         manager.getRepository(AuthCredentialEntity);
@@ -83,12 +88,36 @@ export class CreateUserService {
         email: savedUser.email,
         username: credential.username,
         group: savedUser.group,
-        temporaryPassword,
         mustChangePassword: credential.mustChangePassword,
         urlAvatar: savedUser.urlAvatar,
         status: savedUser.status,
         createdAt: savedUser.createdAt,
       };
     });
+
+    await this.sendOnboardingEmailSafely({
+      to: createdUser.email,
+      name: createdUser.name,
+      username: createdUser.username,
+      temporaryPassword,
+    });
+
+    return createdUser;
+  }
+
+  private async sendOnboardingEmailSafely(input: {
+    to: string;
+    name: string;
+    username: string;
+    temporaryPassword: string;
+  }) {
+    try {
+      await this.userOnboardingEmailService.send(input);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "unknown";
+      this.logger.error(
+        `Falha no envio de email de onboarding para ${input.to}: ${sanitizeSensitiveData(message)}`,
+      );
+    }
   }
 }

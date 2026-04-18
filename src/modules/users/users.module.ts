@@ -2,6 +2,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "../auth/auth.module";
+import { MailModule } from "../mails/mail.module";
 
 // ENTITIES
 import { UserEntity } from "./entities/user.entity";
@@ -22,23 +23,28 @@ import { GetUsersResolver } from "./resolvers/get/get-users.resolver";
 import { UpdateUserResolver } from "./resolvers/update/update-users.resolver";
 import { AdminUpdateUserAccessResolver } from "./resolvers/update/admin-update-user-access.resolver";
 import { AdminUpdateUserAccessService } from "./services/update/admin-update-user-access.service";
+import { UnlockUserCredentialService } from "./services/update/unlock-user-credential.service";
+import { UnlockUserCredentialResolver } from "./resolvers/update/unlock-user-credential.resolver";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity, AuthCredentialEntity]),
     AuthModule,
+    MailModule,
   ],
   providers: [
     CreateUserService,
     GetUsersService,
     UpdateUserService,
     AdminUpdateUserAccessService,
+    UnlockUserCredentialService,
     UpdateUserLoginService,
     UserExistsValidator,
     CreateUserResolver,
     GetUsersResolver,
     UpdateUserResolver,
     AdminUpdateUserAccessResolver,
+    UnlockUserCredentialResolver,
   ],
   exports: [
     CreateUserService,

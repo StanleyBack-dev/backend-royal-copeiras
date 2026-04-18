@@ -15,12 +15,16 @@ import { AuthorizationService } from "../../services/authorization.service";
 import { ChangePasswordService } from "../../services/change-password.service";
 import { LoginService } from "../../services/login.service";
 import { PasswordHasherService } from "../../services/password-hasher.service";
+import { UserOnboardingEmailService } from "../../../mails/services/user-onboarding-email.service";
 
 describe("Auth onboarding flow", () => {
   let createUserService: CreateUserService;
   let loginService: LoginService;
   let changePasswordService: ChangePasswordService;
   let passwordHasherService: PasswordHasherService;
+  let userOnboardingEmailService: {
+    send: jest.Mock<Promise<void>, [unknown]>;
+  };
 
   const sessions: Array<Record<string, unknown>> = [];
   const users: UserEntity[] = [
@@ -215,6 +219,12 @@ describe("Auth onboarding flow", () => {
             }),
           },
         },
+        {
+          provide: UserOnboardingEmailService,
+          useValue: (userOnboardingEmailService = {
+            send: jest.fn().mockResolvedValue(undefined),
+          }),
+        },
       ],
     }).compile();
 
@@ -237,12 +247,20 @@ describe("Auth onboarding flow", () => {
     );
 
     expect(createResult.mustChangePassword).toBe(true);
-    expect(createResult.temporaryPassword).toBeTruthy();
+    expect(createResult).not.toHaveProperty("temporaryPassword");
+    expect(userOnboardingEmailService.send).toHaveBeenCalledTimes(1);
+
+    const onboardingPayload = userOnboardingEmailService.send.mock
+      .calls[0]?.[0] as {
+      temporaryPassword: string;
+      username: string;
+    };
+    expect(onboardingPayload?.temporaryPassword).toBeTruthy();
 
     const firstLogin = await loginService.execute(
       {
         username: createResult.username,
-        password: createResult.temporaryPassword,
+        password: onboardingPayload.temporaryPassword,
       },
       { ipAddress: "127.0.0.1", userAgent: "jest" },
     );
@@ -252,7 +270,7 @@ describe("Auth onboarding flow", () => {
     expect(sessions).toHaveLength(1);
 
     await changePasswordService.execute(createResult.idUsers, {
-      currentPassword: createResult.temporaryPassword,
+      currentPassword: onboardingPayload.temporaryPassword,
       newPassword: "NovaSenhaSuperSegura123!",
     });
 

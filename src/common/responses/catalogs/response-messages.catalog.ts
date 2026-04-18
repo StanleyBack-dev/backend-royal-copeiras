@@ -22,6 +22,10 @@ export const RESPONSE_MESSAGES = {
       code: "USER_ACCESS_UPDATED",
       message: "Acesso do usuário atualizado com sucesso.",
     },
+    unlocked: {
+      code: "USER_UNLOCKED",
+      message: "Usuário desbloqueado com sucesso.",
+    },
     listed: {
       code: "USERS_LISTED",
       message: "Usuários carregados com sucesso.",

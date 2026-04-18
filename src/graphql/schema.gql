@@ -58,7 +58,6 @@ type CreateUserResponseDto {
   email: String!
   username: String!
   group: UserGroup!
-  temporaryPassword: String!
   mustChangePassword: Boolean!
   urlAvatar: String
   status: Boolean!
@@ -113,6 +112,18 @@ type AdminUpdateUserAccessMutationResponseDto {
   message: String
   code: String
   data: AdminUpdateUserAccessResponseDto!
+}
+
+type UnlockUserCredentialResponseDto {
+  idUsers: String!
+  updatedAt: DateTime!
+}
+
+type UnlockUserCredentialMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UnlockUserCredentialResponseDto!
 }
 
 type GetProfileResponseDto {
@@ -317,6 +328,9 @@ type Mutation {
   adminUpdateUserAccess(
     input: AdminUpdateUserAccessInputDto!
   ): AdminUpdateUserAccessMutationResponseDto!
+  unlockUserCredential(
+    input: UnlockUserCredentialInputDto!
+  ): UnlockUserCredentialMutationResponseDto!
   updateMyProfile(
     input: UpdateProfileInputDto!
   ): UpdateProfileMutationResponseDto!
@@ -363,6 +377,10 @@ input AdminUpdateUserAccessInputDto {
   idUsers: String!
   group: UserGroup
   status: Boolean
+}
+
+input UnlockUserCredentialInputDto {
+  idUsers: String!
 }
 
 input UpdateProfileInputDto {

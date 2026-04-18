@@ -49,7 +49,7 @@ export class AuthCredentialEntity {
   failedLoginAttempts!: number;
 
   @Column({ name: "lock_until", type: "timestamp", nullable: true })
-  lockUntil?: Date;
+  lockUntil?: Date | null;
 
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
