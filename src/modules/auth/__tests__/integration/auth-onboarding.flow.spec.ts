@@ -16,6 +16,7 @@ import { ChangePasswordService } from "../../services/change-password.service";
 import { LoginService } from "../../services/login.service";
 import { PasswordHasherService } from "../../services/password-hasher.service";
 import { UserOnboardingEmailService } from "../../../mails/services/user-onboarding-email.service";
+import { UserPageAccessService } from "../../../users/services/permissions/user-page-access.service";
 
 describe("Auth onboarding flow", () => {
   let createUserService: CreateUserService;
@@ -143,6 +144,35 @@ describe("Auth onboarding flow", () => {
 
       return entity;
     }),
+    update: jest.fn(
+      async (
+        criteria: Partial<AuthCredentialEntity>,
+        partial: Partial<AuthCredentialEntity>,
+      ) => {
+        const existing = credentials.find((credential) => {
+          if (criteria.idAuthCredentials) {
+            return credential.idAuthCredentials === criteria.idAuthCredentials;
+          }
+
+          if (criteria.idUsers) {
+            return credential.idUsers === criteria.idUsers;
+          }
+
+          if (criteria.username) {
+            return credential.username === criteria.username;
+          }
+
+          return false;
+        });
+
+        if (existing) {
+          Object.assign(existing, partial, { updatedAt: new Date() });
+          return { affected: 1 };
+        }
+
+        return { affected: 0 };
+      },
+    ),
   };
 
   const dataSource = {
@@ -224,6 +254,12 @@ describe("Auth onboarding flow", () => {
           useValue: (userOnboardingEmailService = {
             send: jest.fn().mockResolvedValue(undefined),
           }),
+        },
+        {
+          provide: UserPageAccessService,
+          useValue: {
+            setDuringUserCreation: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();
