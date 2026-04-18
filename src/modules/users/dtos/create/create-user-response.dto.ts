@@ -19,9 +19,6 @@ export class CreateUserResponseDto {
   group!: UserGroup;
 
   @Field()
-  temporaryPassword!: string;
-
-  @Field()
   mustChangePassword!: boolean;
 
   @Field({ nullable: true })

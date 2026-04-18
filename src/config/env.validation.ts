@@ -55,8 +55,12 @@ export const envValidationSchema = Joi.object({
   DB_TIMEZONE: Joi.string().default("America/Sao_Paulo"),
   TYPEORM_LOGGING: Joi.boolean().truthy("true").falsy("false").default(false),
 
-  // === BREVO (SMTP) ===
-  //BREVO_API_KEY: Joi.string().min(10).required(),
+  // === MAIL / BREVO ===
+  BREVO_API_KEY: Joi.string().min(10).optional(),
+  MAIL_FROM_EMAIL: Joi.string().email().required(),
+  MAIL_FROM_NAME: Joi.string().min(2).required(),
+  MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
+  MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
 
   // === JWT ===
   JWT_ACCESS_SECRET: Joi.string()
@@ -92,6 +96,9 @@ export const envValidationSchema = Joi.object({
 
   RATE_LIMIT_CUSTOMERS_TTL: Joi.number().default(30),
   RATE_LIMIT_CUSTOMERS_LIMIT: Joi.number().default(30),
+
+  RATE_LIMIT_HEALTH_TTL: Joi.number().default(30),
+  RATE_LIMIT_HEALTH_LIMIT: Joi.number().default(30),
 
   RATE_LIMIT_DEFAULT_TTL: Joi.number().default(60),
   RATE_LIMIT_DEFAULT_LIMIT: Joi.number().default(50),

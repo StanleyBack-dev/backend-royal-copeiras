@@ -102,36 +102,52 @@ export class AuthCredentialsService {
   }
 
   async registerFailedLogin(credential: AuthCredentialEntity): Promise<void> {
-    credential.failedLoginAttempts += 1;
+    const newAttempts = credential.failedLoginAttempts + 1;
 
-    if (credential.failedLoginAttempts >= 5) {
-      credential.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
-      credential.failedLoginAttempts = 0;
+    if (newAttempts >= 5) {
+      await this.authCredentialRepository.update(
+        { idAuthCredentials: credential.idAuthCredentials },
+        {
+          failedLoginAttempts: 0,
+          lockUntil: new Date(Date.now() + 15 * 60 * 1000),
+        },
+      );
+    } else {
+      await this.authCredentialRepository.update(
+        { idAuthCredentials: credential.idAuthCredentials },
+        { failedLoginAttempts: newAttempts },
+      );
     }
-
-    await this.authCredentialRepository.save(credential);
   }
 
   async registerSuccessfulLogin(
     credential: AuthCredentialEntity,
   ): Promise<void> {
-    credential.failedLoginAttempts = 0;
-    credential.lockUntil = undefined;
-    credential.lastLoginAt = new Date();
-
-    await this.authCredentialRepository.save(credential);
+    await this.authCredentialRepository.update(
+      { idAuthCredentials: credential.idAuthCredentials },
+      {
+        failedLoginAttempts: 0,
+        lockUntil: null,
+        lastLoginAt: new Date(),
+      },
+    );
   }
 
   async updatePassword(
     credential: AuthCredentialEntity,
     passwordHash: string,
   ): Promise<AuthCredentialEntity> {
-    credential.passwordHash = passwordHash;
-    credential.mustChangePassword = false;
-    credential.passwordChangedAt = new Date();
-    credential.failedLoginAttempts = 0;
-    credential.lockUntil = undefined;
+    await this.authCredentialRepository.update(
+      { idAuthCredentials: credential.idAuthCredentials },
+      {
+        passwordHash,
+        mustChangePassword: false,
+        passwordChangedAt: new Date(),
+        failedLoginAttempts: 0,
+        lockUntil: null,
+      },
+    );
 
-    return this.authCredentialRepository.save(credential);
+    return (await this.findByUserId(credential.idUsers))!;
   }
 }

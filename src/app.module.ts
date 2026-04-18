@@ -13,9 +13,9 @@ import { UsersModule } from "./modules/users/users.module";
 import { ProfilesModule } from "./modules/profiles/profile.module";
 import { CustomersModule } from "./modules/customers/customers.module";
 import { EmployeesModule } from "./modules/employees/employees.module";
+import { MailModule } from "./modules/mails/mail.module";
 import { AppConfigModule } from "./config/config.module";
 import { DatabaseModule } from "./database/database.module";
-import { MailModule } from "./shared/mails/mail.module";
 
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 

@@ -59,8 +59,8 @@ export class GetUserResponseDto {
   @Field(() => Int, { nullable: true })
   failedLoginAttempts?: number;
 
-  @Field({ nullable: true })
-  lockedUntil?: Date;
+  @Field(() => Date, { nullable: true })
+  lockedUntil?: Date | null;
 
   @Field()
   createdAt: Date;

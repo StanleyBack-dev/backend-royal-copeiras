@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { GraphQLFormattedError, GraphQLError } from "graphql";
+import { sanitizeSensitiveData } from "../security/sanitize-sensitive-data";
 
 type ExceptionBody = {
   code?: string;
@@ -16,10 +17,10 @@ function normalizeHttpException(exception: HttpException) {
 
   return {
     code: body.code ?? "HTTP_EXCEPTION",
-    details: body.details ?? null,
+    details: sanitizeSensitiveData(body.details ?? null),
     message: Array.isArray(rawMessage)
-      ? rawMessage.join(", ")
-      : (rawMessage ?? "Erro na requisição."),
+      ? sanitizeSensitiveData(rawMessage.join(", "))
+      : sanitizeSensitiveData(rawMessage ?? "Erro na requisição."),
     statusCode: body.statusCode ?? exception.getStatus(),
   };
 }
@@ -45,7 +46,7 @@ export function formatGraphqlError(
   }
 
   return {
-    message: formattedError.message,
+    message: sanitizeSensitiveData(formattedError.message),
     extensions: {
       code:
         typeof formattedError.extensions?.code === "string"
