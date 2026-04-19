@@ -115,7 +115,7 @@ describe("UpdateBudgetsValidator", () => {
 
     const input = new UpdateBudgetsInputDto();
     input.idBudgets = "budget-1";
-    input.notes = "alterar observacao";
+    input.eventLocation = "Novo local do evento";
 
     await expect(
       UpdateBudgetsValidator.validateAndUpdate(userId, input, {
@@ -178,7 +178,7 @@ describe("UpdateBudgetsValidator", () => {
         sortOrder: 0,
       },
       {
-        description: "material",
+        description: "1 porteiro",
         quantity: 1,
         unitPrice: 150,
         sortOrder: 1,
