@@ -10,6 +10,7 @@ import {
   Matches,
 } from "class-validator";
 import { LeadStatus } from "../../enums/lead-status.enum";
+import { LeadSource } from "../../enums/lead-source.enum";
 
 @InputType()
 export class UpdateLeadsInputDto {
@@ -40,11 +41,10 @@ export class UpdateLeadsInputDto {
   })
   document?: string;
 
-  @Field({ nullable: true })
+  @Field(() => LeadSource, { nullable: true })
   @IsOptional()
-  @IsString()
-  @Length(2, 60)
-  source?: string;
+  @IsEnum(LeadSource)
+  source?: LeadSource;
 
   @Field({ nullable: true })
   @IsOptional()

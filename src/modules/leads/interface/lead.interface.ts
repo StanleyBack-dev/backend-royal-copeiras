@@ -1,4 +1,5 @@
 import { LeadStatus } from "../enums/lead-status.enum";
+import { LeadSource } from "../enums/lead-source.enum";
 
 export interface ILead {
   idLeads: string;
@@ -6,7 +7,7 @@ export interface ILead {
   email?: string;
   phone?: string;
   document?: string;
-  source?: string;
+  source?: LeadSource;
   notes?: string;
   status: LeadStatus;
   isActive: boolean;

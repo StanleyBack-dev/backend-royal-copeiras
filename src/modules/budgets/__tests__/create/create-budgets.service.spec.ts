@@ -23,8 +23,15 @@ describe("CreateBudgetsService", () => {
 
   it("should create a budget", async () => {
     const result = await service.execute("user-id-test", {
+      idLeads: "lead-1",
       validUntil: "2026-04-20",
       status: budgetMock.status,
+      eventDates: ["2026-04-19"],
+      eventLocation: "Polo Empresarial",
+      guestCount: 150,
+      durationHours: 6,
+      paymentMethod: "PIX",
+      advancePercentage: 30,
       items: [
         {
           description: "2 copeiras",
@@ -45,8 +52,15 @@ describe("CreateBudgetsService", () => {
 
     await expect(
       service.execute("user-id-test", {
+        idLeads: "lead-1",
         validUntil: "2026-04-20",
         status: budgetMock.status,
+        eventDates: ["2026-04-19"],
+        eventLocation: "Polo Empresarial",
+        guestCount: 150,
+        durationHours: 6,
+        paymentMethod: "PIX",
+        advancePercentage: 30,
         items: [
           {
             description: "2 copeiras",

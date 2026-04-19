@@ -19,6 +19,7 @@ export interface IBudget {
   totalAmount: number;
   pdfUrl?: string;
   pdfHash?: string;
+  pdfFrozenAt?: Date | string;
   items?: IBudgetItem[];
   createdAt: Date | string;
   updatedAt: Date | string;

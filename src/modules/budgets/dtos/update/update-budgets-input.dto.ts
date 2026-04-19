@@ -4,6 +4,7 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -16,6 +17,11 @@ import {
 import { Field, Float, InputType, Int } from "@nestjs/graphql";
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { UpdateBudgetItemInputDto } from "./update-budget-item-input.dto";
+import {
+  BUDGET_ALLOWED_PAYMENT_METHODS,
+  BUDGET_DURATION_HOURS_MAX,
+  BUDGET_DURATION_HOURS_MIN,
+} from "../../constants/budget-form-rules.constant";
 
 @InputType()
 export class UpdateBudgetsInputDto {
@@ -46,7 +52,8 @@ export class UpdateBudgetsInputDto {
   @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMinSize(1)
+  @IsDateString({}, { each: true })
   eventDates?: string[];
 
   @Field({ nullable: true })
@@ -57,18 +64,20 @@ export class UpdateBudgetsInputDto {
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(1)
   guestCount?: number;
 
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @Min(BUDGET_DURATION_HOURS_MIN)
+  @Max(BUDGET_DURATION_HOURS_MAX)
   durationHours?: number;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
+  @IsIn(BUDGET_ALLOWED_PAYMENT_METHODS)
   paymentMethod?: string;
 
   @Field(() => Float, { nullable: true })
