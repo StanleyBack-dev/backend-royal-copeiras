@@ -87,11 +87,6 @@ export class UpdateBudgetsInputDto {
   @Max(100)
   advancePercentage?: number;
 
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  notes?: string;
-
   @Field(() => Float, { nullable: true })
   @IsOptional()
   @IsNumber()
@@ -105,4 +100,14 @@ export class UpdateBudgetsInputDto {
   @ValidateNested({ each: true })
   @Type(() => UpdateBudgetItemInputDto)
   items?: UpdateBudgetItemInputDto[];
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  sentVia?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsDateString()
+  sentAt?: string;
 }

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateLeadsService } from "../../services/create/create-leads.service";
 import { leadMock } from "../../__mocks__/lead.mock";
+import { LeadSource } from "../../enums/lead-source.enum";
 
 describe("CreateLeadsService", () => {
   let service: CreateLeadsService;
@@ -24,6 +25,7 @@ describe("CreateLeadsService", () => {
   it("should create a lead", async () => {
     const result = await service.execute("user-id-test", {
       name: "Lead Exemplo",
+      source: LeadSource.INSTAGRAM,
       status: leadMock.status,
       isActive: true,
     });
@@ -39,6 +41,7 @@ describe("CreateLeadsService", () => {
     await expect(
       service.execute("user-id-test", {
         name: "Lead Exemplo",
+        source: LeadSource.INSTAGRAM,
         status: leadMock.status,
         isActive: true,
       }),

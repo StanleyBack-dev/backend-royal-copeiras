@@ -27,16 +27,14 @@ export class GetBudgetsResponseDto implements IBudget {
     dto.durationHours = entity.durationHours;
     dto.paymentMethod = entity.paymentMethod;
     dto.advancePercentage = entity.advancePercentage;
-    dto.notes = entity.notes;
     dto.subtotal = entity.subtotal;
     dto.totalAmount = entity.totalAmount;
-    dto.pdfUrl = entity.pdfUrl;
-    dto.pdfHash = entity.pdfHash;
-    dto.pdfFrozenAt =
-      entity.pdfFrozenAt instanceof Date
-        ? entity.pdfFrozenAt.toISOString()
-        : entity.pdfFrozenAt
-          ? String(entity.pdfFrozenAt)
+    dto.sentVia = entity.sentVia;
+    dto.sentAt =
+      entity.sentAt instanceof Date
+        ? entity.sentAt.toISOString()
+        : entity.sentAt
+          ? String(entity.sentAt)
           : undefined;
     dto.items = (entity.items ?? []).map((item) =>
       GetBudgetItemResponseDto.fromEntity(item),
@@ -89,9 +87,6 @@ export class GetBudgetsResponseDto implements IBudget {
   @Field(() => Float, { nullable: true })
   advancePercentage?: number;
 
-  @Field({ nullable: true })
-  notes?: string;
-
   @Field(() => Float)
   subtotal!: number;
 
@@ -99,13 +94,10 @@ export class GetBudgetsResponseDto implements IBudget {
   totalAmount!: number;
 
   @Field({ nullable: true })
-  pdfUrl?: string;
+  sentVia?: string;
 
   @Field({ nullable: true })
-  pdfHash?: string;
-
-  @Field({ nullable: true })
-  pdfFrozenAt?: string;
+  sentAt?: string;
 
   @Field(() => [GetBudgetItemResponseDto], { nullable: true })
   items?: GetBudgetItemResponseDto[];

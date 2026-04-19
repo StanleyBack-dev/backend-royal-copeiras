@@ -11,14 +11,22 @@ import {
   BUDGET_DURATION_HOURS_MAX,
   BUDGET_DURATION_HOURS_MIN,
 } from "../../constants/budget-form-rules.constant";
+import { inferServiceTypeFromDescription } from "../../constants/budget-service-types.constant";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   [BudgetStatus.DRAFT]: [
+    BudgetStatus.GENERATED,
+    BudgetStatus.CANCELED,
+    BudgetStatus.EXPIRED,
+  ],
+  [BudgetStatus.GENERATED]: [
     BudgetStatus.SENT,
+    BudgetStatus.DRAFT,
     BudgetStatus.CANCELED,
     BudgetStatus.EXPIRED,
   ],
   [BudgetStatus.SENT]: [
+    BudgetStatus.DRAFT,
     BudgetStatus.APPROVED,
     BudgetStatus.REJECTED,
     BudgetStatus.EXPIRED,
@@ -124,6 +132,27 @@ export class UpdateBudgetsValidator {
       if (!lead) {
         throw AppException.from(APP_ERRORS.leads.notFound, undefined);
       }
+
+      if (!lead.isActive) {
+        throw AppException.from(APP_ERRORS.budgets.leadInactive, undefined);
+      }
+    }
+
+    if (input.status === BudgetStatus.GENERATED) {
+      const lead = await deps.leadsRepo.findOne({
+        where: {
+          idLeads: input.idLeads ?? current.idLeads,
+          idUsers: userId,
+        },
+      });
+
+      if (!lead) {
+        throw AppException.from(APP_ERRORS.leads.notFound, undefined);
+      }
+
+      if (!lead.isActive) {
+        throw AppException.from(APP_ERRORS.budgets.leadInactive, undefined);
+      }
     }
 
     const updatedIssueDate = input.issueDate
@@ -143,6 +172,8 @@ export class UpdateBudgetsValidator {
     return deps.budgetsRepo.manager.transaction(async (manager) => {
       current.idLeads = input.idLeads ?? current.idLeads;
       current.status = input.status ?? current.status;
+      current.sentVia = input.sentVia ?? current.sentVia;
+      current.sentAt = input.sentAt ? new Date(input.sentAt) : current.sentAt;
       current.issueDate = updatedIssueDate;
       current.validUntil = updatedValidUntil;
       current.eventDates = input.eventDates ?? current.eventDates;
@@ -152,7 +183,6 @@ export class UpdateBudgetsValidator {
       current.paymentMethod = input.paymentMethod ?? current.paymentMethod;
       current.advancePercentage =
         input.advancePercentage ?? current.advancePercentage;
-      current.notes = input.notes ?? current.notes;
 
       if (input.items?.length) {
         const normalizedItems = input.items.map((item) => {
@@ -226,7 +256,6 @@ export class UpdateBudgetsValidator {
       input.durationHours,
       input.paymentMethod,
       input.advancePercentage,
-      input.notes,
       input.totalAmount,
       input.items,
     ].some((value) => value !== undefined);
@@ -308,6 +337,25 @@ export class UpdateBudgetsValidator {
     if (hasInvalidItemDescription) {
       throw AppException.from(
         APP_ERRORS.budgets.itemDescriptionRequired,
+        undefined,
+      );
+    }
+
+    const serviceTypes = data.items.map((item) =>
+      inferServiceTypeFromDescription(item.description),
+    );
+
+    if (serviceTypes.some((type) => type === null)) {
+      throw AppException.from(
+        APP_ERRORS.budgets.itemServiceTypeInvalid,
+        undefined,
+      );
+    }
+
+    const uniqueServiceTypes = new Set(serviceTypes);
+    if (uniqueServiceTypes.size !== serviceTypes.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.itemServiceTypeDuplicated,
         undefined,
       );
     }
