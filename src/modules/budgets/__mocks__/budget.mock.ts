@@ -37,8 +37,6 @@ export const budgetMock: BudgetsEntity = {
   notes: "obs",
   subtotal: 1000,
   totalAmount: 1000,
-  pdfUrl: undefined,
-  pdfHash: undefined,
   items: [budgetItemMock],
   createdAt: new Date("2026-04-10"),
   updatedAt: new Date("2026-04-10"),

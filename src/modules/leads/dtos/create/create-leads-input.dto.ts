@@ -35,10 +35,9 @@ export class CreateLeadsInputDto {
   })
   document?: string;
 
-  @Field(() => LeadSource, { nullable: true })
-  @IsOptional()
+  @Field(() => LeadSource)
   @IsEnum(LeadSource)
-  source?: LeadSource;
+  source!: LeadSource;
 
   @Field({ nullable: true })
   @IsOptional()

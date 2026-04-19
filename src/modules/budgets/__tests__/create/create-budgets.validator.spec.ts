@@ -18,7 +18,6 @@ describe("CreateBudgetsInputDto", () => {
     input.durationHours = 6;
     input.paymentMethod = "PIX";
     input.advancePercentage = 30;
-    input.notes = "observacao";
     input.items = [
       {
         description: "2 copeiras",

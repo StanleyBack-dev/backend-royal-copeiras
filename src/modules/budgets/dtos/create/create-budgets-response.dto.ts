@@ -56,11 +56,15 @@ export class CreateBudgetsResponseDto implements IBudget {
     dto.durationHours = entity.durationHours;
     dto.paymentMethod = entity.paymentMethod;
     dto.advancePercentage = entity.advancePercentage;
-    dto.notes = entity.notes;
     dto.subtotal = entity.subtotal;
     dto.totalAmount = entity.totalAmount;
-    dto.pdfUrl = entity.pdfUrl;
-    dto.pdfHash = entity.pdfHash;
+    dto.sentVia = entity.sentVia;
+    dto.sentAt =
+      entity.sentAt instanceof Date
+        ? entity.sentAt.toISOString()
+        : entity.sentAt
+          ? String(entity.sentAt)
+          : undefined;
     dto.items = (entity.items ?? []).map((item) => ({
       idBudgetItems: item.idBudgetItems,
       description: item.description,
@@ -126,9 +130,6 @@ export class CreateBudgetsResponseDto implements IBudget {
   @Field(() => Float, { nullable: true })
   advancePercentage?: number;
 
-  @Field({ nullable: true })
-  notes?: string;
-
   @Field(() => Float)
   subtotal!: number;
 
@@ -136,10 +137,10 @@ export class CreateBudgetsResponseDto implements IBudget {
   totalAmount!: number;
 
   @Field({ nullable: true })
-  pdfUrl?: string;
+  sentVia?: string;
 
   @Field({ nullable: true })
-  pdfHash?: string;
+  sentAt?: string;
 
   @Field(() => [CreateBudgetItemResponseDto], { nullable: true })
   items?: CreateBudgetItemResponseDto[];

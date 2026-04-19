@@ -113,17 +113,11 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   })
   totalAmount!: number;
 
-  @Column({ name: "pdf_url", type: "varchar", length: 500, nullable: true })
-  pdfUrl?: string;
+  @Column({ name: "sent_via", type: "varchar", length: 20, nullable: true })
+  sentVia?: string;
 
-  @Column({ name: "pdf_hash", type: "varchar", length: 128, nullable: true })
-  pdfHash?: string;
-
-  @Column({ name: "pdf_snapshot", type: "jsonb", nullable: true })
-  pdfSnapshot?: unknown;
-
-  @Column({ name: "pdf_frozen_at", type: "timestamptz", nullable: true })
-  pdfFrozenAt?: Date;
+  @Column({ name: "sent_at", type: "timestamptz", nullable: true })
+  sentAt?: Date;
 
   @OneToMany(
     () => BudgetItemsEntity,

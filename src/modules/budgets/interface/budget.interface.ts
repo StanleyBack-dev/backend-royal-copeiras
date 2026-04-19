@@ -14,12 +14,10 @@ export interface IBudget {
   durationHours?: number;
   paymentMethod?: string;
   advancePercentage?: number;
-  notes?: string;
   subtotal: number;
   totalAmount: number;
-  pdfUrl?: string;
-  pdfHash?: string;
-  pdfFrozenAt?: Date | string;
+  sentVia?: string;
+  sentAt?: Date | string;
   items?: IBudgetItem[];
   createdAt: Date | string;
   updatedAt: Date | string;
