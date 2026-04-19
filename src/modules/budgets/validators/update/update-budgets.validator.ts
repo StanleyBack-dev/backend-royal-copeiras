@@ -6,6 +6,11 @@ import { BudgetsEntity } from "../../entities/budgets.entity";
 import { UpdateBudgetsInputDto } from "../../dtos/update/update-budgets-input.dto";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
 import { BudgetStatus } from "../../enums/budget-status.enum";
+import {
+  BUDGET_ALLOWED_PAYMENT_METHODS,
+  BUDGET_DURATION_HOURS_MAX,
+  BUDGET_DURATION_HOURS_MIN,
+} from "../../constants/budget-form-rules.constant";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   [BudgetStatus.DRAFT]: [
@@ -31,7 +36,21 @@ interface UpdateBudgetDeps {
   leadsRepo: Repository<LeadsEntity>;
 }
 
+interface BudgetRulesSnapshot {
+  idLeads?: string | null;
+  eventDates?: string[] | null;
+  eventLocation?: string | null;
+  guestCount?: number | null;
+  durationHours?: number | null;
+  paymentMethod?: string | null;
+  advancePercentage?: number | null;
+  items?: Array<{ description?: string | null }>;
+}
+
 export class UpdateBudgetsValidator {
+  private static readonly allowedPaymentMethods =
+    BUDGET_ALLOWED_PAYMENT_METHODS as readonly string[];
+
   static async validateAndUpdate(
     userId: string,
     input: UpdateBudgetsInputDto,
@@ -64,6 +83,21 @@ export class UpdateBudgetsValidator {
     const hasNonStatusUpdates = this.hasAnyNonStatusField(input);
     if (hasNonStatusUpdates && current.status !== BudgetStatus.DRAFT) {
       throw AppException.from(APP_ERRORS.budgets.editForbidden, undefined);
+    }
+
+    if (hasNonStatusUpdates) {
+      this.validateBusinessRules({
+        idLeads: input.idLeads ?? current.idLeads,
+        eventDates: input.eventDates ?? current.eventDates,
+        eventLocation: input.eventLocation ?? current.eventLocation,
+        guestCount: input.guestCount ?? current.guestCount,
+        durationHours: input.durationHours ?? current.durationHours,
+        paymentMethod: input.paymentMethod ?? current.paymentMethod,
+        advancePercentage: input.advancePercentage ?? current.advancePercentage,
+        items:
+          input.items?.map((item) => ({ description: item.description })) ??
+          current.items,
+      });
     }
 
     if (input.status && input.status !== current.status) {
@@ -196,5 +230,86 @@ export class UpdateBudgetsValidator {
       input.totalAmount,
       input.items,
     ].some((value) => value !== undefined);
+  }
+
+  private static validateBusinessRules(data: BudgetRulesSnapshot): void {
+    if (!data.idLeads) {
+      throw AppException.from(APP_ERRORS.budgets.leadRequired, undefined);
+    }
+
+    if (!data.items?.length) {
+      throw AppException.from(APP_ERRORS.budgets.itemsRequired, undefined);
+    }
+
+    if (!data.eventDates?.length) {
+      throw AppException.from(APP_ERRORS.budgets.eventDatesRequired, undefined);
+    }
+
+    if (!data.eventLocation?.trim()) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventLocationRequired,
+        undefined,
+      );
+    }
+
+    if (
+      data.guestCount === undefined ||
+      data.guestCount === null ||
+      !Number.isInteger(data.guestCount) ||
+      data.guestCount < 1
+    ) {
+      throw AppException.from(APP_ERRORS.budgets.guestCountRequired, undefined);
+    }
+
+    if (
+      data.durationHours === undefined ||
+      data.durationHours === null ||
+      !Number.isInteger(data.durationHours) ||
+      data.durationHours < BUDGET_DURATION_HOURS_MIN ||
+      data.durationHours > BUDGET_DURATION_HOURS_MAX
+    ) {
+      throw AppException.from(
+        APP_ERRORS.budgets.durationHoursRequired,
+        undefined,
+      );
+    }
+
+    if (!data.paymentMethod?.trim()) {
+      throw AppException.from(
+        APP_ERRORS.budgets.paymentMethodRequired,
+        undefined,
+      );
+    }
+
+    if (!this.allowedPaymentMethods.includes(data.paymentMethod)) {
+      throw AppException.from(
+        APP_ERRORS.budgets.paymentMethodInvalid,
+        undefined,
+      );
+    }
+
+    if (
+      data.advancePercentage === undefined ||
+      data.advancePercentage === null ||
+      Number.isNaN(Number(data.advancePercentage)) ||
+      data.advancePercentage < 0 ||
+      data.advancePercentage > 100
+    ) {
+      throw AppException.from(
+        APP_ERRORS.budgets.advancePercentageRequired,
+        undefined,
+      );
+    }
+
+    const hasInvalidItemDescription = data.items.some(
+      (item) => !item.description?.trim(),
+    );
+
+    if (hasInvalidItemDescription) {
+      throw AppException.from(
+        APP_ERRORS.budgets.itemDescriptionRequired,
+        undefined,
+      );
+    }
   }
 }

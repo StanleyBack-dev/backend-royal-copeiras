@@ -32,6 +32,12 @@ export class GetBudgetsResponseDto implements IBudget {
     dto.totalAmount = entity.totalAmount;
     dto.pdfUrl = entity.pdfUrl;
     dto.pdfHash = entity.pdfHash;
+    dto.pdfFrozenAt =
+      entity.pdfFrozenAt instanceof Date
+        ? entity.pdfFrozenAt.toISOString()
+        : entity.pdfFrozenAt
+          ? String(entity.pdfFrozenAt)
+          : undefined;
     dto.items = (entity.items ?? []).map((item) =>
       GetBudgetItemResponseDto.fromEntity(item),
     );
@@ -97,6 +103,9 @@ export class GetBudgetsResponseDto implements IBudget {
 
   @Field({ nullable: true })
   pdfHash?: string;
+
+  @Field({ nullable: true })
+  pdfFrozenAt?: string;
 
   @Field(() => [GetBudgetItemResponseDto], { nullable: true })
   items?: GetBudgetItemResponseDto[];

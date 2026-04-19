@@ -7,6 +7,8 @@ import { UserEntity } from "../../users/entities/user.entity";
 import { AuthTokenPayload } from "../interfaces/auth-token-payload.interface";
 import { parseDurationToMs } from "../utils/duration.util";
 
+const MIN_REFRESH_DURATION_MS = parseDurationToMs("30d");
+
 @Injectable()
 export class AuthTokensService {
   constructor(private readonly configService: ConfigService) {}
@@ -44,7 +46,10 @@ export class AuthTokensService {
   }
 
   getRefreshTokenMaxAgeMs(): number {
-    return parseDurationToMs(this.getRefreshExpiresIn());
+    return Math.max(
+      parseDurationToMs(this.getRefreshExpiresIn()),
+      MIN_REFRESH_DURATION_MS,
+    );
   }
 
   private verifyToken(

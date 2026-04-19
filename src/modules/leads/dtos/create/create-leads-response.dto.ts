@@ -1,6 +1,7 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ILead } from "../../interface/lead.interface";
 import { LeadStatus } from "../../enums/lead-status.enum";
+import { LeadSource, normalizeLeadSource } from "../../enums/lead-source.enum";
 
 @ObjectType()
 export class CreateLeadsResponseDto implements ILead {
@@ -13,7 +14,7 @@ export class CreateLeadsResponseDto implements ILead {
     dto.email = entity.email;
     dto.phone = entity.phone;
     dto.document = entity.document;
-    dto.source = entity.source;
+    dto.source = normalizeLeadSource(entity.source);
     dto.notes = entity.notes;
     dto.status = entity.status;
     dto.isActive = entity.isActive;
@@ -43,8 +44,8 @@ export class CreateLeadsResponseDto implements ILead {
   @Field({ nullable: true })
   document?: string;
 
-  @Field({ nullable: true })
-  source?: string;
+  @Field(() => LeadSource, { nullable: true })
+  source?: LeadSource;
 
   @Field({ nullable: true })
   notes?: string;

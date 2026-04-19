@@ -1,10 +1,18 @@
 import { Field, Float, InputType, Int } from "@nestjs/graphql";
-import { IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from "class-validator";
 
 @InputType()
 export class CreateBudgetItemInputDto {
   @Field()
   @IsString()
+  @IsNotEmpty()
   description!: string;
 
   @Field(() => Int)
