@@ -26,6 +26,11 @@ export const budgetsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "O lead é obrigatório para criar ou atualizar o orçamento.",
   },
+  leadInactive: {
+    code: "BUDGETS_LEAD_INACTIVE",
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    message: "Não é permitido criar ou gerar orçamento para lead inativo.",
+  },
   eventDatesRequired: {
     code: "BUDGETS_EVENT_DATES_REQUIRED",
     status: HttpStatus.BAD_REQUEST,
@@ -69,6 +74,18 @@ export const budgetsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Todos os itens do orçamento devem possuir descrição.",
   },
+  itemServiceTypeInvalid: {
+    code: "BUDGETS_ITEM_SERVICE_TYPE_INVALID",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Um ou mais itens possuem tipo de serviço inválido para orçamento.",
+  },
+  itemServiceTypeDuplicated: {
+    code: "BUDGETS_ITEM_SERVICE_TYPE_DUPLICATED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Não é permitido repetir o mesmo tipo de serviço em itens do orçamento.",
+  },
   invalidValidityRange: {
     code: "BUDGETS_INVALID_VALIDITY_RANGE",
     status: HttpStatus.BAD_REQUEST,
@@ -95,16 +112,14 @@ export const budgetsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Informe idBudgets ou draft para gerar o preview do orçamento.",
   },
-  alreadyFrozen: {
-    code: "BUDGETS_ALREADY_FROZEN",
-    status: HttpStatus.CONFLICT,
-    message:
-      "Este orçamento já possui uma versão oficial gerada e não pode ser congelado novamente.",
-  },
-  notFrozen: {
-    code: "BUDGETS_NOT_FROZEN",
+  leadHasNoEmail: {
+    code: "BUDGETS_LEAD_HAS_NO_EMAIL",
     status: HttpStatus.UNPROCESSABLE_ENTITY,
-    message:
-      "Este orçamento ainda não possui uma versão oficial de PDF gerada.",
+    message: "O lead vinculado a este orçamento não possui e-mail cadastrado.",
+  },
+  emailSendFailed: {
+    code: "BUDGETS_EMAIL_SEND_FAILED",
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    message: "Não foi possível enviar o e-mail do orçamento. Tente novamente.",
   },
 };

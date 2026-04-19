@@ -77,11 +77,6 @@ export class CreateBudgetsInputDto {
   @Max(100)
   advancePercentage!: number;
 
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  notes?: string;
-
   @Field(() => Float, { nullable: true })
   @IsOptional()
   @IsNumber()

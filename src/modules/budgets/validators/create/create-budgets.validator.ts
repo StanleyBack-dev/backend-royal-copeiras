@@ -10,6 +10,8 @@ import {
   BUDGET_DURATION_HOURS_MAX,
   BUDGET_DURATION_HOURS_MIN,
 } from "../../constants/budget-form-rules.constant";
+import { inferServiceTypeFromDescription } from "../../constants/budget-service-types.constant";
+import { BudgetStatus } from "../../enums/budget-status.enum";
 
 interface CreateBudgetResult {
   budget: BudgetsEntity;
@@ -49,6 +51,10 @@ export class CreateBudgetsValidator {
       throw AppException.from(APP_ERRORS.leads.notFound, undefined);
     }
 
+    if (!lead.isActive) {
+      throw AppException.from(APP_ERRORS.budgets.leadInactive, undefined);
+    }
+
     const normalizedItems = input.items.map((item) => {
       const totalPrice = Number((item.quantity * item.unitPrice).toFixed(2));
       return {
@@ -76,7 +82,7 @@ export class CreateBudgetsValidator {
         idUsers: userId,
         idLeads: input.idLeads,
         budgetNumber,
-        status: input.status,
+        status: BudgetStatus.DRAFT,
         issueDate,
         validUntil,
         eventDates: input.eventDates ?? [],
@@ -85,7 +91,6 @@ export class CreateBudgetsValidator {
         durationHours: input.durationHours,
         paymentMethod: input.paymentMethod,
         advancePercentage: input.advancePercentage,
-        notes: input.notes,
         subtotal,
         totalAmount,
       });
@@ -184,6 +189,25 @@ export class CreateBudgetsValidator {
     if (hasInvalidItemDescription) {
       throw AppException.from(
         APP_ERRORS.budgets.itemDescriptionRequired,
+        undefined,
+      );
+    }
+
+    const serviceTypes = input.items.map((item) =>
+      inferServiceTypeFromDescription(item.description),
+    );
+
+    if (serviceTypes.some((type) => type === null)) {
+      throw AppException.from(
+        APP_ERRORS.budgets.itemServiceTypeInvalid,
+        undefined,
+      );
+    }
+
+    const uniqueServiceTypes = new Set(serviceTypes);
+    if (uniqueServiceTypes.size !== serviceTypes.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.itemServiceTypeDuplicated,
         undefined,
       );
     }

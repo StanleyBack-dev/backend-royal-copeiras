@@ -59,6 +59,13 @@ export class BrevoMailProvider implements IMailProvider {
       };
     }
 
+    if (command.attachments?.length) {
+      sendSmtpEmail.attachment = command.attachments.map((a) => ({
+        name: a.name,
+        content: a.content,
+      }));
+    }
+
     await this.apiInstance.sendTransacEmail(sendSmtpEmail);
   }
 }

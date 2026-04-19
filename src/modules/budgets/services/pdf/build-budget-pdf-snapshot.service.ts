@@ -25,7 +25,6 @@ export class BuildBudgetPdfSnapshotService {
         durationHours: entity.durationHours,
         paymentMethod: entity.paymentMethod,
         advancePercentage: entity.advancePercentage,
-        notes: entity.notes,
         subtotal: entity.subtotal,
         totalAmount: entity.totalAmount,
       },

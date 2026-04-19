@@ -93,13 +93,9 @@ export const RESPONSE_MESSAGES = {
       code: "BUDGET_PREVIEW_GENERATED",
       message: "Preview do orçamento gerado com sucesso.",
     },
-    frozen: {
-      code: "BUDGET_PDF_FROZEN",
-      message: "PDF oficial do orçamento gerado e salvo com sucesso.",
-    },
-    downloaded: {
-      code: "BUDGET_PDF_DOWNLOADED",
-      message: "PDF do orçamento baixado com sucesso.",
+    emailSent: {
+      code: "BUDGET_EMAIL_SENT",
+      message: "Orçamento enviado por e-mail com sucesso.",
     },
   },
   employees: {

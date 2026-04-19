@@ -426,11 +426,10 @@ type CreateBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
-  notes: String
   subtotal: Float!
   totalAmount: Float!
-  pdfUrl: String
-  pdfHash: String
+  sentVia: String
+  sentAt: String
   items: [CreateBudgetItemResponseDto!]
   createdAt: String!
   updatedAt: String!
@@ -438,6 +437,7 @@ type CreateBudgetsResponseDto {
 
 enum BudgetStatus {
   DRAFT
+  GENERATED
   SENT
   APPROVED
   REJECTED
@@ -470,12 +470,10 @@ type GetBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
-  notes: String
   subtotal: Float!
   totalAmount: Float!
-  pdfUrl: String
-  pdfHash: String
-  pdfFrozenAt: String
+  sentVia: String
+  sentAt: String
   items: [GetBudgetItemResponseDto!]
   createdAt: String!
   updatedAt: String!
@@ -506,11 +504,10 @@ type UpdateBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
-  notes: String
   subtotal: Float!
   totalAmount: Float!
-  pdfUrl: String
-  pdfHash: String
+  sentVia: String
+  sentAt: String
   items: [UpdateBudgetItemResponseDto!]
   createdAt: String!
   updatedAt: String!
@@ -556,43 +553,17 @@ type GenerateBudgetPreviewMutationResponseDto {
   data: GenerateBudgetPreviewResponseDto!
 }
 
-type FreezeBudgetPdfResponseDto {
-  fileName: String!
-  mimeType: String!
-  base64Content: String!
-  snapshotHash: String!
-  frozenAt: String!
-}
-
-type FreezeBudgetPdfMutationResponseDto {
+type SuccessResponseDto {
   success: Boolean!
   message: String
   code: String
-  data: FreezeBudgetPdfResponseDto!
-}
-
-type DownloadBudgetPdfResponseDto {
-  fileName: String!
-  mimeType: String!
-  base64Content: String!
-  snapshotHash: String!
-  frozenAt: String!
-}
-
-type DownloadBudgetPdfQueryResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: DownloadBudgetPdfResponseDto!
 }
 
 type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
-  getUserPagePermissions(
-    input: GetUserPagePermissionsInputDto!
-  ): UserPagePermissionsResponseDto!
+  getUserPagePermissions(input: GetUserPagePermissionsInputDto!): UserPagePermissionsResponseDto!
   getMyPagePermissions: UserPagePermissionsResponseDto!
   getMyProfile: GetProfileResponseDto!
   getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
@@ -600,9 +571,6 @@ type Query {
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
-  downloadBudgetPdf(
-    input: DownloadBudgetPdfInputDto!
-  ): DownloadBudgetPdfQueryResponseDto!
 }
 
 input GetUsersInputDto {
@@ -658,64 +626,30 @@ input GetBudgetsInputDto {
   endDate: String
 }
 
-input DownloadBudgetPdfInputDto {
-  idBudgets: String!
-}
-
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
-  requestPasswordRecovery(
-    input: RequestPasswordRecoveryInputDto!
-  ): LogoutResponseDto!
-  verifyPasswordRecoveryCode(
-    input: VerifyPasswordRecoveryCodeInputDto!
-  ): VerifyPasswordRecoveryCodeMutationResponseDto!
-  resetPasswordWithRecovery(
-    input: ResetPasswordWithRecoveryInputDto!
-  ): LogoutResponseDto!
+  requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
+  verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
+  resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  adminUpdateUserAccess(
-    input: AdminUpdateUserAccessInputDto!
-  ): AdminUpdateUserAccessMutationResponseDto!
-  setUserPagePermissions(
-    input: SetUserPagePermissionsInputDto!
-  ): SetUserPagePermissionsMutationResponseDto!
-  unlockUserCredential(
-    input: UnlockUserCredentialInputDto!
-  ): UnlockUserCredentialMutationResponseDto!
-  updateMyProfile(
-    input: UpdateProfileInputDto!
-  ): UpdateProfileMutationResponseDto!
-  createCustomers(
-    input: CreateCustomersInputDto!
-  ): CreateCustomersMutationResponseDto!
-  updateCustomers(
-    input: UpdateCustomersInputDto!
-  ): UpdateCustomersMutationResponseDto!
-  createEmployees(
-    input: CreateEmployeesInputDto!
-  ): CreateEmployeesMutationResponseDto!
-  updateEmployees(
-    input: UpdateEmployeesInputDto!
-  ): UpdateEmployeesMutationResponseDto!
+  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
+  setUserPagePermissions(input: SetUserPagePermissionsInputDto!): SetUserPagePermissionsMutationResponseDto!
+  unlockUserCredential(input: UnlockUserCredentialInputDto!): UnlockUserCredentialMutationResponseDto!
+  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileMutationResponseDto!
+  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
+  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
+  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
+  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
   createLeads(input: CreateLeadsInputDto!): CreateLeadsMutationResponseDto!
   updateLeads(input: UpdateLeadsInputDto!): UpdateLeadsMutationResponseDto!
-  createBudgets(
-    input: CreateBudgetsInputDto!
-  ): CreateBudgetsMutationResponseDto!
-  updateBudgets(
-    input: UpdateBudgetsInputDto!
-  ): UpdateBudgetsMutationResponseDto!
-  generateBudgetPreviewPdf(
-    input: GenerateBudgetPreviewInputDto!
-  ): GenerateBudgetPreviewMutationResponseDto!
-  freezeBudgetPdf(
-    input: FreezeBudgetPdfInputDto!
-  ): FreezeBudgetPdfMutationResponseDto!
+  createBudgets(input: CreateBudgetsInputDto!): CreateBudgetsMutationResponseDto!
+  updateBudgets(input: UpdateBudgetsInputDto!): UpdateBudgetsMutationResponseDto!
+  generateBudgetPreviewPdf(input: GenerateBudgetPreviewInputDto!): GenerateBudgetPreviewMutationResponseDto!
+  sendBudgetEmail(input: SendBudgetEmailInputDto!): SuccessResponseDto!
 }
 
 input LoginInputDto {
@@ -829,7 +763,7 @@ input CreateLeadsInputDto {
   email: String
   phone: String
   document: String
-  source: LeadSource
+  source: LeadSource!
   notes: String
   status: LeadStatus! = NEW
   isActive: Boolean! = true
@@ -858,7 +792,6 @@ input CreateBudgetsInputDto {
   durationHours: Int!
   paymentMethod: String!
   advancePercentage: Float!
-  notes: String
   totalAmount: Float
   items: [CreateBudgetItemInputDto!]!
 }
@@ -883,9 +816,10 @@ input UpdateBudgetsInputDto {
   durationHours: Int
   paymentMethod: String
   advancePercentage: Float
-  notes: String
   totalAmount: Float
   items: [UpdateBudgetItemInputDto!]
+  sentVia: String
+  sentAt: String
 }
 
 input UpdateBudgetItemInputDto {
@@ -902,6 +836,6 @@ input GenerateBudgetPreviewInputDto {
   draft: CreateBudgetsInputDto
 }
 
-input FreezeBudgetPdfInputDto {
+input SendBudgetEmailInputDto {
   idBudgets: String!
 }
