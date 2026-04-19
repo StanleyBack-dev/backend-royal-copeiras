@@ -1,6 +1,7 @@
 import { LeadsEntity } from "../entities/leads.entity";
 import { UserEntity } from "../../users/entities/user.entity";
 import { LeadStatus } from "../enums/lead-status.enum";
+import { LeadSource } from "../enums/lead-source.enum";
 
 export const leadMock: LeadsEntity = {
   idLeads: "lead-1",
@@ -10,7 +11,7 @@ export const leadMock: LeadsEntity = {
   email: "lead@test.com",
   phone: "62999990000",
   document: "12345678901",
-  source: "instagram",
+  source: LeadSource.INSTAGRAM,
   notes: "note",
   status: LeadStatus.NEW,
   isActive: true,

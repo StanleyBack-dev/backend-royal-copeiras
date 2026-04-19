@@ -323,12 +323,21 @@ type CreateLeadsResponseDto {
   email: String
   phone: String
   document: String
-  source: String
+  source: LeadSource
   notes: String
   status: LeadStatus!
   isActive: Boolean!
   createdAt: String!
   updatedAt: String!
+}
+
+enum LeadSource {
+  INSTAGRAM
+  REFERRAL
+  WEBSITE
+  WHATSAPP
+  EVENT
+  OTHER
 }
 
 enum LeadStatus {
@@ -344,7 +353,7 @@ type GetLeadsResponseDto {
   email: String
   phone: String
   document: String
-  source: String
+  source: LeadSource
   notes: String
   status: LeadStatus!
   isActive: Boolean!
@@ -358,7 +367,7 @@ type UpdateLeadsResponseDto {
   email: String
   phone: String
   document: String
-  source: String
+  source: LeadSource
   notes: String
   status: LeadStatus!
   isActive: Boolean!
@@ -466,6 +475,7 @@ type GetBudgetsResponseDto {
   totalAmount: Float!
   pdfUrl: String
   pdfHash: String
+  pdfFrozenAt: String
   items: [GetBudgetItemResponseDto!]
   createdAt: String!
   updatedAt: String!
@@ -819,7 +829,7 @@ input CreateLeadsInputDto {
   email: String
   phone: String
   document: String
-  source: String
+  source: LeadSource
   notes: String
   status: LeadStatus! = NEW
   isActive: Boolean! = true
@@ -831,23 +841,23 @@ input UpdateLeadsInputDto {
   email: String
   phone: String
   document: String
-  source: String
+  source: LeadSource
   notes: String
   status: LeadStatus
   isActive: Boolean
 }
 
 input CreateBudgetsInputDto {
-  idLeads: String
+  idLeads: String!
   status: BudgetStatus! = DRAFT
   issueDate: String
   validUntil: String!
-  eventDates: [String!]
-  eventLocation: String
-  guestCount: Int
-  durationHours: Int
-  paymentMethod: String
-  advancePercentage: Float
+  eventDates: [String!]!
+  eventLocation: String!
+  guestCount: Int!
+  durationHours: Int!
+  paymentMethod: String!
+  advancePercentage: Float!
   notes: String
   totalAmount: Float
   items: [CreateBudgetItemInputDto!]!

@@ -1,4 +1,5 @@
 import { CreateLeadsInputDto } from "../../dtos/create/create-leads-input.dto";
+import { LeadSource } from "../../enums/lead-source.enum";
 import { LeadStatus } from "../../enums/lead-status.enum";
 
 describe("CreateLeadsInputDto", () => {
@@ -13,7 +14,7 @@ describe("CreateLeadsInputDto", () => {
     input.email = "lead@exemplo.com";
     input.phone = "62999990000";
     input.document = "12345678901";
-    input.source = "instagram";
+    input.source = LeadSource.INSTAGRAM;
     input.notes = "observacao";
     input.status = LeadStatus.NEW;
     input.isActive = true;

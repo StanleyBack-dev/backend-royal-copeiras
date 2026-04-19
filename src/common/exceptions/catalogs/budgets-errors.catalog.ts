@@ -21,6 +21,54 @@ export const budgetsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "É necessário informar pelo menos um item no orçamento.",
   },
+  leadRequired: {
+    code: "BUDGETS_LEAD_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "O lead é obrigatório para criar ou atualizar o orçamento.",
+  },
+  eventDatesRequired: {
+    code: "BUDGETS_EVENT_DATES_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe pelo menos uma data válida para o evento.",
+  },
+  eventLocationRequired: {
+    code: "BUDGETS_EVENT_LOCATION_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "O local do evento é obrigatório.",
+  },
+  guestCountRequired: {
+    code: "BUDGETS_GUEST_COUNT_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "A quantidade de convidados é obrigatória e deve ser maior que zero.",
+  },
+  durationHoursRequired: {
+    code: "BUDGETS_DURATION_HOURS_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "A duração do evento é obrigatória e deve estar entre 1 e 24 horas.",
+  },
+  paymentMethodRequired: {
+    code: "BUDGETS_PAYMENT_METHOD_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "A forma de pagamento é obrigatória.",
+  },
+  paymentMethodInvalid: {
+    code: "BUDGETS_PAYMENT_METHOD_INVALID",
+    status: HttpStatus.BAD_REQUEST,
+    message: "A forma de pagamento informada não é válida.",
+  },
+  advancePercentageRequired: {
+    code: "BUDGETS_ADVANCE_PERCENTAGE_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "A porcentagem de entrada é obrigatória e deve estar entre 0 e 100.",
+  },
+  itemDescriptionRequired: {
+    code: "BUDGETS_ITEM_DESCRIPTION_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Todos os itens do orçamento devem possuir descrição.",
+  },
   invalidValidityRange: {
     code: "BUDGETS_INVALID_VALIDITY_RANGE",
     status: HttpStatus.BAD_REQUEST,

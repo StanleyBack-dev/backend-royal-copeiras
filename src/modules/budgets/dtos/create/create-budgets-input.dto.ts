@@ -4,7 +4,9 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -16,13 +18,17 @@ import {
 import { Field, Float, InputType, Int } from "@nestjs/graphql";
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { CreateBudgetItemInputDto } from "./create-budget-item-input.dto";
+import {
+  BUDGET_ALLOWED_PAYMENT_METHODS,
+  BUDGET_DURATION_HOURS_MAX,
+  BUDGET_DURATION_HOURS_MIN,
+} from "../../constants/budget-form-rules.constant";
 
 @InputType()
 export class CreateBudgetsInputDto {
-  @Field({ nullable: true })
-  @IsOptional()
+  @Field()
   @IsUUID()
-  idLeads?: string;
+  idLeads!: string;
 
   @Field(() => BudgetStatus, { defaultValue: BudgetStatus.DRAFT })
   @IsEnum(BudgetStatus)
@@ -37,40 +43,39 @@ export class CreateBudgetsInputDto {
   @IsDateString()
   validUntil!: string;
 
-  @Field(() => [String], { nullable: true })
-  @IsOptional()
+  @Field(() => [String])
   @IsArray()
-  @IsString({ each: true })
-  eventDates?: string[];
+  @ArrayMinSize(1)
+  @IsDateString({}, { each: true })
+  eventDates!: string[];
 
-  @Field({ nullable: true })
-  @IsOptional()
+  @Field()
   @IsString()
-  eventLocation?: string;
+  @IsNotEmpty()
+  eventLocation!: string;
 
-  @Field(() => Int, { nullable: true })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  guestCount?: number;
-
-  @Field(() => Int, { nullable: true })
-  @IsOptional()
+  @Field(() => Int)
   @IsInt()
   @Min(1)
-  durationHours?: number;
+  guestCount!: number;
 
-  @Field({ nullable: true })
-  @IsOptional()
+  @Field(() => Int)
+  @IsInt()
+  @Min(BUDGET_DURATION_HOURS_MIN)
+  @Max(BUDGET_DURATION_HOURS_MAX)
+  durationHours!: number;
+
+  @Field()
   @IsString()
-  paymentMethod?: string;
+  @IsNotEmpty()
+  @IsIn(BUDGET_ALLOWED_PAYMENT_METHODS)
+  paymentMethod!: string;
 
-  @Field(() => Float, { nullable: true })
-  @IsOptional()
+  @Field(() => Float)
   @IsNumber()
   @Min(0)
   @Max(100)
-  advancePercentage?: number;
+  advancePercentage!: number;
 
   @Field({ nullable: true })
   @IsOptional()

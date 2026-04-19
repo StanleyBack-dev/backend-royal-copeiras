@@ -10,6 +10,7 @@ import {
 import { UserEntity } from "../../users/entities/user.entity";
 import { ILead } from "../interface/lead.interface";
 import { LeadStatus } from "../enums/lead-status.enum";
+import { LeadSource } from "../enums/lead-source.enum";
 
 @Entity("tb_leads")
 export class LeadsEntity implements ILead {
@@ -36,7 +37,7 @@ export class LeadsEntity implements ILead {
   document?: string;
 
   @Column({ name: "source", type: "varchar", length: 60, nullable: true })
-  source?: string;
+  source?: LeadSource;
 
   @Column({ name: "notes", type: "text", nullable: true })
   notes?: string;
