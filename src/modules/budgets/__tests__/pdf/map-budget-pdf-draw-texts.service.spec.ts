@@ -1,19 +1,22 @@
 import { budgetMock } from "../../__mocks__/budget.mock";
 import { BuildBudgetPdfSnapshotService } from "../../services/pdf/build-budget-pdf-snapshot.service";
-import { MapBudgetPdfDrawTextsService } from "../../services/pdf/map-budget-pdf-draw-texts.service";
+import { BuildBudgetProposalPdfPayloadService } from "../../services/pdf/build-budget-proposal-pdf-payload.service";
+import { RenderBudgetProposalTemplateService } from "../../../pdf-generator/templates/budgets/render-budget-proposal-template.service";
 
-describe("MapBudgetPdfDrawTextsService", () => {
-  it("should map snapshot to draw texts", () => {
+describe("RenderBudgetProposalTemplateService", () => {
+  it("should render snapshot to pdf buffer", async () => {
     const snapshotBuilder = new BuildBudgetPdfSnapshotService();
-    const mapper = new MapBudgetPdfDrawTextsService();
+    const payloadBuilder = new BuildBudgetProposalPdfPayloadService();
+    const renderer = new RenderBudgetProposalTemplateService();
 
     const snapshot = snapshotBuilder.buildFromEntity(budgetMock);
-    const drawTexts = mapper.map(snapshot, "abc1234567890defabc1234567890def");
+    const payload = payloadBuilder.build(
+      snapshot,
+      "abc1234567890defabc1234567890def",
+    );
+    const buffer = await renderer.render(payload);
 
-    expect(Array.isArray(drawTexts)).toBe(true);
-    expect(drawTexts.length).toBeGreaterThan(0);
-    expect(drawTexts[0]).toHaveProperty("text");
-    expect(drawTexts[0]).toHaveProperty("x");
-    expect(drawTexts[0]).toHaveProperty("y");
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
   });
 });

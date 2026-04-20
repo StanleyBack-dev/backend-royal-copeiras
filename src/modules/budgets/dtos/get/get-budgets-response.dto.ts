@@ -2,6 +2,7 @@ import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { IBudget } from "../../interface/budget.interface";
 import { GetBudgetItemResponseDto } from "./get-budget-item-response.dto";
+import { formatBudgetDateOnly } from "../../utils/budget-date.util";
 
 @ObjectType()
 export class GetBudgetsResponseDto implements IBudget {
@@ -13,14 +14,8 @@ export class GetBudgetsResponseDto implements IBudget {
     dto.idLeads = entity.idLeads;
     dto.budgetNumber = entity.budgetNumber;
     dto.status = entity.status;
-    dto.issueDate =
-      entity.issueDate instanceof Date
-        ? entity.issueDate.toISOString()
-        : String(entity.issueDate);
-    dto.validUntil =
-      entity.validUntil instanceof Date
-        ? entity.validUntil.toISOString()
-        : String(entity.validUntil);
+    dto.issueDate = formatBudgetDateOnly(entity.issueDate);
+    dto.validUntil = formatBudgetDateOnly(entity.validUntil);
     dto.eventDates = entity.eventDates ?? [];
     dto.eventLocation = entity.eventLocation;
     dto.guestCount = entity.guestCount;
