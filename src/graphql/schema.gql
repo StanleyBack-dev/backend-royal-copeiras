@@ -401,6 +401,155 @@ type UpdateLeadsMutationResponseDto {
   data: UpdateLeadsResponseDto!
 }
 
+type CreateContractsResponseDto {
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  contractNumber: String!
+  status: ContractStatus!
+  issueDate: String!
+  validUntil: String
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int!
+  retentionUntil: String
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum ContractStatus {
+  DRAFT
+  GENERATED
+  PENDING_SIGNATURE
+  SIGNED
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+type GetContractsResponseDto {
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  contractNumber: String!
+  status: ContractStatus!
+  issueDate: String!
+  validUntil: String
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int!
+  retentionUntil: String
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UpdateContractsResponseDto {
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  contractNumber: String!
+  status: ContractStatus!
+  issueDate: String!
+  validUntil: String
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int!
+  retentionUntil: String
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateContractsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateContractsResponseDto!
+}
+
+type GetContractsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetContractsResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateContractsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateContractsResponseDto!
+}
+
+type GenerateContractPreviewResponseDto {
+  fileName: String!
+  mimeType: String!
+  base64Content: String!
+  snapshotHash: String!
+}
+
+type GenerateContractPreviewMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: GenerateContractPreviewResponseDto!
+}
+
+type SuccessResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
 type CreateBudgetItemResponseDto {
   idBudgetItems: String!
   description: String!
@@ -553,25 +702,18 @@ type GenerateBudgetPreviewMutationResponseDto {
   data: GenerateBudgetPreviewResponseDto!
 }
 
-type SuccessResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-}
-
 type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
-  getUserPagePermissions(
-    input: GetUserPagePermissionsInputDto!
-  ): UserPagePermissionsResponseDto!
+  getUserPagePermissions(input: GetUserPagePermissionsInputDto!): UserPagePermissionsResponseDto!
   getMyPagePermissions: UserPagePermissionsResponseDto!
   getMyProfile: GetProfileResponseDto!
   getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
   getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
+  getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
 }
 
@@ -618,6 +760,16 @@ input GetLeadsInputDto {
   endDate: String
 }
 
+input GetContractsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idContracts: String
+  idBudgets: String
+  status: ContractStatus
+  startDate: String
+  endDate: String
+}
+
 input GetBudgetsInputDto {
   page: Int = 1
   limit: Int = 10
@@ -633,52 +785,28 @@ type Mutation {
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
-  requestPasswordRecovery(
-    input: RequestPasswordRecoveryInputDto!
-  ): LogoutResponseDto!
-  verifyPasswordRecoveryCode(
-    input: VerifyPasswordRecoveryCodeInputDto!
-  ): VerifyPasswordRecoveryCodeMutationResponseDto!
-  resetPasswordWithRecovery(
-    input: ResetPasswordWithRecoveryInputDto!
-  ): LogoutResponseDto!
+  requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
+  verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
+  resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  adminUpdateUserAccess(
-    input: AdminUpdateUserAccessInputDto!
-  ): AdminUpdateUserAccessMutationResponseDto!
-  setUserPagePermissions(
-    input: SetUserPagePermissionsInputDto!
-  ): SetUserPagePermissionsMutationResponseDto!
-  unlockUserCredential(
-    input: UnlockUserCredentialInputDto!
-  ): UnlockUserCredentialMutationResponseDto!
-  updateMyProfile(
-    input: UpdateProfileInputDto!
-  ): UpdateProfileMutationResponseDto!
-  createCustomers(
-    input: CreateCustomersInputDto!
-  ): CreateCustomersMutationResponseDto!
-  updateCustomers(
-    input: UpdateCustomersInputDto!
-  ): UpdateCustomersMutationResponseDto!
-  createEmployees(
-    input: CreateEmployeesInputDto!
-  ): CreateEmployeesMutationResponseDto!
-  updateEmployees(
-    input: UpdateEmployeesInputDto!
-  ): UpdateEmployeesMutationResponseDto!
+  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
+  setUserPagePermissions(input: SetUserPagePermissionsInputDto!): SetUserPagePermissionsMutationResponseDto!
+  unlockUserCredential(input: UnlockUserCredentialInputDto!): UnlockUserCredentialMutationResponseDto!
+  updateMyProfile(input: UpdateProfileInputDto!): UpdateProfileMutationResponseDto!
+  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
+  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
+  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
+  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
   createLeads(input: CreateLeadsInputDto!): CreateLeadsMutationResponseDto!
   updateLeads(input: UpdateLeadsInputDto!): UpdateLeadsMutationResponseDto!
-  createBudgets(
-    input: CreateBudgetsInputDto!
-  ): CreateBudgetsMutationResponseDto!
-  updateBudgets(
-    input: UpdateBudgetsInputDto!
-  ): UpdateBudgetsMutationResponseDto!
-  generateBudgetPreviewPdf(
-    input: GenerateBudgetPreviewInputDto!
-  ): GenerateBudgetPreviewMutationResponseDto!
+  createContracts(input: CreateContractsInputDto!): CreateContractsMutationResponseDto!
+  updateContracts(input: UpdateContractsInputDto!): UpdateContractsMutationResponseDto!
+  generateContractPreviewPdf(input: GenerateContractPreviewInputDto!): GenerateContractPreviewMutationResponseDto!
+  sendContractEmail(input: SendContractEmailInputDto!): SuccessResponseDto!
+  createBudgets(input: CreateBudgetsInputDto!): CreateBudgetsMutationResponseDto!
+  updateBudgets(input: UpdateBudgetsInputDto!): UpdateBudgetsMutationResponseDto!
+  generateBudgetPreviewPdf(input: GenerateBudgetPreviewInputDto!): GenerateBudgetPreviewMutationResponseDto!
   sendBudgetEmail(input: SendBudgetEmailInputDto!): SuccessResponseDto!
 }
 
@@ -809,6 +937,45 @@ input UpdateLeadsInputDto {
   notes: String
   status: LeadStatus
   isActive: Boolean
+}
+
+input CreateContractsInputDto {
+  idBudgets: String!
+  status: ContractStatus
+  issueDate: String!
+  body: String
+  templateVersion: Int
+  notes: String
+}
+
+input UpdateContractsInputDto {
+  idContracts: String!
+  status: ContractStatus
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+}
+
+input GenerateContractPreviewInputDto {
+  idContracts: String!
+}
+
+input SendContractEmailInputDto {
+  idContracts: String!
 }
 
 input CreateBudgetsInputDto {
