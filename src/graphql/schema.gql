@@ -401,6 +401,155 @@ type UpdateLeadsMutationResponseDto {
   data: UpdateLeadsResponseDto!
 }
 
+type CreateContractsResponseDto {
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  contractNumber: String!
+  status: ContractStatus!
+  issueDate: String!
+  validUntil: String
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int!
+  retentionUntil: String
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum ContractStatus {
+  DRAFT
+  GENERATED
+  PENDING_SIGNATURE
+  SIGNED
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+type GetContractsResponseDto {
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  contractNumber: String!
+  status: ContractStatus!
+  issueDate: String!
+  validUntil: String
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int!
+  retentionUntil: String
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UpdateContractsResponseDto {
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  budgetNumber: String!
+  contractNumber: String!
+  status: ContractStatus!
+  issueDate: String!
+  validUntil: String
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int!
+  retentionUntil: String
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateContractsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateContractsResponseDto!
+}
+
+type GetContractsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetContractsResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateContractsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateContractsResponseDto!
+}
+
+type GenerateContractPreviewResponseDto {
+  fileName: String!
+  mimeType: String!
+  base64Content: String!
+  snapshotHash: String!
+}
+
+type GenerateContractPreviewMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: GenerateContractPreviewResponseDto!
+}
+
+type SuccessResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
 type CreateBudgetItemResponseDto {
   idBudgetItems: String!
   description: String!
@@ -553,12 +702,6 @@ type GenerateBudgetPreviewMutationResponseDto {
   data: GenerateBudgetPreviewResponseDto!
 }
 
-type SuccessResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-}
-
 type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
@@ -572,6 +715,7 @@ type Query {
   getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
+  getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
 }
 
@@ -614,6 +758,16 @@ input GetLeadsInputDto {
   limit: Int = 10
   idLeads: String
   status: LeadStatus
+  startDate: String
+  endDate: String
+}
+
+input GetContractsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idContracts: String
+  idBudgets: String
+  status: ContractStatus
   startDate: String
   endDate: String
 }
@@ -670,6 +824,16 @@ type Mutation {
   ): UpdateEmployeesMutationResponseDto!
   createLeads(input: CreateLeadsInputDto!): CreateLeadsMutationResponseDto!
   updateLeads(input: UpdateLeadsInputDto!): UpdateLeadsMutationResponseDto!
+  createContracts(
+    input: CreateContractsInputDto!
+  ): CreateContractsMutationResponseDto!
+  updateContracts(
+    input: UpdateContractsInputDto!
+  ): UpdateContractsMutationResponseDto!
+  generateContractPreviewPdf(
+    input: GenerateContractPreviewInputDto!
+  ): GenerateContractPreviewMutationResponseDto!
+  sendContractEmail(input: SendContractEmailInputDto!): SuccessResponseDto!
   createBudgets(
     input: CreateBudgetsInputDto!
   ): CreateBudgetsMutationResponseDto!
@@ -809,6 +973,45 @@ input UpdateLeadsInputDto {
   notes: String
   status: LeadStatus
   isActive: Boolean
+}
+
+input CreateContractsInputDto {
+  idBudgets: String!
+  status: ContractStatus
+  issueDate: String!
+  body: String
+  templateVersion: Int
+  notes: String
+}
+
+input UpdateContractsInputDto {
+  idContracts: String!
+  status: ContractStatus
+  effectiveDate: String
+  expiresAt: String
+  body: String
+  templateVersion: Int
+  signatureProvider: String
+  signatureEnvelopeId: String
+  signatureStatus: String
+  signedByName: String
+  signedByDocument: String
+  signedByEmail: String
+  signerIp: String
+  signerUserAgent: String
+  signedAt: String
+  consentAt: String
+  sentVia: String
+  sentAt: String
+  notes: String
+}
+
+input GenerateContractPreviewInputDto {
+  idContracts: String!
+}
+
+input SendContractEmailInputDto {
+  idContracts: String!
 }
 
 input CreateBudgetsInputDto {

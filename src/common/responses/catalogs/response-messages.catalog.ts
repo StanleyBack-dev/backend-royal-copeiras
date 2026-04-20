@@ -98,6 +98,28 @@ export const RESPONSE_MESSAGES = {
       message: "Orçamento enviado por e-mail com sucesso.",
     },
   },
+  contracts: {
+    created: {
+      code: "CONTRACT_CREATED",
+      message: "Contrato criado com sucesso.",
+    },
+    updated: {
+      code: "CONTRACT_UPDATED",
+      message: "Contrato atualizado com sucesso.",
+    },
+    listed: {
+      code: "CONTRACTS_LISTED",
+      message: "Contratos carregados com sucesso.",
+    },
+    previewGenerated: {
+      code: "CONTRACT_PREVIEW_GENERATED",
+      message: "Preview do contrato gerado com sucesso.",
+    },
+    emailSent: {
+      code: "CONTRACT_EMAIL_SENT",
+      message: "Contrato enviado por e-mail com sucesso.",
+    },
+  },
   employees: {
     created: {
       code: "EMPLOYEE_CREATED",
