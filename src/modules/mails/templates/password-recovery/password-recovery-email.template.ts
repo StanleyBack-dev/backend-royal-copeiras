@@ -1,4 +1,5 @@
 import { renderStandardEmailLayout } from "../layout/standard-email-layout.template";
+import { EMAIL_BRAND } from "../layout/email-brand";
 
 interface PasswordRecoveryEmailTemplateInput {
   appUrl: string;
@@ -45,20 +46,20 @@ export function buildPasswordRecoveryEmail({
     heading: "Recuperacao de senha",
     greeting: `Ola, ${name}.`,
     contentHtml: `
-      <p style="margin: 0 0 14px 0; color: #4f3428; font-size: 15px; line-height: 1.6;">
+      <p style="margin:0 0 14px 0;color:${EMAIL_BRAND.textMuted};font-size:15px;line-height:1.6;">
         Recebemos uma solicitacao para recuperar a senha da sua conta na Royal Copeiras.
       </p>
-      <p style="margin: 0 0 14px 0; color: #4f3428; font-size: 15px; line-height: 1.6;">
+      <p style="margin:0 0 14px 0;color:${EMAIL_BRAND.textMuted};font-size:15px;line-height:1.6;">
         Usuario: <strong>${username}</strong>
       </p>
-      <div style="margin: 22px 0; padding: 18px; border-radius: 14px; background: #f7efe8; text-align: center;">
-        <div style="font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #8b5e4a; margin-bottom: 8px;">Codigo de verificacao</div>
-        <div style="font-size: 32px; font-weight: 700; letter-spacing: 0.3em; color: #2c1810;">${code}</div>
+      <div style="margin:22px 0;padding:18px;border-radius:14px;background:${EMAIL_BRAND.cardBackground};border:1px solid ${EMAIL_BRAND.border};text-align:center;">
+        <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:${EMAIL_BRAND.accentDark};margin-bottom:8px;">Codigo de verificacao</div>
+        <div style="font-size:32px;font-weight:700;letter-spacing:0.3em;color:${EMAIL_BRAND.text};">${code}</div>
       </div>
-      <p style="margin: 0 0 14px 0; color: #4f3428; font-size: 15px; line-height: 1.6;">
+      <p style="margin:0 0 14px 0;color:${EMAIL_BRAND.textMuted};font-size:15px;line-height:1.6;">
         Este codigo expira em <strong>${formattedExpiration}</strong>.
       </p>
-      <p style="margin: 0; color: #6f4a3b; font-size: 14px; line-height: 1.6;">
+      <p style="margin:0;color:${EMAIL_BRAND.textSoft};font-size:14px;line-height:1.6;">
         Se voce nao solicitou esta recuperacao, ignore este email.
       </p>
     `,
