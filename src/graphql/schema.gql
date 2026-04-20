@@ -149,6 +149,9 @@ type UserPagePermissionsResponseDto {
 
 enum PageAccessKey {
   DASHBOARD
+  LEADS
+  BUDGETS
+  CONTRACTS
   CLIENTS
   EMPLOYEES
   USERS
