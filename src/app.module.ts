@@ -14,6 +14,7 @@ import { ProfilesModule } from "./modules/profiles/profile.module";
 import { CustomersModule } from "./modules/customers/customers.module";
 import { EmployeesModule } from "./modules/employees/employees.module";
 import { LeadsModule } from "./modules/leads/leads.module";
+import { ContractsModule } from "./modules/contracts/contracts.module";
 import { MailModule } from "./modules/mails/mail.module";
 import { AppConfigModule } from "./config/config.module";
 import { DatabaseModule } from "./database/database.module";
@@ -40,6 +41,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     CustomersModule,
     EmployeesModule,
     LeadsModule,
+    ContractsModule,
     BudgetsModule,
     PdfGeneratorModule,
   ],

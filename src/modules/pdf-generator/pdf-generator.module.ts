@@ -4,6 +4,7 @@ import { PdfTemplateResolverService } from "./services/pdf-template-resolver.ser
 import { PdfSnapshotHashService } from "./services/pdf-snapshot-hash.service";
 import { PdfTemplateEngineService } from "./services/pdf-template-engine.service";
 import { RenderBudgetProposalTemplateService } from "./templates/budgets/render-budget-proposal-template.service";
+import { RenderContractTemplateService } from "./templates/contracts/render-contract-template.service";
 
 @Module({
   providers: [
@@ -12,6 +13,7 @@ import { RenderBudgetProposalTemplateService } from "./templates/budgets/render-
     PdfSnapshotHashService,
     PdfTemplateEngineService,
     RenderBudgetProposalTemplateService,
+    RenderContractTemplateService,
   ],
   exports: [
     PdfGeneratorService,

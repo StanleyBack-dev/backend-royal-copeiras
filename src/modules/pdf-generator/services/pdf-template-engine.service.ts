@@ -4,6 +4,7 @@ import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import { PdfTemplateKey } from "../enums/pdf-template-key.enum";
 import { PdfTemplateRenderer } from "../interfaces/pdf-template-renderer.interface";
 import { RenderBudgetProposalTemplateService } from "../templates/budgets/render-budget-proposal-template.service";
+import { RenderContractTemplateService } from "../templates/contracts/render-contract-template.service";
 
 interface GenerateByTemplateInput<TPayload> {
   templateKey: PdfTemplateKey;
@@ -16,11 +17,16 @@ export class PdfTemplateEngineService {
 
   constructor(
     private readonly renderBudgetProposalTemplateService: RenderBudgetProposalTemplateService,
+    private readonly renderContractTemplateService: RenderContractTemplateService,
   ) {
     this.registry = new Map<PdfTemplateKey, PdfTemplateRenderer>([
       [
         this.renderBudgetProposalTemplateService.templateKey,
         this.renderBudgetProposalTemplateService,
+      ],
+      [
+        this.renderContractTemplateService.templateKey,
+        this.renderContractTemplateService,
       ],
     ]);
   }

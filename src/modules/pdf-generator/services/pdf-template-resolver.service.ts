@@ -7,6 +7,7 @@ import { PdfTemplateKey } from "../enums/pdf-template-key.enum";
 
 const TEMPLATE_FILE_BY_KEY: Record<PdfTemplateKey, string> = {
   [PdfTemplateKey.BUDGETS]: "budgets.pdf",
+  [PdfTemplateKey.CONTRACTS]: "budgets.pdf",
 };
 
 @Injectable()
