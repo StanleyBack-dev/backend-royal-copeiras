@@ -2,6 +2,9 @@ import { registerEnumType } from "@nestjs/graphql";
 
 export enum PageAccessKey {
   DASHBOARD = "DASHBOARD",
+  LEADS = "LEADS",
+  BUDGETS = "BUDGETS",
+  CONTRACTS = "CONTRACTS",
   CLIENTS = "CLIENTS",
   EMPLOYEES = "EMPLOYEES",
   USERS = "USERS",
@@ -11,12 +14,11 @@ export enum PageAccessKey {
   INVESTMENTS = "INVESTMENTS",
 }
 
-registerEnumType(PageAccessKey, {
-  name: "PageAccessKey",
-});
-
 export const ALL_PAGE_ACCESS_KEYS: PageAccessKey[] = [
   PageAccessKey.DASHBOARD,
+  PageAccessKey.LEADS,
+  PageAccessKey.BUDGETS,
+  PageAccessKey.CONTRACTS,
   PageAccessKey.CLIENTS,
   PageAccessKey.EMPLOYEES,
   PageAccessKey.USERS,
@@ -25,3 +27,7 @@ export const ALL_PAGE_ACCESS_KEYS: PageAccessKey[] = [
   PageAccessKey.DEBTS,
   PageAccessKey.INVESTMENTS,
 ];
+
+registerEnumType(PageAccessKey, {
+  name: "PageAccessKey",
+});
