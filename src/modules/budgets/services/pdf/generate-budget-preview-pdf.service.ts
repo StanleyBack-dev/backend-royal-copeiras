@@ -5,26 +5,24 @@ import { AppException } from "../../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
-import { PdfTemplateKey } from "../../../pdf-generator/enums/pdf-template-key.enum";
-import { PdfGeneratorService } from "../../../pdf-generator/services/pdf-generator.service";
-import { PdfSnapshotHashService } from "../../../pdf-generator/services/pdf-snapshot-hash.service";
+import { LeadsEntity } from "../../../leads/entities/leads.entity";
+import { GenerateBudgetPreviewInputDto } from "../../dtos/pdf/generate-budget-preview-input.dto";
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
 import { BudgetStatus } from "../../enums/budget-status.enum";
-import { GenerateBudgetPreviewInputDto } from "../../dtos/pdf/generate-budget-preview-input.dto";
-import { BuildBudgetPdfSnapshotService } from "./build-budget-pdf-snapshot.service";
-import { MapBudgetPdfDrawTextsService } from "./map-budget-pdf-draw-texts.service";
+import { buildBudgetPdfFileName } from "../../utils/build-budget-pdf-file-name.util";
+import { parseBudgetDateOnly } from "../../utils/budget-date.util";
+import { GenerateBudgetProposalPdfDocumentService } from "./generate-budget-proposal-pdf-document.service";
 
 @Injectable()
 export class GenerateBudgetPreviewPdfService {
   constructor(
     @InjectRepository(BudgetsEntity)
     private readonly budgetsRepository: Repository<BudgetsEntity>,
+    @InjectRepository(LeadsEntity)
+    private readonly leadsRepository: Repository<LeadsEntity>,
     private readonly authorizationService: AuthorizationService,
-    private readonly buildBudgetPdfSnapshotService: BuildBudgetPdfSnapshotService,
-    private readonly mapBudgetPdfDrawTextsService: MapBudgetPdfDrawTextsService,
-    private readonly pdfSnapshotHashService: PdfSnapshotHashService,
-    private readonly pdfGeneratorService: PdfGeneratorService,
+    private readonly generateBudgetProposalPdfDocumentService: GenerateBudgetProposalPdfDocumentService,
   ) {}
 
   async execute(userId: string, input: GenerateBudgetPreviewInputDto) {
@@ -34,26 +32,41 @@ export class GenerateBudgetPreviewPdfService {
     );
 
     const budgetEntity = await this.resolvePreviewSource(userId, input);
-    const snapshot =
-      this.buildBudgetPdfSnapshotService.buildFromEntity(budgetEntity);
-    const snapshotHash = this.pdfSnapshotHashService.hashSnapshot(snapshot);
-
-    const drawTexts = this.mapBudgetPdfDrawTextsService.map(
-      snapshot,
-      snapshotHash,
-    );
-
-    const pdfBuffer = await this.pdfGeneratorService.generateFromTemplate({
-      templateKey: PdfTemplateKey.BUDGETS,
-      drawTexts,
-    });
+    const leadName = await this.resolveLeadName(userId, budgetEntity);
+    const document =
+      await this.generateBudgetProposalPdfDocumentService.generateFromBudget(
+        budgetEntity,
+      );
 
     return {
-      fileName: `${snapshot.budget.budgetNumber}.pdf`,
+      fileName: buildBudgetPdfFileName({
+        leadName,
+        issueDate: budgetEntity.issueDate,
+      }),
       mimeType: "application/pdf",
-      base64Content: pdfBuffer.toString("base64"),
-      snapshotHash,
+      base64Content: document.pdfBuffer.toString("base64"),
+      snapshotHash: document.snapshotHash,
     };
+  }
+
+  private async resolveLeadName(
+    userId: string,
+    budget: BudgetsEntity,
+  ): Promise<string | undefined> {
+    if (budget.lead?.name) {
+      return budget.lead.name;
+    }
+
+    if (!budget.idLeads) {
+      return undefined;
+    }
+
+    const lead = await this.leadsRepository.findOne({
+      where: { idLeads: budget.idLeads, idUsers: userId },
+      select: { name: true, idLeads: true, idUsers: true },
+    });
+
+    return lead?.name;
   }
 
   private async resolvePreviewSource(
@@ -66,7 +79,7 @@ export class GenerateBudgetPreviewPdfService {
           idBudgets: input.idBudgets,
           idUsers: userId,
         },
-        relations: { items: true },
+        relations: { items: true, lead: true },
       });
 
       if (!record) {
@@ -90,14 +103,21 @@ export class GenerateBudgetPreviewPdfService {
     userId: string,
     input: GenerateBudgetPreviewInputDto,
   ): BudgetsEntity {
-    const draft = input.draft!;
+    const draft = input.draft;
+
+    if (!draft) {
+      throw AppException.from(
+        APP_ERRORS.budgets.previewSourceRequired,
+        undefined,
+      );
+    }
 
     if (!draft.items?.length) {
       throw AppException.from(APP_ERRORS.budgets.itemsRequired, undefined);
     }
 
-    const issueDate = draft.issueDate ? new Date(draft.issueDate) : new Date();
-    const validUntil = new Date(draft.validUntil);
+    const issueDate = parseBudgetDateOnly(draft.issueDate);
+    const validUntil = parseBudgetDateOnly(draft.validUntil);
 
     const items: BudgetItemsEntity[] = draft.items.map((item, index) => {
       const totalPrice = Number((item.quantity * item.unitPrice).toFixed(2));
@@ -121,8 +141,6 @@ export class GenerateBudgetPreviewPdfService {
       items.reduce((sum, item) => sum + item.totalPrice, 0).toFixed(2),
     );
 
-    const totalAmount = Number((draft.totalAmount ?? subtotal).toFixed(2));
-
     return {
       idBudgets: "preview-budget",
       user: undefined as never,
@@ -139,8 +157,9 @@ export class GenerateBudgetPreviewPdfService {
       durationHours: draft.durationHours,
       paymentMethod: draft.paymentMethod,
       advancePercentage: draft.advancePercentage,
+      notes: undefined,
       subtotal,
-      totalAmount,
+      totalAmount: Number((draft.totalAmount ?? subtotal).toFixed(2)),
       items,
       createdAt: new Date(),
       updatedAt: new Date(),

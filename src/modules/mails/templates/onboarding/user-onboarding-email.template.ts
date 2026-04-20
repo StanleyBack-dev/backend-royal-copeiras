@@ -1,4 +1,5 @@
 import { renderStandardEmailLayout } from "../layout/standard-email-layout.template";
+import { EMAIL_BRAND } from "../layout/email-brand";
 
 interface UserOnboardingTemplateInput {
   name: string;
@@ -33,13 +34,13 @@ export function buildUserOnboardingEmail(input: UserOnboardingTemplateInput): {
   const firstName = input.name.split(" ")[0] || input.name;
 
   const contentHtml = `
-    <p style="margin:0 0 12px 0;">Sua conta na plataforma foi criada e já está pronta para acesso.</p>
-    <p style="margin:0 0 12px 0;">Use as credenciais abaixo no primeiro login:</p>
-    <div style="background:#f9f6f4;border:1px solid #eadfd7;border-radius:10px;padding:14px 16px;margin:8px 0 16px 0;">
-      <p style="margin:0 0 8px 0;"><strong>Usuário:</strong> ${input.username}</p>
-      <p style="margin:0;"><strong>Senha temporária:</strong> ${input.temporaryPassword}</p>
+    <p style="margin:0 0 12px 0;color:${EMAIL_BRAND.textMuted};">Sua conta na plataforma foi criada e já está pronta para acesso.</p>
+    <p style="margin:0 0 12px 0;color:${EMAIL_BRAND.textMuted};">Use as credenciais abaixo no primeiro login:</p>
+    <div style="background:${EMAIL_BRAND.cardBackground};border:1px solid ${EMAIL_BRAND.border};border-radius:10px;padding:14px 16px;margin:8px 0 16px 0;">
+      <p style="margin:0 0 8px 0;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Usuário:</strong> ${input.username}</p>
+      <p style="margin:0;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Senha temporária:</strong> ${input.temporaryPassword}</p>
     </div>
-    <p style="margin:0;">Por segurança, a troca de senha será obrigatória no primeiro acesso.</p>
+    <p style="margin:0;color:${EMAIL_BRAND.textMuted};">Por segurança, a troca de senha será obrigatória no primeiro acesso.</p>
   `;
 
   const html = renderStandardEmailLayout({

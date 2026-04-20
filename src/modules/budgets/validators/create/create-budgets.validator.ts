@@ -12,6 +12,7 @@ import {
 } from "../../constants/budget-form-rules.constant";
 import { inferServiceTypeFromDescription } from "../../constants/budget-service-types.constant";
 import { BudgetStatus } from "../../enums/budget-status.enum";
+import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 
 interface CreateBudgetResult {
   budget: BudgetsEntity;
@@ -30,8 +31,8 @@ export class CreateBudgetsValidator {
   ): Promise<CreateBudgetResult> {
     this.validateBusinessRules(input);
 
-    const issueDate = input.issueDate ? new Date(input.issueDate) : new Date();
-    const validUntil = new Date(input.validUntil);
+    const issueDate = parseBudgetDateOnly(input.issueDate);
+    const validUntil = parseBudgetDateOnly(input.validUntil);
 
     if (validUntil < issueDate) {
       throw AppException.from(

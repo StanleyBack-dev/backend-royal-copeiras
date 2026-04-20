@@ -12,6 +12,7 @@ import {
   BUDGET_DURATION_HOURS_MIN,
 } from "../../constants/budget-form-rules.constant";
 import { inferServiceTypeFromDescription } from "../../constants/budget-service-types.constant";
+import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   [BudgetStatus.DRAFT]: [
@@ -156,10 +157,10 @@ export class UpdateBudgetsValidator {
     }
 
     const updatedIssueDate = input.issueDate
-      ? new Date(input.issueDate)
+      ? parseBudgetDateOnly(input.issueDate)
       : current.issueDate;
     const updatedValidUntil = input.validUntil
-      ? new Date(input.validUntil)
+      ? parseBudgetDateOnly(input.validUntil)
       : current.validUntil;
 
     if (updatedValidUntil < updatedIssueDate) {

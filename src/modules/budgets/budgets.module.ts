@@ -13,8 +13,9 @@ import { UpdateBudgetsResolver } from "./resolvers/update/update-budgets.resolve
 import { GenerateBudgetPreviewResolver } from "./resolvers/pdf/generate-budget-preview.resolver";
 import { PdfGeneratorModule } from "../pdf-generator/pdf-generator.module";
 import { BuildBudgetPdfSnapshotService } from "./services/pdf/build-budget-pdf-snapshot.service";
+import { BuildBudgetProposalPdfPayloadService } from "./services/pdf/build-budget-proposal-pdf-payload.service";
+import { GenerateBudgetProposalPdfDocumentService } from "./services/pdf/generate-budget-proposal-pdf-document.service";
 import { GenerateBudgetPreviewPdfService } from "./services/pdf/generate-budget-preview-pdf.service";
-import { MapBudgetPdfDrawTextsService } from "./services/pdf/map-budget-pdf-draw-texts.service";
 import { MailModule } from "../mails/mail.module";
 import { SendBudgetEmailService } from "./services/pdf/send-budget-email.service";
 import { SendBudgetEmailResolver } from "./resolvers/pdf/send-budget-email.resolver";
@@ -28,7 +29,8 @@ import { SendBudgetEmailResolver } from "./resolvers/pdf/send-budget-email.resol
   ],
   providers: [
     BuildBudgetPdfSnapshotService,
-    MapBudgetPdfDrawTextsService,
+    BuildBudgetProposalPdfPayloadService,
+    GenerateBudgetProposalPdfDocumentService,
     GenerateBudgetPreviewPdfService,
     SendBudgetEmailService,
     CreateBudgetsService,

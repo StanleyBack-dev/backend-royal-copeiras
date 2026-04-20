@@ -1,21 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { ConfigService } from "@nestjs/config";
 import { AppException } from "../../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
-import { BudgetsEntity } from "../../entities/budgets.entity";
-import { BudgetStatus } from "../../enums/budget-status.enum";
-import { LeadsEntity } from "../../../leads/entities/leads.entity";
 import type { IMailProvider } from "../../../mails/contracts/mail-provider.contract";
 import { MAIL_PROVIDER_TOKEN } from "../../../mails/contracts/mail.tokens";
 import { buildBudgetProposalEmail } from "../../../mails/templates/budgets/budget-proposal-email.template";
-import { PdfGeneratorService } from "../../../pdf-generator/services/pdf-generator.service";
-import { BuildBudgetPdfSnapshotService } from "./build-budget-pdf-snapshot.service";
-import { MapBudgetPdfDrawTextsService } from "./map-budget-pdf-draw-texts.service";
-import { PdfTemplateKey } from "../../../pdf-generator/enums/pdf-template-key.enum";
+import { LeadsEntity } from "../../../leads/entities/leads.entity";
+import { BudgetsEntity } from "../../entities/budgets.entity";
+import { BudgetStatus } from "../../enums/budget-status.enum";
+import { buildBudgetPdfFileName } from "../../utils/build-budget-pdf-file-name.util";
+import { GenerateBudgetProposalPdfDocumentService } from "./generate-budget-proposal-pdf-document.service";
 
 export interface SendBudgetEmailInput {
   idBudgets: string;
@@ -32,9 +30,7 @@ export class SendBudgetEmailService {
     @Inject(MAIL_PROVIDER_TOKEN)
     private readonly mailProvider: IMailProvider,
     private readonly configService: ConfigService,
-    private readonly pdfGeneratorService: PdfGeneratorService,
-    private readonly buildBudgetPdfSnapshotService: BuildBudgetPdfSnapshotService,
-    private readonly mapBudgetPdfDrawTextsService: MapBudgetPdfDrawTextsService,
+    private readonly generateBudgetProposalPdfDocumentService: GenerateBudgetProposalPdfDocumentService,
   ) {}
 
   async execute(userId: string, input: SendBudgetEmailInput): Promise<void> {
@@ -75,8 +71,8 @@ export class SendBudgetEmailService {
       throw AppException.from(APP_ERRORS.budgets.leadHasNoEmail, undefined);
     }
 
-    const items = (budget.items ?? []).sort(
-      (a, b) => a.sortOrder - b.sortOrder,
+    const items = [...(budget.items ?? [])].sort(
+      (left, right) => left.sortOrder - right.sortOrder,
     );
 
     const template = buildBudgetProposalEmail({
@@ -94,7 +90,6 @@ export class SendBudgetEmailService {
       eventDates: budget.eventDates,
       guestCount: budget.guestCount,
       durationHours: budget.durationHours,
-      paymentMethod: budget.paymentMethod,
       advancePercentage: budget.advancePercentage,
       subtotal: budget.subtotal,
       totalAmount: budget.totalAmount,
@@ -108,13 +103,10 @@ export class SendBudgetEmailService {
     });
 
     try {
-      const snapshot =
-        this.buildBudgetPdfSnapshotService.buildFromEntity(budget);
-      const drawTexts = this.mapBudgetPdfDrawTextsService.map(snapshot, "");
-      const pdfBuffer = await this.pdfGeneratorService.generateFromTemplate({
-        templateKey: PdfTemplateKey.BUDGETS,
-        drawTexts,
-      });
+      const document =
+        await this.generateBudgetProposalPdfDocumentService.generateFromBudget(
+          budget,
+        );
 
       await this.mailProvider.send({
         to: { email: lead.email, name: lead.name },
@@ -124,8 +116,11 @@ export class SendBudgetEmailService {
         replyTo: this.buildReplyTo(),
         attachments: [
           {
-            name: `orcamento-${budget.budgetNumber}.pdf`,
-            content: pdfBuffer.toString("base64"),
+            name: buildBudgetPdfFileName({
+              leadName: lead.name,
+              issueDate: budget.issueDate,
+            }),
+            content: document.pdfBuffer.toString("base64"),
             type: "application/pdf",
           },
         ],
@@ -143,7 +138,10 @@ export class SendBudgetEmailService {
 
   private buildReplyTo() {
     const replyToEmail = this.configService.get<string>("MAIL_REPLY_TO_EMAIL");
-    if (!replyToEmail) return undefined;
+    if (!replyToEmail) {
+      return undefined;
+    }
+
     return {
       email: replyToEmail,
       name:
