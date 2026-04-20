@@ -62,7 +62,9 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       );
       signatureAssets.signatureRoyal =
         await document.embedPng(signatureRoyalBytes);
-    } catch {}
+    } catch {
+      // Falha ao carregar assinatura Royal, segue sem imagem
+    }
     const state = this.createState(document);
 
     this.drawHeader(state.page, fonts, payload, headerAssets);
