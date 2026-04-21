@@ -146,11 +146,6 @@ export class BuildContractProposalPdfPayloadService {
         legalNotice:
           "Este contrato reflete o acordo entre as partes para a prestação dos serviços especificados, com validade jurídica após aceite e assinatura.",
       },
-      signatures: {
-        contractorName,
-        contractorDocument: snapshot.lead?.document,
-        contractedName: "Royal Copeiras",
-      },
       referenceCode: snapshotHash,
     };
   }

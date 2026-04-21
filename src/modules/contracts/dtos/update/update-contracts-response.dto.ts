@@ -30,18 +30,6 @@ export class UpdateContractsResponseDto implements IContract {
     dto.retentionUntil = entity.retentionUntil
       ? formatContractDateOnly(entity.retentionUntil)
       : undefined;
-    dto.signatureProvider = entity.signatureProvider;
-    dto.signatureEnvelopeId = entity.signatureEnvelopeId;
-    dto.signatureStatus = entity.signatureStatus;
-    dto.signedByName = entity.signedByName;
-    dto.signedByDocument = entity.signedByDocument;
-    dto.signedByEmail = entity.signedByEmail;
-    dto.signerIp = entity.signerIp;
-    dto.signerUserAgent = entity.signerUserAgent;
-    dto.signedAt = entity.signedAt ? entity.signedAt.toISOString() : undefined;
-    dto.consentAt = entity.consentAt
-      ? entity.consentAt.toISOString()
-      : undefined;
     dto.sentVia = entity.sentVia;
     dto.sentAt = entity.sentAt ? entity.sentAt.toISOString() : undefined;
     dto.notes = entity.notes;
