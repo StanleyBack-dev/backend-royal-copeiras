@@ -119,6 +119,28 @@ export const RESPONSE_MESSAGES = {
       code: "CONTRACT_EMAIL_SENT",
       message: "Contrato enviado por e-mail com sucesso.",
     },
+    signatureRequested: {
+      code: "CONTRACT_SIGNATURE_REQUESTED",
+      message: "Contrato enviado para assinatura com sucesso.",
+    },
+  },
+  signatures: {
+    listed: {
+      code: "SIGNATURES_LISTED",
+      message: "Assinaturas carregadas com sucesso.",
+    },
+    requestCreated: {
+      code: "SIGNATURE_REQUEST_CREATED",
+      message: "Solicitacao de assinatura criada com sucesso.",
+    },
+    statusFetched: {
+      code: "SIGNATURE_STATUS_FETCHED",
+      message: "Status da assinatura carregado com sucesso.",
+    },
+    cancelled: {
+      code: "SIGNATURE_CANCELLED",
+      message: "Solicitacao de assinatura cancelada com sucesso.",
+    },
   },
   employees: {
     created: {

@@ -61,6 +61,17 @@ export const envValidationSchema = Joi.object({
   MAIL_FROM_NAME: Joi.string().min(2).required(),
   MAIL_REPLY_TO_EMAIL: Joi.string().email().optional(),
   MAIL_REPLY_TO_NAME: Joi.string().min(2).optional(),
+  ASSINAFY_BASE_URL: Joi.string()
+    .uri()
+    .default("https://api.assinafy.com.br/v1"),
+  ASSINAFY_API_KEY: Joi.string().min(10).optional(),
+  ASSINAFY_API_TOKEN: Joi.string().min(10).optional(),
+  ASSINAFY_ACCOUNT_ID: Joi.string().min(5).optional(),
+  ASSINAFY_TIMEOUT_MS: Joi.number().integer().min(1000).default(15000),
+  CONTRACT_COMPANY_SIGNER_NAME: Joi.string().min(2).optional(),
+  CONTRACT_COMPANY_SIGNER_EMAIL: Joi.string().email().optional(),
+  CONTRACT_COMPANY_SIGNER_IDENTIFIER: Joi.string().optional(),
+  CONTRACT_COMPANY_SIGNER_PHONE: Joi.string().optional(),
   PASSWORD_RECOVERY_CODE_TTL_MINUTES: Joi.number().integer().min(1).default(10),
   PASSWORD_RECOVERY_RESET_TTL_MINUTES: Joi.number()
     .integer()

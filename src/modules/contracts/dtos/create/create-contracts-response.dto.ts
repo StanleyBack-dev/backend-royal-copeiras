@@ -30,18 +30,6 @@ export class CreateContractsResponseDto implements IContract {
     dto.retentionUntil = entity.retentionUntil
       ? formatContractDateOnly(entity.retentionUntil)
       : undefined;
-    dto.signatureProvider = entity.signatureProvider;
-    dto.signatureEnvelopeId = entity.signatureEnvelopeId;
-    dto.signatureStatus = entity.signatureStatus;
-    dto.signedByName = entity.signedByName;
-    dto.signedByDocument = entity.signedByDocument;
-    dto.signedByEmail = entity.signedByEmail;
-    dto.signerIp = entity.signerIp;
-    dto.signerUserAgent = entity.signerUserAgent;
-    dto.signedAt = entity.signedAt ? entity.signedAt.toISOString() : undefined;
-    dto.consentAt = entity.consentAt
-      ? entity.consentAt.toISOString()
-      : undefined;
     dto.sentVia = entity.sentVia;
     dto.sentAt = entity.sentAt ? entity.sentAt.toISOString() : undefined;
     dto.notes = entity.notes;
@@ -89,35 +77,7 @@ export class CreateContractsResponseDto implements IContract {
   @Field({ nullable: true })
   retentionUntil?: string;
 
-  @Field({ nullable: true })
-  signatureProvider?: string;
-
-  @Field({ nullable: true })
-  signatureEnvelopeId?: string;
-
-  @Field({ nullable: true })
-  signatureStatus?: string;
-
-  @Field({ nullable: true })
-  signedByName?: string;
-
-  @Field({ nullable: true })
-  signedByDocument?: string;
-
-  @Field({ nullable: true })
-  signedByEmail?: string;
-
-  @Field({ nullable: true })
-  signerIp?: string;
-
-  @Field({ nullable: true })
-  signerUserAgent?: string;
-
-  @Field({ nullable: true })
-  signedAt?: string;
-
-  @Field({ nullable: true })
-  consentAt?: string;
+  // Todos os campos de assinatura migrados para SignatureEntity
 
   @Field({ nullable: true })
   sentVia?: string;

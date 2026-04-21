@@ -25,12 +25,5 @@ export interface ContractPdfPayload {
     cityAndIssueDate: string;
     legalNotice: string;
   };
-  signatures: {
-    contractorName: string;
-    contractorDocument?: string;
-    contractedName: string;
-    witnessOne?: string;
-    witnessTwo?: string;
-  };
   referenceCode: string;
 }

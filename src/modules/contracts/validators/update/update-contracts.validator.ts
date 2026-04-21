@@ -79,17 +79,9 @@ export class UpdateContractsValidator {
       input.expiresAt,
       input.body,
       input.templateVersion,
-      input.signatureProvider,
-      input.signatureEnvelopeId,
-      input.signatureStatus,
-      input.signedByName,
-      input.signedByDocument,
-      input.signedByEmail,
-      input.signerIp,
-      input.signerUserAgent,
-      input.signedAt,
-      input.consentAt,
       input.notes,
+      input.sentVia,
+      input.sentAt,
     ].some((value) => value !== undefined);
 
     if (
@@ -108,29 +100,12 @@ export class UpdateContractsValidator {
       : record.expiresAt;
     record.body = input.body ?? record.body;
     record.templateVersion = input.templateVersion ?? record.templateVersion;
-    record.signatureProvider =
-      input.signatureProvider ?? record.signatureProvider;
-    record.signatureEnvelopeId =
-      input.signatureEnvelopeId ?? record.signatureEnvelopeId;
-    record.signatureStatus = input.signatureStatus ?? record.signatureStatus;
-    record.signedByName = input.signedByName ?? record.signedByName;
-    record.signedByDocument = input.signedByDocument ?? record.signedByDocument;
-    record.signedByEmail = input.signedByEmail ?? record.signedByEmail;
-    record.signerIp = input.signerIp ?? record.signerIp;
-    record.signerUserAgent = input.signerUserAgent ?? record.signerUserAgent;
-    record.signedAt = input.signedAt
-      ? new Date(input.signedAt)
-      : record.signedAt;
-    record.consentAt = input.consentAt
-      ? new Date(input.consentAt)
-      : record.consentAt;
+    // Campos de assinatura migrados para SignatureEntity
     record.sentVia = input.sentVia ?? record.sentVia;
     record.sentAt = input.sentAt ? new Date(input.sentAt) : record.sentAt;
     record.notes = input.notes ?? record.notes;
 
-    if (record.status === ContractStatus.SIGNED && !record.signedAt) {
-      record.signedAt = new Date();
-    }
+    // Removido: signedAt agora pertence à SignatureEntity
 
     return contractsRepo.save(record);
   }

@@ -14,16 +14,6 @@ export interface IContract {
   body?: string;
   templateVersion: number;
   retentionUntil?: Date | string;
-  signatureProvider?: string;
-  signatureEnvelopeId?: string;
-  signatureStatus?: string;
-  signedByName?: string;
-  signedByDocument?: string;
-  signedByEmail?: string;
-  signerIp?: string;
-  signerUserAgent?: string;
-  signedAt?: Date | string;
-  consentAt?: Date | string;
   notes?: string;
   createdAt: Date | string;
   updatedAt: Date | string;

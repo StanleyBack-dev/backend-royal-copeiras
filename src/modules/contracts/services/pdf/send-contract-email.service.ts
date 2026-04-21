@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -21,6 +21,8 @@ export interface SendContractEmailInput {
 
 @Injectable()
 export class SendContractEmailService {
+  private readonly logger = new Logger(SendContractEmailService.name);
+
   constructor(
     @InjectRepository(ContractsEntity)
     private readonly contractsRepository: Repository<ContractsEntity>,
@@ -77,27 +79,26 @@ export class SendContractEmailService {
       throw AppException.from(APP_ERRORS.contracts.leadHasNoEmail, undefined);
     }
 
-    const template = buildContractProposalEmail({
-      leadName: lead.name,
-      contractNumber: contract.contractNumber,
-      budgetNumber: contract.budgetNumber,
-      issueDate:
-        contract.issueDate instanceof Date
-          ? contract.issueDate.toISOString()
-          : String(contract.issueDate),
-      validUntil:
-        contract.validUntil instanceof Date
-          ? contract.validUntil.toISOString()
-          : contract.validUntil
-            ? String(contract.validUntil)
-            : undefined,
-    });
-
     try {
       const document =
         await this.generateContractProposalPdfDocumentService.generateFromContract(
           contract,
         );
+      const template = buildContractProposalEmail({
+        leadName: lead.name,
+        contractNumber: contract.contractNumber,
+        budgetNumber: contract.budgetNumber,
+        issueDate:
+          contract.issueDate instanceof Date
+            ? contract.issueDate.toISOString()
+            : String(contract.issueDate),
+        validUntil:
+          contract.validUntil instanceof Date
+            ? contract.validUntil.toISOString()
+            : contract.validUntil
+              ? String(contract.validUntil)
+              : undefined,
+      });
 
       await this.mailProvider.send({
         to: { email: lead.email, name: lead.name },
@@ -116,14 +117,32 @@ export class SendContractEmailService {
           },
         ],
       });
-    } catch {
+
+      await this.contractsRepository.update(contract.idContracts, {
+        sentVia: "email_preview",
+        sentAt: new Date(),
+      });
+    } catch (error) {
+      // Mantém forte coesão do domínio: AppException já possui código/status/mensagem corretos.
+      if (error instanceof AppException) {
+        const response = error.getResponse();
+        this.logger.warn("Falha ao enviar contrato por e-mail (AppException)", {
+          idContracts: contract.idContracts,
+          response,
+        });
+        throw error;
+      }
+
+      this.logger.error(
+        "Falha ao enviar contrato por e-mail (erro inesperado)",
+        {
+          idContracts: contract.idContracts,
+          message: (error as Error | undefined)?.message,
+        },
+      );
+
       throw AppException.from(APP_ERRORS.contracts.emailSendFailed, undefined);
     }
-
-    await this.contractsRepository.update(contract.idContracts, {
-      status: ContractStatus.PENDING_SIGNATURE,
-      signatureStatus: "sent_email",
-    });
   }
 
   private buildReplyTo() {

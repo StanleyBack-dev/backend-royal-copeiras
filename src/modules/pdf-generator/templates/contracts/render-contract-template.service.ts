@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import {
   PDFDocument,
-  PDFFont,
   PDFImage,
+  PDFFont,
   PDFPage,
   StandardFonts,
 } from "pdf-lib";
@@ -20,15 +20,14 @@ import {
   ContractPdfPayloadParty,
 } from "./interfaces/contract-pdf-payload.interface";
 import { wrapText } from "../../../../utils/pdf";
-import { SignatureAssets } from "./interfaces/signature-assets.interface";
 
 const HEADER_HEIGHT = 68;
 const LOGO_BOX_WIDTH = 80;
 const LOGO_BOX_HEIGHT = 48;
 const META_BOX_WIDTH = 180;
 const HEADER_DIVIDER_Y = PDF_LAYOUT.pageHeight - 132;
-const CONTENT_START_Y = HEADER_DIVIDER_Y - 18;
-const FOOTER_RESERVED_HEIGHT = 124;
+const CONTENT_START_Y = HEADER_DIVIDER_Y - 30;
+const FOOTER_RESERVED_HEIGHT = 84;
 const LOGO_IMAGE_PATH = resolve(process.cwd(), "src/assets/images/logo.png");
 
 interface FontSet {
@@ -55,16 +54,6 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     const document = await PDFDocument.create();
     const fonts = await this.loadFonts(document);
     const headerAssets = await this.loadHeaderAssets(document);
-    const signatureAssets: SignatureAssets = {};
-    try {
-      const signatureRoyalBytes = await readFile(
-        resolve(process.cwd(), "src/assets/images/signature-royal.png"),
-      );
-      signatureAssets.signatureRoyal =
-        await document.embedPng(signatureRoyalBytes);
-    } catch {
-      // Falha ao carregar assinatura Royal, segue sem imagem
-    }
     const state = this.createState(document);
 
     this.drawHeader(state.page, fonts, payload, headerAssets);
@@ -74,7 +63,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     this.drawParties(state, fonts, payload.parties);
 
     if (payload.objectParagraphs.length) {
-      this.drawSectionTitle(state, fonts, "Objeto", { topSpacing: 10 });
+      this.drawSectionTitle(state, fonts, "Objeto", { topSpacing: 18 });
       this.drawParagraphs(state, fonts, payload.objectParagraphs);
     }
 
@@ -82,9 +71,6 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       this.drawSectionTitle(state, fonts, "Clausulas");
       this.drawClauses(state, fonts, payload.clauses);
     }
-
-    this.drawSectionTitle(state, fonts, "Assinaturas", { topSpacing: 12 });
-    this.drawSignatures(state, fonts, payload, signatureAssets);
 
     for (let index = 0; index < state.pages.length; index += 1) {
       this.drawFooter(
@@ -328,7 +314,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     options?: { topSpacing?: number },
   ) {
     const topSpacing = options?.topSpacing ?? 0;
-    this.ensureSpace(state, 22 + topSpacing);
+    this.ensureSpace(state, 18 + topSpacing);
     if (topSpacing > 0) {
       state.cursorY -= topSpacing;
     }
@@ -337,7 +323,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       x: PDF_LAYOUT.marginX,
       y: state.cursorY,
       font: fonts.bold,
-      size: 11,
+      size: 10,
       color: PDF_COLORS.text,
     });
 
@@ -349,7 +335,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       color: PDF_COLORS.gold,
     });
 
-    state.cursorY -= 16;
+    state.cursorY -= 13;
   }
 
   private drawParties(
@@ -357,7 +343,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     fonts: FontSet,
     parties: ContractPdfPayloadParty[],
   ) {
-    const cardGap = 12;
+    const cardGap = 10;
     const cardWidth = (PDF_LAYOUT.contentWidth - cardGap) / 2;
 
     for (let index = 0; index < parties.length; index += 2) {
@@ -375,7 +361,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
         return {
           party,
           lines,
-          height: 24 + lines.length * 11,
+          height: 20 + lines.length * 9,
         };
       });
 
@@ -400,26 +386,26 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
 
         state.page.drawText(card.party.role.toUpperCase(), {
           x: cardX + 10,
-          y: topY - 15,
+          y: topY - 13,
           font: fonts.bold,
-          size: PDF_FONT_SIZES.small,
+          size: 7,
           color: PDF_COLORS.textMuted,
         });
 
-        let y = topY - 29;
+        let y = topY - 24;
         for (const line of card.lines) {
           state.page.drawText(line, {
             x: cardX + 10,
             y,
             font: fonts.regular,
-            size: 9,
+            size: 8,
             color: PDF_COLORS.text,
           });
-          y -= 11;
+          y -= 9;
         }
       });
 
-      state.cursorY = bottomY - 6;
+      state.cursorY = bottomY - 4;
     }
   }
 
@@ -433,9 +419,9 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
         paragraph,
         PDF_LAYOUT.contentWidth,
         fonts.regular,
-        9,
+        8,
       );
-      const requiredHeight = lines.length * 12 + 5;
+      const requiredHeight = lines.length * 10 + 3;
       this.ensureSpace(state, requiredHeight);
 
       for (const line of lines) {
@@ -443,13 +429,13 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
           x: PDF_LAYOUT.marginX,
           y: state.cursorY,
           font: fonts.regular,
-          size: 9,
+          size: 8,
           color: PDF_COLORS.text,
         });
-        state.cursorY -= 12;
+        state.cursorY -= 10;
       }
 
-      state.cursorY -= 5;
+      state.cursorY -= 3;
     }
   }
 
@@ -460,9 +446,9 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
         `${prefix}${clauses[index]}`,
         PDF_LAYOUT.contentWidth - 6,
         fonts.regular,
-        9,
+        8,
       );
-      const requiredHeight = lines.length * 12 + 4;
+      const requiredHeight = lines.length * 10 + 3;
       this.ensureSpace(state, requiredHeight);
 
       for (const line of lines) {
@@ -470,158 +456,14 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
           x: PDF_LAYOUT.marginX,
           y: state.cursorY,
           font: fonts.regular,
-          size: 9,
-          color: PDF_COLORS.text,
-        });
-        state.cursorY -= 12;
-      }
-
-      state.cursorY -= 4;
-    }
-  }
-
-  private drawSignatures(
-    state: RenderState,
-    fonts: FontSet,
-    payload: ContractPdfPayload,
-    signatureAssets?: SignatureAssets,
-  ) {
-    const requiredHeight = 110;
-    this.ensureSpace(state, requiredHeight);
-
-    const y = state.cursorY;
-    const leftX = PDF_LAYOUT.marginX;
-    const rightX = PDF_LAYOUT.marginX + PDF_LAYOUT.contentWidth / 2 + 10;
-    const lineWidth = PDF_LAYOUT.contentWidth / 2 - 20;
-
-    // Desenhar imagem de assinatura da Royal acima da linha da contratada
-    if (signatureAssets?.signatureRoyal) {
-      const imgWidth = 100;
-      const imgHeight = 40;
-      const centerX = rightX + (lineWidth - imgWidth) / 2;
-      // Descer mais 8 pontos abaixo da linha
-      const imgY = y - 40 - 8;
-      state.page.drawImage(signatureAssets.signatureRoyal, {
-        x: centerX,
-        y: imgY,
-        width: imgWidth,
-        height: imgHeight,
-      });
-    }
-
-    state.page.drawLine({
-      start: { x: leftX, y: y - 40 },
-      end: { x: leftX + lineWidth, y: y - 40 },
-      thickness: 1,
-      color: PDF_COLORS.border,
-    });
-
-    state.page.drawLine({
-      start: { x: rightX, y: y - 40 },
-      end: { x: rightX + lineWidth, y: y - 40 },
-      thickness: 1,
-      color: PDF_COLORS.border,
-    });
-
-    state.page.drawText(payload.signatures.contractorName, {
-      x: leftX,
-      y: y - 52,
-      font: fonts.bold,
-      size: 9,
-      color: PDF_COLORS.text,
-    });
-
-    let docY = y - 64;
-    if (payload.signatures.contractorDocument) {
-      state.page.drawText(
-        `Documento: ${payload.signatures.contractorDocument}`,
-        {
-          x: leftX,
-          y: docY,
-          font: fonts.regular,
-          size: 8,
-          color: PDF_COLORS.textMuted,
-        },
-      );
-      docY -= 12;
-    }
-    // Data de assinatura contratante (somente data)
-    if (payload.footer && payload.footer.cityAndIssueDate) {
-      state.page.drawText(
-        `Assinado em: ${payload.footer.cityAndIssueDate.replace(/^[^,]*,\s*/, "")}`,
-        {
-          x: leftX,
-          y: docY,
-          font: fonts.regular,
-          size: 8,
-          color: PDF_COLORS.textMuted,
-        },
-      );
-    }
-
-    state.page.drawText(payload.signatures.contractedName, {
-      x: rightX,
-      y: y - 52,
-      font: fonts.bold,
-      size: 9,
-      color: PDF_COLORS.text,
-    });
-    let docYRight = y - 64;
-    // Adicionar CNPJ da empresa abaixo do nome
-    state.page.drawText("CNPJ: 64.062.038/0001-71", {
-      x: rightX,
-      y: docYRight,
-      font: fonts.regular,
-      size: 8,
-      color: PDF_COLORS.textMuted,
-    });
-    docYRight -= 12;
-    // Data de assinatura contratada (somente data)
-    if (payload.footer && payload.footer.cityAndIssueDate) {
-      state.page.drawText(
-        `Assinado em: ${payload.footer.cityAndIssueDate.replace(/^[^,]*,\s*/, "")}`,
-        {
-          x: rightX,
-          y: docYRight,
-          font: fonts.regular,
-          size: 8,
-          color: PDF_COLORS.textMuted,
-        },
-      );
-    }
-
-    if (payload.signatures.witnessOne || payload.signatures.witnessTwo) {
-      const witnessY = y - 85;
-      state.page.drawText("Testemunhas:", {
-        x: PDF_LAYOUT.marginX,
-        y: witnessY,
-        font: fonts.bold,
-        size: 8,
-        color: PDF_COLORS.textMuted,
-      });
-
-      if (payload.signatures.witnessOne) {
-        state.page.drawText(`1) ${payload.signatures.witnessOne}`, {
-          x: PDF_LAYOUT.marginX + 60,
-          y: witnessY,
-          font: fonts.regular,
           size: 8,
           color: PDF_COLORS.text,
         });
+        state.cursorY -= 10;
       }
 
-      if (payload.signatures.witnessTwo) {
-        state.page.drawText(`2) ${payload.signatures.witnessTwo}`, {
-          x: PDF_LAYOUT.marginX + 260,
-          y: witnessY,
-          font: fonts.regular,
-          size: 8,
-          color: PDF_COLORS.text,
-        });
-      }
+      state.cursorY -= 3;
     }
-
-    state.cursorY -= requiredHeight;
   }
 
   private drawFooter(
@@ -630,7 +472,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     payload: ContractPdfPayload,
     pageCounter: string,
   ) {
-    const startY = 84;
+    const startY = 62;
 
     page.drawLine({
       start: { x: PDF_LAYOUT.marginX, y: startY + 28 },
@@ -641,9 +483,9 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
 
     page.drawText(payload.footer.cityAndIssueDate, {
       x: PDF_LAYOUT.marginX,
-      y: startY + 10,
+      y: startY + 8,
       font: fonts.bold,
-      size: 9,
+      size: 8,
       color: PDF_COLORS.text,
     });
 
@@ -651,19 +493,19 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       payload.footer.legalNotice,
       PDF_LAYOUT.contentWidth,
       fonts.regular,
-      PDF_FONT_SIZES.small,
+      7,
     );
 
-    let y = startY - 6;
+    let y = startY - 4;
     for (const line of legalLines) {
       page.drawText(line, {
         x: PDF_LAYOUT.marginX,
         y,
         font: fonts.regular,
-        size: PDF_FONT_SIZES.small,
+        size: 7,
         color: PDF_COLORS.textMuted,
       });
-      y -= 9;
+      y -= 8;
     }
 
     page.drawText(
