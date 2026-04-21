@@ -48,64 +48,6 @@ export class UpdateContractsInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @Length(2, 80)
-  signatureProvider?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(2, 120)
-  signatureEnvelopeId?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(2, 60)
-  signatureStatus?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(2, 120)
-  signedByName?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(5, 20)
-  signedByDocument?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(5, 120)
-  signedByEmail?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(2, 60)
-  signerIp?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @Length(2, 255)
-  signerUserAgent?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString()
-  signedAt?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString()
-  consentAt?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
   @Length(2, 20)
   sentVia?: string;
 

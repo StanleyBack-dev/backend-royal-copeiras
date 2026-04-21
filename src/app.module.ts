@@ -20,6 +20,7 @@ import { AppConfigModule } from "./config/config.module";
 import { DatabaseModule } from "./database/database.module";
 import { BudgetsModule } from "./modules/budgets/budgets.module";
 import { PdfGeneratorModule } from "./modules/pdf-generator/pdf-generator.module";
+import { SignatureModule } from "./modules/signature/signature.module";
 
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 
@@ -44,6 +45,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     ContractsModule,
     BudgetsModule,
     PdfGeneratorModule,
+    SignatureModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })

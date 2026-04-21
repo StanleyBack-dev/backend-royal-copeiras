@@ -1,6 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import SibApiV3Sdk from "sib-api-v3-sdk";
+import { AppException } from "../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
 import type { IMailProvider } from "../contracts/mail-provider.contract";
 import type { SendMailCommand } from "../contracts/send-mail.command";
 
@@ -33,7 +35,7 @@ export class BrevoMailProvider implements IMailProvider {
 
   async send(command: SendMailCommand): Promise<void> {
     if (!this.configService.get<string>("BREVO_API_KEY")) {
-      throw new Error("BREVO_API_KEY não configurada.");
+      throw AppException.from(APP_ERRORS.mails.notConfigured, undefined);
     }
 
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();

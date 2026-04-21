@@ -404,6 +404,74 @@ type UpdateLeadsMutationResponseDto {
   data: UpdateLeadsResponseDto!
 }
 
+type SuccessResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+}
+
+type SignatureRequestResponseDto {
+  requestId: String!
+  status: SignatureStatus!
+  providerRawStatus: String!
+  signatureUrl: String
+  completedAt: String
+}
+
+enum SignatureStatus {
+  DRAFT
+  PENDING
+  SIGNED
+  REJECTED
+  CANCELLED
+  EXPIRED
+  UNKNOWN
+}
+
+type CreateSignatureRequestMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: SignatureRequestResponseDto!
+}
+
+type GetSignatureStatusMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: SignatureRequestResponseDto!
+}
+
+type GetSignaturesResponseDto {
+  idSignatures: String!
+  idContracts: String!
+  contractNumber: String
+  contractStatus: String
+  provider: String!
+  envelopeId: String!
+  status: SignatureStatus!
+  signedByName: String
+  signedByEmail: String
+  signedByDocument: String
+  signerIp: String
+  signedAt: String
+  signatureUrl: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetSignaturesListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetSignaturesResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type CreateContractsResponseDto {
   idContracts: String!
   idBudgets: String!
@@ -418,16 +486,6 @@ type CreateContractsResponseDto {
   body: String
   templateVersion: Int!
   retentionUntil: String
-  signatureProvider: String
-  signatureEnvelopeId: String
-  signatureStatus: String
-  signedByName: String
-  signedByDocument: String
-  signedByEmail: String
-  signerIp: String
-  signerUserAgent: String
-  signedAt: String
-  consentAt: String
   sentVia: String
   sentAt: String
   notes: String
@@ -459,16 +517,6 @@ type GetContractsResponseDto {
   body: String
   templateVersion: Int!
   retentionUntil: String
-  signatureProvider: String
-  signatureEnvelopeId: String
-  signatureStatus: String
-  signedByName: String
-  signedByDocument: String
-  signedByEmail: String
-  signerIp: String
-  signerUserAgent: String
-  signedAt: String
-  consentAt: String
   sentVia: String
   sentAt: String
   notes: String
@@ -545,12 +593,6 @@ type GenerateContractPreviewMutationResponseDto {
   message: String
   code: String
   data: GenerateContractPreviewResponseDto!
-}
-
-type SuccessResponseDto {
-  success: Boolean!
-  message: String
-  code: String
 }
 
 type CreateBudgetItemResponseDto {
@@ -719,6 +761,7 @@ type Query {
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
   getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
+  getSignatures(input: GetSignaturesInputDto): GetSignaturesListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
 }
 
@@ -773,6 +816,13 @@ input GetContractsInputDto {
   status: ContractStatus
   startDate: String
   endDate: String
+}
+
+input GetSignaturesInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idContracts: String
+  status: SignatureStatus
 }
 
 input GetBudgetsInputDto {
@@ -837,6 +887,18 @@ type Mutation {
     input: GenerateContractPreviewInputDto!
   ): GenerateContractPreviewMutationResponseDto!
   sendContractEmail(input: SendContractEmailInputDto!): SuccessResponseDto!
+  sendContractSignatureRequest(
+    input: SendContractSignatureRequestInputDto!
+  ): SuccessResponseDto!
+  createSignatureRequest(
+    input: CreateSignatureRequestInputDto!
+  ): CreateSignatureRequestMutationResponseDto!
+  getSignatureStatus(
+    input: GetSignatureStatusInputDto!
+  ): GetSignatureStatusMutationResponseDto!
+  cancelSignatureRequest(
+    input: CancelSignatureRequestInputDto!
+  ): SuccessResponseDto!
   createBudgets(
     input: CreateBudgetsInputDto!
   ): CreateBudgetsMutationResponseDto!
@@ -994,16 +1056,6 @@ input UpdateContractsInputDto {
   expiresAt: String
   body: String
   templateVersion: Int
-  signatureProvider: String
-  signatureEnvelopeId: String
-  signatureStatus: String
-  signedByName: String
-  signedByDocument: String
-  signedByEmail: String
-  signerIp: String
-  signerUserAgent: String
-  signedAt: String
-  consentAt: String
   sentVia: String
   sentAt: String
   notes: String
@@ -1015,6 +1067,32 @@ input GenerateContractPreviewInputDto {
 
 input SendContractEmailInputDto {
   idContracts: String!
+}
+
+input SendContractSignatureRequestInputDto {
+  idContracts: String!
+}
+
+input CreateSignatureRequestInputDto {
+  documentName: String!
+  documentBase64: String!
+  externalReference: String
+  signers: [SignatureSignerInputDto!]!
+}
+
+input SignatureSignerInputDto {
+  name: String!
+  email: String!
+  phone: String
+  identifier: String
+}
+
+input GetSignatureStatusInputDto {
+  requestId: String!
+}
+
+input CancelSignatureRequestInputDto {
+  requestId: String!
 }
 
 input CreateBudgetsInputDto {

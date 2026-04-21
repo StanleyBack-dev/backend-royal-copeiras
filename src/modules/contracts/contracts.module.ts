@@ -5,6 +5,7 @@ import { BudgetsEntity } from "../budgets/entities/budgets.entity";
 import { LeadsEntity } from "../leads/entities/leads.entity";
 import { MailModule } from "../mails/mail.module";
 import { PdfGeneratorModule } from "../pdf-generator/pdf-generator.module";
+import { SignatureModule } from "../signature/signature.module";
 import { ContractsEntity } from "./entities/contracts.entity";
 import { CreateContractsService } from "./services/create/create-contracts.service";
 import { GetContractsService } from "./services/get/get-contracts.service";
@@ -19,12 +20,15 @@ import { GenerateContractPreviewPdfService } from "./services/pdf/generate-contr
 import { GenerateContractPreviewResolver } from "./resolvers/pdf/generate-contract-preview.resolver";
 import { SendContractEmailService } from "./services/pdf/send-contract-email.service";
 import { SendContractEmailResolver } from "./resolvers/pdf/send-contract-email.resolver";
+import { SendContractSignatureRequestService } from "./services/pdf/send-contract-signature-request.service";
+import { SendContractSignatureRequestResolver } from "./resolvers/pdf/send-contract-signature-request.resolver";
 
 @Module({
   imports: [
     AuthModule,
     MailModule,
     PdfGeneratorModule,
+    SignatureModule,
     TypeOrmModule.forFeature([ContractsEntity, BudgetsEntity, LeadsEntity]),
   ],
   providers: [
@@ -41,6 +45,8 @@ import { SendContractEmailResolver } from "./resolvers/pdf/send-contract-email.r
     GenerateContractPreviewResolver,
     SendContractEmailService,
     SendContractEmailResolver,
+    SendContractSignatureRequestService,
+    SendContractSignatureRequestResolver,
   ],
   exports: [
     CreateContractsService,
