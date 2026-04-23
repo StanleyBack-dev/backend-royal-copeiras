@@ -23,18 +23,28 @@ export class CreateSignatureRequestService {
     const idContracts = input.externalReference;
 
     if (idContracts) {
-      await this.signaturesRepository.save(
-        this.signaturesRepository.create({
+      const signingUrls = response.signingUrls ?? [];
+      const signers = input.signers ?? [];
+      const entities = signers.map((s, i) => {
+        const assign = signingUrls[i] ?? signingUrls.find((a) => false);
+        return this.signaturesRepository.create({
           idContracts,
           provider: "assinafy",
           envelopeId: response.requestId,
           status: response.status,
-          signatureUrl: response.signatureUrl,
-          signedByName: input.signers?.[0]?.name,
-          signedByEmail: input.signers?.[0]?.email,
-          signedByDocument: input.signers?.[0]?.identifier,
-        }),
-      );
+          signatureUrl:
+            assign?.url ?? (i === 0 ? response.signatureUrl : undefined),
+          signedByName: s?.name,
+          signedByEmail: s?.email,
+          signedByDocument: s?.identifier,
+          providerSignerId: assign?.signerId,
+          signerIndex: i,
+        });
+      });
+
+      if (entities.length > 0) {
+        await this.signaturesRepository.save(entities);
+      }
     }
 
     return { ...response };

@@ -9,15 +9,23 @@ import { CreateSignatureRequestService } from "./services/create-signature-reque
 import { GetSignatureStatusService } from "./services/get-signature-status.service";
 import { GetSignaturesService } from "./services/get-signatures.service";
 import { SignatureEntity } from "./entities/signature.entity";
+import { ProcessSignatureWebhookService } from "./services/process-signature-webhook.service";
+import { SignatureWebhookController } from "./controllers/signature-webhook.controller";
+import { ContractsEntity } from "../contracts/entities/contracts.entity";
 
 @Module({
-  imports: [AuthModule, TypeOrmModule.forFeature([SignatureEntity])],
+  imports: [
+    AuthModule,
+    TypeOrmModule.forFeature([SignatureEntity, ContractsEntity]),
+  ],
+  controllers: [SignatureWebhookController],
   providers: [
     SignatureResolver,
     CreateSignatureRequestService,
     GetSignatureStatusService,
     CancelSignatureRequestService,
     GetSignaturesService,
+    ProcessSignatureWebhookService,
     {
       provide: SIGNATURE_PROVIDER_TOKEN,
       useClass: AssinafySignatureProvider,

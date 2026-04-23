@@ -95,6 +95,25 @@ export class SignatureEntity {
   })
   signatureUrl?: string;
 
+  @Column({
+    name: "provider_event_id",
+    type: "varchar",
+    length: 120,
+    nullable: true,
+  })
+  providerEventId?: string;
+
+  @Column({
+    name: "provider_signer_id",
+    type: "varchar",
+    length: 120,
+    nullable: true,
+  })
+  providerSignerId?: string;
+
+  @Column({ name: "signer_index", type: "int", nullable: true })
+  signerIndex?: number;
+
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 
