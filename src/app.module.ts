@@ -7,10 +7,8 @@ import { join } from "path";
 // INTERCEPTORS
 import { formatGraphqlError } from "./common/exceptions/graphql-error.formatter";
 import { RequestInfoInterceptor } from "./common/interceptors/request-info.interceptors";
-
 import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
-import { ProfilesModule } from "./modules/profiles/profile.module";
 import { CustomersModule } from "./modules/customers/customers.module";
 import { EmployeesModule } from "./modules/employees/employees.module";
 import { LeadsModule } from "./modules/leads/leads.module";
@@ -38,7 +36,6 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     }),
     AuthModule,
     UsersModule,
-    ProfilesModule,
     CustomersModule,
     EmployeesModule,
     LeadsModule,

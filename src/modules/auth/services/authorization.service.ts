@@ -53,7 +53,8 @@ export class AuthorizationService {
 
     if (missingPermission) {
       throw AppException.from<PermissionParams>(
-        APP_ERRORS.authorization.missingPermission as unknown as AppErrorDefinition<PermissionParams>,
+        APP_ERRORS.authorization
+          .missingPermission as unknown as AppErrorDefinition<PermissionParams>,
         { group, permission: missingPermission },
       );
     }
