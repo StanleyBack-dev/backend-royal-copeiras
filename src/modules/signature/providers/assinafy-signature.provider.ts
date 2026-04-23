@@ -121,6 +121,12 @@ export class AssinafySignatureProvider implements ISignatureProvider {
       status: SignatureStatus.PENDING,
       providerRawStatus: "pending_signature",
       signatureUrl,
+      signingUrls: Array.isArray(assignment.signing_urls)
+        ? assignment.signing_urls.map((s) => ({
+            signerId: s.signer_id,
+            url: s.url,
+          }))
+        : [],
     };
   }
 

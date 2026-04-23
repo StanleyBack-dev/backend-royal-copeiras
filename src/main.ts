@@ -3,26 +3,26 @@ import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import cookieParser from "cookie-parser";
 import * as bodyParser from "body-parser";
-import type { Request } from "express";
+import { Request } from "express";
 
 // MODULES
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // capture raw body for webhook HMAC verification
+  // Attach raw body buffer to request for HMAC webhook verification
   app.use(
     bodyParser.json({
-      verify: (req: Request & { rawBody?: string }, _res, buf: Buffer) => {
-        req.rawBody = buf && buf.length ? buf.toString() : "";
+      verify: (req: Request & { rawBody?: Buffer }, _res, buf: Buffer) => {
+        req.rawBody = buf;
       },
     }),
   );
   app.use(
     bodyParser.urlencoded({
       extended: true,
-      verify: (req: Request & { rawBody?: string }, _res, buf: Buffer) => {
-        req.rawBody = buf && buf.length ? buf.toString() : "";
+      verify: (req: Request & { rawBody?: Buffer }, _res, buf: Buffer) => {
+        req.rawBody = buf;
       },
     }),
   );

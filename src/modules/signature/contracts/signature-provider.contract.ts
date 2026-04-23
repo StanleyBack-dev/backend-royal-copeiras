@@ -13,6 +13,7 @@ export interface SignatureRequestResult {
   status: SignatureStatus;
   providerRawStatus: string;
   signatureUrl?: string;
+  signingUrls?: Array<{ signerId?: string; url?: string }>;
 }
 
 export interface SignatureStatusResult extends SignatureRequestResult {

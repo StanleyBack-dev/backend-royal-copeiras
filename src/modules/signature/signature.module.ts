@@ -15,6 +15,8 @@ import { LeadsEntity } from "../leads/entities/leads.entity";
 import { LeadsModule } from "../leads/leads.module";
 import { ProcessSignatureCallbackService } from "./services/process-signature-callback.service";
 import { AssinafyWebhookController } from "./controllers/assinafy-webhook.controller";
+import { ProcessSignatureWebhookService } from "./services/process-signature-webhook.service";
+import { SignatureWebhookController } from "./controllers/signature-webhook.controller";
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { AssinafyWebhookController } from "./controllers/assinafy-webhook.contro
       LeadsEntity,
     ]),
   ],
+  controllers: [AssinafyWebhookController, SignatureWebhookController],
   providers: [
     SignatureResolver,
     CreateSignatureRequestService,
@@ -34,12 +37,12 @@ import { AssinafyWebhookController } from "./controllers/assinafy-webhook.contro
     CancelSignatureRequestService,
     GetSignaturesService,
     ProcessSignatureCallbackService,
+    ProcessSignatureWebhookService,
     {
       provide: SIGNATURE_PROVIDER_TOKEN,
       useClass: AssinafySignatureProvider,
     },
   ],
-  controllers: [AssinafyWebhookController],
   exports: [
     CreateSignatureRequestService,
     GetSignatureStatusService,
