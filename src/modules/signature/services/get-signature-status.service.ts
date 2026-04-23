@@ -17,17 +17,20 @@ export class GetSignatureStatusService {
 
   async execute(requestId: string): Promise<SignatureRequestResponseDto> {
     const response = await this.signatureProvider.getRequestStatus(requestId);
-    const existing = await this.signaturesRepository.findOne({
+    const existing = await this.signaturesRepository.find({
       where: { envelopeId: requestId },
     });
 
-    if (existing) {
-      existing.status = response.status;
-      existing.signatureUrl = response.signatureUrl;
-      existing.signedAt = response.completedAt
-        ? new Date(response.completedAt)
-        : existing.signedAt;
-      await this.signaturesRepository.save(existing);
+    if (existing && existing.length > 0) {
+      const updated = existing.map((e) => {
+        e.status = response.status;
+        e.signatureUrl = response.signatureUrl ?? e.signatureUrl;
+        e.signedAt = response.completedAt
+          ? new Date(response.completedAt)
+          : e.signedAt;
+        return e;
+      });
+      await this.signaturesRepository.save(updated);
     }
 
     return { ...response };
