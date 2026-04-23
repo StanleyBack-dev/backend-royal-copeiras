@@ -1,52 +1,49 @@
 import { ProcessSignatureWebhookService } from "../process-signature-webhook.service";
+import { Repository } from "typeorm";
 
 describe("ProcessSignatureWebhookService", () => {
   it("returns gracefully when payload lacks envelope id", async () => {
     const svc = new ProcessSignatureWebhookService(
-      // @ts-expect-error partial mock
-      { find: jest.fn() },
-      // @ts-expect-error partial mock
-      { manager: { transaction: jest.fn() } },
+      { find: jest.fn() } as unknown as Partial<Repository<Record<string, unknown>>>,
+      ({ manager: { transaction: jest.fn() } } as unknown) as Partial<Repository<Record<string, unknown>>>,
     );
 
     await expect(svc.execute({})).resolves.toBeUndefined();
   });
 
   it("updates signatures and marks contract signed when all signed", async () => {
-    const signature = {
+    const signature: Record<string, unknown> = {
       idSignatures: "s1",
       idContracts: "c1",
       envelopeId: "env1",
       providerSignerId: "p1",
       signerIndex: 0,
       status: "PENDING",
-    } as any;
+    };
 
-    const signaturesRepo: any = {
+    const signaturesRepo = {
       find: jest
         .fn()
         .mockResolvedValueOnce([signature])
         .mockResolvedValueOnce([signature, { ...signature, status: "SIGNED" }]),
       save: jest.fn().mockResolvedValue(true),
-    };
+    } as unknown as Partial<Repository<Record<string, unknown>>>;
 
-    const contractsRepo: any = {
+    const contractsRepo = ({
       manager: {
-        transaction: jest.fn().mockImplementation(async (cb: any) => {
+        transaction: jest.fn().mockImplementation(async (cb: unknown) => {
           const manager = {
-            findOne: jest
-              .fn()
-              .mockResolvedValue({ idContracts: "c1", status: "generated" }),
+            findOne: jest.fn().mockResolvedValue({ idContracts: "c1", status: "generated" }),
             save: jest.fn().mockResolvedValue(true),
           };
-          return cb(manager);
+          return (cb as (m: unknown) => Promise<unknown>)(manager);
         }),
       },
-    };
+    } as unknown) as Partial<Repository<Record<string, unknown>>>;
 
     const svc = new ProcessSignatureWebhookService(
-      signaturesRepo,
-      contractsRepo,
+      signaturesRepo as unknown as Repository<Record<string, unknown>>,
+      contractsRepo as unknown as Repository<Record<string, unknown>>,
     );
 
     await expect(

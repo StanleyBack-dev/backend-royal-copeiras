@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { Public } from "../../../common/decorators/public.decorator";
+import { Request } from "express";
 import { ConfigService } from "@nestjs/config";
 import { ProcessSignatureWebhookService } from "../services/process-signature-webhook.service";
 import * as crypto from "crypto";
@@ -23,9 +24,9 @@ export class SignatureWebhookController {
   @Public()
   @HttpCode(200)
   async handleWebhook(
-    @Req() req: any,
+    @Req() req: Request & { rawBody?: Buffer },
     @Headers() headers: Record<string, string>,
-    @Body() body: any,
+    @Body() body: unknown,
   ) {
     const secret =
       this.config.get<string>("ASSINAFY_WEBHOOK_SECRET") ||
@@ -43,7 +44,7 @@ export class SignatureWebhookController {
       }
 
       const raw: Buffer | undefined = req.rawBody;
-      const payloadBuffer = raw ?? Buffer.from(JSON.stringify(body || ""));
+      const payloadBuffer = raw ?? Buffer.from(JSON.stringify(body ?? ""));
 
       const hmac = crypto
         .createHmac("sha256", secret)
@@ -54,10 +55,10 @@ export class SignatureWebhookController {
         ? signatureHeader.split("=")[1]
         : signatureHeader;
 
-      const a = Buffer.from(hmac, "hex");
-      const b = Buffer.from(expectedSig, "hex");
+      const aBuff = Buffer.from(hmac, "hex");
+      const bBuff = Buffer.from(expectedSig, "hex");
 
-      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      if (aBuff.length !== bBuff.length || !crypto.timingSafeEqual(aBuff, bBuff)) {
         throw new UnauthorizedException();
       }
     } else {

@@ -26,7 +26,7 @@ export class CreateSignatureRequestService {
       const signingUrls = response.signingUrls ?? [];
       const signers = input.signers ?? [];
       const entities = signers.map((s, i) => {
-        const assign = signingUrls[i] ?? signingUrls.find((a) => false);
+        const assign = signingUrls[i] ?? undefined;
         return this.signaturesRepository.create({
           idContracts,
           provider: "assinafy",

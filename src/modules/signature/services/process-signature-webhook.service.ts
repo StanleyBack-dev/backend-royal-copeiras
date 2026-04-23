@@ -30,27 +30,33 @@ export class ProcessSignatureWebhookService {
     return SignatureStatus.UNKNOWN;
   }
 
-  async execute(payload: any): Promise<void> {
-    const eventId =
-      payload.eventId ?? payload.id ?? payload.event_id ?? undefined;
+  async execute(payload: unknown): Promise<void> {
+    const p = (payload as Record<string, unknown>) ?? {};
+    const eventId = p["eventId"] ?? p["id"] ?? p["event_id"];
     const envelopeId =
-      payload.requestId ??
-      payload.request_id ??
-      payload.envelopeId ??
-      payload.envelope_id;
+      (p["requestId"] ?? p["request_id"] ?? p["envelopeId"] ?? p["envelope_id"]) as
+        | string
+        | undefined;
+
+    const signerObj = p["signer"] as Record<string, unknown> | undefined;
     const providerSignerId =
-      payload.signerId ?? payload.signer_id ?? payload.signer?.id ?? undefined;
+      (typeof p["signerId"] === "string" ? (p["signerId"] as string) : undefined) ??
+      (typeof p["signer_id"] === "string" ? (p["signer_id"] as string) : undefined) ??
+      (typeof signerObj === "object" && signerObj && typeof signerObj["id"] === "string" ? (signerObj["id"] as string) : undefined);
+
+    const signerIndexRaw = p["signerIndex"] ?? p["signer_index"];
     const signerIndex =
-      payload.signerIndex ?? payload.signer_index ?? undefined;
-    const providerStatus = this.mapProviderStatus(
-      payload.status ?? payload.state ?? payload.event,
-    );
-    const signatureUrl = payload.signatureUrl ?? payload.url ?? undefined;
-    const completedAt =
-      payload.completedAt ??
-      payload.completed_at ??
-      payload.signedAt ??
-      undefined;
+      typeof signerIndexRaw === "number"
+        ? signerIndexRaw
+        : typeof signerIndexRaw === "string" && /^[0-9]+$/.test(signerIndexRaw)
+        ? Number(signerIndexRaw)
+        : undefined;
+
+    const statusRaw = p["status"] ?? p["state"] ?? p["event"];
+    const providerStatus = typeof statusRaw === "string" ? this.mapProviderStatus(statusRaw) : this.mapProviderStatus(undefined);
+
+    const signatureUrl = typeof p["signatureUrl"] === "string" ? (p["signatureUrl"] as string) : typeof p["url"] === "string" ? (p["url"] as string) : undefined;
+    const completedAt = typeof (p["completedAt"] ?? p["completed_at"] ?? p["signedAt"]) === "string" ? ((p["completedAt"] ?? p["completed_at"] ?? p["signedAt"]) as string) : undefined;
 
     if (!envelopeId) {
       this.logger.warn("Webhook payload missing envelope/request id");
