@@ -32,7 +32,14 @@ export class ProcessSignatureWebhookService {
 
   async execute(payload: unknown): Promise<void> {
     const p = (payload as Record<string, unknown>) ?? {};
-    const eventId = p["eventId"] ?? p["id"] ?? p["event_id"];
+    const eventId =
+      typeof p["eventId"] === "string"
+        ? (p["eventId"] as string)
+        : typeof p["id"] === "string"
+        ? (p["id"] as string)
+        : typeof p["event_id"] === "string"
+        ? (p["event_id"] as string)
+        : undefined;
     const envelopeId = (p["requestId"] ??
       p["request_id"] ??
       p["envelopeId"] ??

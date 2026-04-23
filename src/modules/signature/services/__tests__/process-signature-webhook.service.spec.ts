@@ -1,59 +1,62 @@
 import { ProcessSignatureWebhookService } from "../process-signature-webhook.service";
 import { Repository } from "typeorm";
+import { SignatureEntity } from "../../entities/signature.entity";
+import { ContractsEntity } from "../../../contracts/entities/contracts.entity";
+import { SignatureStatus } from "../../enums/signature-status.enum";
 
 describe("ProcessSignatureWebhookService", () => {
   it("returns gracefully when payload lacks envelope id", async () => {
+    const mockSigRepo1 = { find: jest.fn() };
+    const mockContractsRepo1 = { manager: { transaction: jest.fn() } };
+
     const svc = new ProcessSignatureWebhookService(
-      { find: jest.fn() } as unknown as Partial<
-        Repository<Record<string, unknown>>
-      >,
-      { manager: { transaction: jest.fn() } } as unknown as Partial<
-        Repository<Record<string, unknown>>
-      >,
+      mockSigRepo1 as unknown as Repository<SignatureEntity>,
+      mockContractsRepo1 as unknown as Repository<ContractsEntity>,
     );
 
     await expect(svc.execute({})).resolves.toBeUndefined();
   });
 
   it("updates signatures and marks contract signed when all signed", async () => {
-    const signature: Record<string, unknown> = {
+    const signature: Partial<SignatureEntity> = {
       idSignatures: "s1",
       idContracts: "c1",
       envelopeId: "env1",
       providerSignerId: "p1",
       signerIndex: 0,
-      status: "PENDING",
+      status: SignatureStatus.PENDING,
     };
 
-    const signaturesRepo = {
+    const mockSignaturesRepo = {
       find: jest
         .fn()
         .mockResolvedValueOnce([signature])
         .mockResolvedValueOnce([signature, { ...signature, status: "SIGNED" }]),
       save: jest.fn().mockResolvedValue(true),
-    } as unknown as Partial<Repository<Record<string, unknown>>>;
+    } as unknown as Repository<SignatureEntity>;
 
-    const contractsRepo = {
+    // contracts repo mock not used in the first test path
+
+    const mockManager = {
+      findOne: jest.fn().mockResolvedValue({ idContracts: "c1", status: "generated" }),
+      save: jest.fn().mockResolvedValue(true),
+    };
+
+    const mockContractsRepo2 = {
       manager: {
-        transaction: jest.fn().mockImplementation(async (cb: unknown) => {
-          const manager = {
-            findOne: jest
-              .fn()
-              .mockResolvedValue({ idContracts: "c1", status: "generated" }),
-            save: jest.fn().mockResolvedValue(true),
-          };
-          return (cb as (m: unknown) => Promise<unknown>)(manager);
+        transaction: jest.fn().mockImplementation(async (cb: (m: typeof mockManager) => Promise<unknown>) => {
+          return cb(mockManager);
         }),
       },
-    } as unknown as Partial<Repository<Record<string, unknown>>>;
+    } as unknown as Repository<ContractsEntity>;
 
-    const svc = new ProcessSignatureWebhookService(
-      signaturesRepo as unknown as Repository<Record<string, unknown>>,
-      contractsRepo as unknown as Repository<Record<string, unknown>>,
+    const svc2 = new ProcessSignatureWebhookService(
+      mockSignaturesRepo as unknown as Repository<SignatureEntity>,
+      mockContractsRepo2,
     );
 
     await expect(
-      svc.execute({
+      svc2.execute({
         requestId: "env1",
         signerId: "p1",
         status: "signed",
@@ -61,7 +64,10 @@ describe("ProcessSignatureWebhookService", () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(signaturesRepo.save).toHaveBeenCalled();
-    expect(contractsRepo.manager.transaction).toHaveBeenCalled();
+    const saveMock = (mockSignaturesRepo as unknown as { save: jest.Mock }).save;
+    const txMock = (mockContractsRepo2 as unknown as { manager: { transaction: jest.Mock } }).manager.transaction;
+
+    expect(saveMock).toHaveBeenCalled();
+    expect(txMock).toHaveBeenCalled();
   });
 });
