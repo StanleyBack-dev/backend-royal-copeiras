@@ -68,7 +68,7 @@ export class UpdateProfileValidator {
     });
 
     if (!profile) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       throw AppException.from(
         APP_ERRORS.profiles.notFoundForUser as any,
         undefined,
@@ -76,7 +76,7 @@ export class UpdateProfileValidator {
     }
 
     if (profile.user.idUsers !== userId) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       throw AppException.from(
         APP_ERRORS.profiles.editForbidden as any,
         undefined,
