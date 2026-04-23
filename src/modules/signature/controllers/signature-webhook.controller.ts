@@ -58,7 +58,10 @@ export class SignatureWebhookController {
       const aBuff = Buffer.from(hmac, "hex");
       const bBuff = Buffer.from(expectedSig, "hex");
 
-      if (aBuff.length !== bBuff.length || !crypto.timingSafeEqual(aBuff, bBuff)) {
+      if (
+        aBuff.length !== bBuff.length ||
+        !crypto.timingSafeEqual(aBuff, bBuff)
+      ) {
         throw new UnauthorizedException();
       }
     } else {

@@ -4,8 +4,12 @@ import { Repository } from "typeorm";
 describe("ProcessSignatureWebhookService", () => {
   it("returns gracefully when payload lacks envelope id", async () => {
     const svc = new ProcessSignatureWebhookService(
-      { find: jest.fn() } as unknown as Partial<Repository<Record<string, unknown>>>,
-      ({ manager: { transaction: jest.fn() } } as unknown) as Partial<Repository<Record<string, unknown>>>,
+      { find: jest.fn() } as unknown as Partial<
+        Repository<Record<string, unknown>>
+      >,
+      { manager: { transaction: jest.fn() } } as unknown as Partial<
+        Repository<Record<string, unknown>>
+      >,
     );
 
     await expect(svc.execute({})).resolves.toBeUndefined();
@@ -29,17 +33,19 @@ describe("ProcessSignatureWebhookService", () => {
       save: jest.fn().mockResolvedValue(true),
     } as unknown as Partial<Repository<Record<string, unknown>>>;
 
-    const contractsRepo = ({
+    const contractsRepo = {
       manager: {
         transaction: jest.fn().mockImplementation(async (cb: unknown) => {
           const manager = {
-            findOne: jest.fn().mockResolvedValue({ idContracts: "c1", status: "generated" }),
+            findOne: jest
+              .fn()
+              .mockResolvedValue({ idContracts: "c1", status: "generated" }),
             save: jest.fn().mockResolvedValue(true),
           };
           return (cb as (m: unknown) => Promise<unknown>)(manager);
         }),
       },
-    } as unknown) as Partial<Repository<Record<string, unknown>>>;
+    } as unknown as Partial<Repository<Record<string, unknown>>>;
 
     const svc = new ProcessSignatureWebhookService(
       signaturesRepo as unknown as Repository<Record<string, unknown>>,
