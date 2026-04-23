@@ -3,7 +3,7 @@ import { ObjectType, Field } from "@nestjs/graphql";
 @ObjectType()
 export class CreateProfileResponseDto {
   @Field()
-  idProfiles: string;
+  idProfiles!: string;
 
   @Field({ nullable: true })
   phone?: string;
@@ -27,8 +27,8 @@ export class CreateProfileResponseDto {
   userAgent?: string;
 
   @Field()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Field()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -50,10 +50,14 @@ export class AuthorizationService {
     );
 
     if (missingPermission) {
-      throw AppException.from(APP_ERRORS.authorization.missingPermission, {
-        group,
-        permission: missingPermission,
-      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw AppException.from(
+        APP_ERRORS.authorization.missingPermission as any,
+        {
+          group,
+          permission: missingPermission,
+        },
+      );
     }
   }
 }

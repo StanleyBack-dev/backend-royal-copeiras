@@ -18,7 +18,10 @@ export function parseDurationToMs(value: string): number {
 
   const match = DURATION_PATTERN.exec(value.trim());
   if (!match) {
-    throw AppException.from(APP_ERRORS.validation.invalidFormat, { value });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    throw AppException.from(APP_ERRORS.validation.invalidFormat as any, {
+      value,
+    });
   }
 
   const [, amount, unit] = match;

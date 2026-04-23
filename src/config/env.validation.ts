@@ -67,6 +67,7 @@ export const envValidationSchema = Joi.object({
   ASSINAFY_API_KEY: Joi.string().min(10).optional(),
   ASSINAFY_API_TOKEN: Joi.string().min(10).optional(),
   ASSINAFY_ACCOUNT_ID: Joi.string().min(5).optional(),
+  ASSINAFY_WEBHOOK_SECRET: Joi.string().min(8).optional(),
   ASSINAFY_TIMEOUT_MS: Joi.number().integer().min(1000).default(15000),
   CONTRACT_COMPANY_SIGNER_NAME: Joi.string().min(2).optional(),
   CONTRACT_COMPANY_SIGNER_EMAIL: Joi.string().email().optional(),

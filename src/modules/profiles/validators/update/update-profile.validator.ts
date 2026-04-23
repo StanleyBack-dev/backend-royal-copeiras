@@ -34,21 +34,24 @@ export class UpdateProfileValidator {
     const goalOptions = ["lose_weight", "maintain", "gain_weight"];
 
     if (input.sex && !sexOptions.includes(input.sex)) {
-      throw AppException.from(APP_ERRORS.profiles.invalidOption, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw AppException.from(APP_ERRORS.profiles.invalidOption as any, {
         field: "sex",
         options: sexOptions,
       });
     }
 
     if (input.activityLevel && !activityOptions.includes(input.activityLevel)) {
-      throw AppException.from(APP_ERRORS.profiles.invalidOption, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw AppException.from(APP_ERRORS.profiles.invalidOption as any, {
         field: "activityLevel",
         options: activityOptions,
       });
     }
 
     if (input.goal && !goalOptions.includes(input.goal)) {
-      throw AppException.from(APP_ERRORS.profiles.invalidOption, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw AppException.from(APP_ERRORS.profiles.invalidOption as any, {
         field: "goal",
         options: goalOptions,
       });
@@ -65,11 +68,19 @@ export class UpdateProfileValidator {
     });
 
     if (!profile) {
-      throw AppException.from(APP_ERRORS.profiles.notFoundForUser, undefined);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw AppException.from(
+        APP_ERRORS.profiles.notFoundForUser as any,
+        undefined,
+      );
     }
 
     if (profile.user.idUsers !== userId) {
-      throw AppException.from(APP_ERRORS.profiles.editForbidden, undefined);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw AppException.from(
+        APP_ERRORS.profiles.editForbidden as any,
+        undefined,
+      );
     }
 
     return profile;

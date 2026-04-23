@@ -3,7 +3,7 @@ import { ObjectType, Field } from "@nestjs/graphql";
 @ObjectType()
 export class UpdateProfileResponseDto {
   @Field()
-  idProfiles: string;
+  idProfiles!: string;
 
   @Field({ nullable: true })
   phone?: string;

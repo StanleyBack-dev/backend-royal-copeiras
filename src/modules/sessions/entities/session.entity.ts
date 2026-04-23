@@ -13,18 +13,18 @@ import { UserEntity } from "../../users/entities/user.entity";
 @Entity("tb_sessions")
 export class SessionEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_sessions" })
-  idUsersSessions: string;
+  idUsersSessions!: string;
 
   @ManyToOne(() => UserEntity, { onDelete: "CASCADE" })
   @JoinColumn({ name: "idtb_users" })
-  user: UserEntity;
+  user!: UserEntity;
 
   @Column({ name: "idtb_users", type: "uuid" })
   @Index()
-  idUsers: string;
+  idUsers!: string;
 
   @Column({ name: "refresh_token", unique: true })
-  refreshToken: string;
+  refreshToken!: string;
 
   @Column({ name: "ip_address", nullable: true })
   ipAddress?: string;
@@ -33,10 +33,10 @@ export class SessionEntity {
   userAgent?: string;
 
   @Column({ name: "session_active", type: "boolean", default: true })
-  sessionActive: boolean;
+  sessionActive!: boolean;
 
   @Column({ name: "refresh_token_expires_at", type: "timestamp" })
-  refreshTokenExpiresAt: Date;
+  refreshTokenExpiresAt!: Date;
 
   @Column({ name: "revoked_at", type: "timestamp", nullable: true })
   revokedAt?: Date;
@@ -45,8 +45,8 @@ export class SessionEntity {
   lastUsedAt?: Date;
 
   @CreateDateColumn({ name: "created_at" })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: "updated_at" })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

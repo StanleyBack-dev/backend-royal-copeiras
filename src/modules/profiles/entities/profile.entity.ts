@@ -12,14 +12,14 @@ import { UserEntity } from "../../users/entities/user.entity";
 @Entity("tb_profiles")
 export class ProfileEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_profiles" })
-  idProfiles: string;
+  idProfiles!: string;
 
   @Column({ name: "idtb_users", type: "uuid" })
-  idUsers: string;
+  idUsers!: string;
 
   @OneToOne(() => UserEntity)
   @JoinColumn({ name: "idtb_users" })
-  user: UserEntity;
+  user!: UserEntity;
 
   @Column({ nullable: true })
   phone?: string;
@@ -51,8 +51,8 @@ export class ProfileEntity {
   userAgent?: string;
 
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
