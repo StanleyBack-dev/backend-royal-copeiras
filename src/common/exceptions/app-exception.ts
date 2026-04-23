@@ -19,7 +19,7 @@ function resolveMessage<TDefinition extends AppErrorDefinition<any>>(
 
 export class AppException extends HttpException {
   constructor(
-    definition: AppErrorDefinition<any>,
+    definition: AppErrorDefinition<unknown>,
     message: string,
     details?: unknown,
   ) {
@@ -33,7 +33,7 @@ export class AppException extends HttpException {
     );
   }
 
-  static from<TDefinition extends AppErrorDefinition<any>>(
+  static from<TDefinition extends AppErrorDefinition<unknown>>(
     definition: TDefinition,
     params: ErrorParams<TDefinition>,
     details?: unknown,
