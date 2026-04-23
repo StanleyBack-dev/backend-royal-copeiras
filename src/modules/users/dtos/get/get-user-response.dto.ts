@@ -27,13 +27,13 @@ export class GetUserResponseDto {
   }
 
   @Field()
-  idUsers: string;
+  idUsers!: string;
 
   @Field()
-  name: string;
+  name!: string;
 
   @Field()
-  email: string;
+  email!: string;
 
   @Field({ nullable: true })
   username?: string;
@@ -42,10 +42,10 @@ export class GetUserResponseDto {
   urlAvatar?: string;
 
   @Field()
-  status: boolean;
+  status!: boolean;
 
   @Field(() => UserGroup)
-  group: UserGroup;
+  group!: UserGroup;
 
   @Field({ nullable: true })
   inactivatedAt?: Date;
@@ -63,8 +63,8 @@ export class GetUserResponseDto {
   lockedUntil?: Date | null;
 
   @Field()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Field()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

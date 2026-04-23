@@ -1,20 +1,15 @@
 import { HttpException } from "@nestjs/common";
 import { AppErrorDefinition } from "./app-error-definition.type";
 
-type ErrorParams<TDefinition extends AppErrorDefinition<unknown>> =
-  TDefinition extends AppErrorDefinition<infer TParams> ? TParams : never;
-
-function resolveMessage<TDefinition extends AppErrorDefinition<unknown>>(
-  definition: TDefinition,
-  params: ErrorParams<TDefinition>,
+function resolveMessage<TParams>(
+  definition: AppErrorDefinition<TParams>,
+  params: TParams,
 ): string {
   if (typeof definition.message === "function") {
-    return (definition.message as (args: ErrorParams<TDefinition>) => string)(
-      params,
-    );
+    return (definition.message as (args: TParams) => string)(params);
   }
 
-  return definition.message;
+  return definition.message as string;
 }
 
 export class AppException extends HttpException {
@@ -33,13 +28,13 @@ export class AppException extends HttpException {
     );
   }
 
-  static from<TDefinition extends AppErrorDefinition<unknown>>(
-    definition: TDefinition,
-    params: ErrorParams<TDefinition>,
+  static from<TParams>(
+    definition: AppErrorDefinition<TParams>,
+    params: TParams,
     details?: unknown,
   ): AppException {
     return new AppException(
-      definition,
+      definition as unknown as AppErrorDefinition<unknown>,
       resolveMessage(definition, params),
       details,
     );

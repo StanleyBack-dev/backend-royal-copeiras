@@ -168,31 +168,6 @@ type SetUserPagePermissionsMutationResponseDto {
   data: UserPagePermissionsResponseDto!
 }
 
-type GetProfileResponseDto {
-  idProfiles: String!
-  phone: String
-  birthDate: String
-  sex: String
-  activityLevel: String
-  goal: String
-}
-
-type UpdateProfileResponseDto {
-  idProfiles: String!
-  phone: String
-  birthDate: String
-  sex: String
-  activityLevel: String
-  goal: String
-}
-
-type UpdateProfileMutationResponseDto {
-  success: Boolean!
-  message: String
-  code: String
-  data: UpdateProfileResponseDto!
-}
-
 type CreateCustomersResponseDto {
   idCustomers: String!
   name: String!
@@ -755,8 +730,6 @@ type Query {
     input: GetUserPagePermissionsInputDto!
   ): UserPagePermissionsResponseDto!
   getMyPagePermissions: UserPagePermissionsResponseDto!
-  getMyProfile: GetProfileResponseDto!
-  getProfile(input: GetProfileInputDto!): GetProfileResponseDto!
   getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
@@ -777,10 +750,6 @@ input GetUserInputDto {
 
 input GetUserPagePermissionsInputDto {
   idUsers: String!
-}
-
-input GetProfileInputDto {
-  idProfiles: String
 }
 
 input GetCustomersInputDto {
@@ -860,9 +829,6 @@ type Mutation {
   unlockUserCredential(
     input: UnlockUserCredentialInputDto!
   ): UnlockUserCredentialMutationResponseDto!
-  updateMyProfile(
-    input: UpdateProfileInputDto!
-  ): UpdateProfileMutationResponseDto!
   createCustomers(
     input: CreateCustomersInputDto!
   ): CreateCustomersMutationResponseDto!
@@ -967,14 +933,6 @@ input SetUserPagePermissionsInputDto {
 
 input UnlockUserCredentialInputDto {
   idUsers: String!
-}
-
-input UpdateProfileInputDto {
-  phone: String
-  birthDate: String
-  sex: String
-  activityLevel: String
-  goal: String
 }
 
 input CreateCustomersInputDto {

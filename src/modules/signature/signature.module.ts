@@ -9,22 +9,34 @@ import { CreateSignatureRequestService } from "./services/create-signature-reque
 import { GetSignatureStatusService } from "./services/get-signature-status.service";
 import { GetSignaturesService } from "./services/get-signatures.service";
 import { SignatureEntity } from "./entities/signature.entity";
+import { ContractsEntity } from "../contracts/entities/contracts.entity";
+import { UserEntity } from "../users/entities/user.entity";
+import { LeadsEntity } from "../leads/entities/leads.entity";
+import { LeadsModule } from "../leads/leads.module";
+import { ProcessSignatureCallbackService } from "./services/process-signature-callback.service";
+import { AssinafyWebhookController } from "./controllers/assinafy-webhook.controller";
 import { ProcessSignatureWebhookService } from "./services/process-signature-webhook.service";
 import { SignatureWebhookController } from "./controllers/signature-webhook.controller";
-import { ContractsEntity } from "../contracts/entities/contracts.entity";
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([SignatureEntity, ContractsEntity]),
+    LeadsModule,
+    TypeOrmModule.forFeature([
+      SignatureEntity,
+      ContractsEntity,
+      UserEntity,
+      LeadsEntity,
+    ]),
   ],
-  controllers: [SignatureWebhookController],
+  controllers: [AssinafyWebhookController, SignatureWebhookController],
   providers: [
     SignatureResolver,
     CreateSignatureRequestService,
     GetSignatureStatusService,
     CancelSignatureRequestService,
     GetSignaturesService,
+    ProcessSignatureCallbackService,
     ProcessSignatureWebhookService,
     {
       provide: SIGNATURE_PROVIDER_TOKEN,
