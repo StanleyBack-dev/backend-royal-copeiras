@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AppException } from "../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../common/exceptions/app-errors.catalog";
+import type { AppErrorDefinition } from "../../../common/exceptions/app-error-definition.type";
+import type { PermissionParams } from "../../../common/exceptions/catalogs/catalog-params.type";
 import { UserEntity } from "../../users/entities/user.entity";
 import { UserGroup } from "../../users/enums/user-group.enum";
 import { GROUP_PERMISSIONS } from "../constants/group-permissions.constant";
@@ -50,14 +52,10 @@ export class AuthorizationService {
     );
 
     if (missingPermission) {
-       
-      throw AppException.from(
-        APP_ERRORS.authorization.missingPermission as any,
-        {
-          group,
-          permission: missingPermission,
-        },
-      );
+        throw AppException.from(
+          APP_ERRORS.authorization.missingPermission as unknown as AppErrorDefinition<PermissionParams>,
+          { group, permission: missingPermission },
+        );
     }
   }
 }
