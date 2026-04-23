@@ -38,15 +38,21 @@ describe("ProcessSignatureWebhookService", () => {
     // contracts repo mock not used in the first test path
 
     const mockManager = {
-      findOne: jest.fn().mockResolvedValue({ idContracts: "c1", status: "generated" }),
+      findOne: jest
+        .fn()
+        .mockResolvedValue({ idContracts: "c1", status: "generated" }),
       save: jest.fn().mockResolvedValue(true),
     };
 
     const mockContractsRepo2 = {
       manager: {
-        transaction: jest.fn().mockImplementation(async (cb: (m: typeof mockManager) => Promise<unknown>) => {
-          return cb(mockManager);
-        }),
+        transaction: jest
+          .fn()
+          .mockImplementation(
+            async (cb: (m: typeof mockManager) => Promise<unknown>) => {
+              return cb(mockManager);
+            },
+          ),
       },
     } as unknown as Repository<ContractsEntity>;
 
@@ -64,8 +70,11 @@ describe("ProcessSignatureWebhookService", () => {
       }),
     ).resolves.toBeUndefined();
 
-    const saveMock = (mockSignaturesRepo as unknown as { save: jest.Mock }).save;
-    const txMock = (mockContractsRepo2 as unknown as { manager: { transaction: jest.Mock } }).manager.transaction;
+    const saveMock = (mockSignaturesRepo as unknown as { save: jest.Mock })
+      .save;
+    const txMock = (
+      mockContractsRepo2 as unknown as { manager: { transaction: jest.Mock } }
+    ).manager.transaction;
 
     expect(saveMock).toHaveBeenCalled();
     expect(txMock).toHaveBeenCalled();
