@@ -6,7 +6,6 @@ import { CreateCustomersInputDto } from "../../dtos/create/create-customers-inpu
 import { CreateCustomersResponseDto } from "../../dtos/create/create-customers-response.dto";
 import { ICustomer } from "../../interface/customer.interface";
 import { CreateCustomersValidator } from "../../validators/create/create-customers.validator";
-import { ProfileEntity } from "../../../profiles/entities/profile.entity";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 
@@ -15,9 +14,6 @@ export class CreateCustomersService {
   constructor(
     @InjectRepository(CustomersEntity)
     private readonly customersRepository: Repository<CustomersEntity>,
-
-    @InjectRepository(ProfileEntity)
-    private readonly profileRepository: Repository<ProfileEntity>,
     private readonly authorizationService: AuthorizationService,
   ) {}
 

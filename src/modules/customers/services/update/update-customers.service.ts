@@ -6,7 +6,6 @@ import { UpdateCustomersInputDto } from "../../dtos/update/update-customers-inpu
 import { UpdateCustomersResponseDto } from "../../dtos/update/update-customers-response.dto";
 import { ICustomer } from "../../interface/customer.interface";
 import { UpdateCustomersValidator } from "../../validators/update/update-customers.validator";
-import { ProfileEntity } from "../../../profiles/entities/profile.entity";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 
@@ -15,9 +14,6 @@ export class UpdateCustomersService {
   constructor(
     @InjectRepository(CustomersEntity)
     private readonly customersRepository: Repository<CustomersEntity>,
-
-    @InjectRepository(ProfileEntity)
-    private readonly profileRepository: Repository<ProfileEntity>,
     private readonly authorizationService: AuthorizationService,
   ) {}
 
