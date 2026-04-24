@@ -6,6 +6,7 @@ import {
   formatDateBR,
   formatLongDateBR,
 } from "../../../../utils/pdf";
+import { getFragmentForServiceType } from "../../constants/service-fragments";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
 function splitBodyIntoParagraphs(body?: string): string[] {
@@ -50,10 +51,61 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     typeof snapshot.budget?.advancePercentage === "number"
       ? snapshot.budget.advancePercentage
       : 30;
+  // choose primary service type from budget items (first defined)
+  const primaryServiceType =
+    snapshot.budget?.items && snapshot.budget.items.length
+      ? String(snapshot.budget.items[0].serviceType || "").trim()
+      : "";
+
+  const fragment = getFragmentForServiceType(primaryServiceType);
+  // build a services block listing each budget item as a separate line
+  const items = snapshot.budget?.items || [];
+
+  function numberToPtWords(n: number): string {
+    const map: Record<number, string> = {
+      0: "zero",
+      1: "um",
+      2: "dois",
+      3: "três",
+      4: "quatro",
+      5: "cinco",
+      6: "seis",
+      7: "sete",
+      8: "oito",
+      9: "nove",
+      10: "dez",
+    };
+    return map[n] || String(n);
+  }
+
+  const buildItemLine = (it: {
+    serviceType?: string;
+    quantity?: number;
+    description?: string;
+  }) => {
+    const qty =
+      it.quantity && Number.isFinite(it.quantity) && it.quantity > 0
+        ? it.quantity
+        : 1;
+    const qtyWords = numberToPtWords(qty);
+    const serviceLabel =
+      (it.serviceType && String(it.serviceType).trim()) || "serviço";
+    const lowerService = serviceLabel.toLowerCase();
+    const descFragment =
+      (it.description && String(it.description).trim()) ||
+      getFragmentForServiceType(it.serviceType) ||
+      fragment;
+    // produce a single canonical sentence per item (no leading dot)
+    return `Prestação de serviço de ${qty} (${qtyWords}) ${lowerService} para atuação durante o evento, com foco em ${descFragment}.`;
+  };
+
+  const servicesBlock = items.length
+    ? `1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada consistentes na disponibilização:\n\n${items.map(buildItemLine).join("\n")}\n`
+    : `1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada consistentes na disponibilização de 1 - serviço, cuja função será ${fragment},`;
 
   return `CLAUSULA 1a - SERVIÇOS CONTRATADOS:
 
-1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada consistentes na disponibilização de 1 - serviço, cuja função será zelar pela organização e limpeza de todo o salão, auditório e toaletes do evento, pelo período de ${eventHours} horas consecutivas.
+${servicesBlock}pelo período de ${eventHours} horas consecutivas.
 1.2. O evento está previsto para ocorrer ${eventDatesText}.
 
 CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:

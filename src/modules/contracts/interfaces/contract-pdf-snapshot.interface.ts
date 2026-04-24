@@ -27,6 +27,11 @@ export interface ContractPdfSnapshot {
     paymentMethod?: string;
     advancePercentage?: number;
     totalAmount?: number;
+    items?: Array<{
+      serviceType?: string;
+      quantity?: number;
+      description?: string;
+    }>;
   };
   lead?: {
     name?: string;
