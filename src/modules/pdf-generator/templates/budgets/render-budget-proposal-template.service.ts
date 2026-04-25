@@ -59,6 +59,7 @@ interface HeaderAssets {
 @Injectable()
 export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<BudgetProposalPdfPayload> {
   readonly templateKey = PdfTemplateKey.BUDGETS;
+  private _lastPayloadTotals: string = "";
 
   async render(payload: BudgetProposalPdfPayload): Promise<Buffer> {
     const document = await PDFDocument.create();
@@ -69,21 +70,21 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     this.drawHeader(state.page, fonts, payload, headerAssets);
     state.cursorY = CONTENT_START_Y;
 
-    this.drawSectionTitle(state, fonts, "Apresentacao");
+    this.drawSectionTitle(state, fonts, "Apresentação");
     this.drawParagraphs(state, fonts, payload.introductionParagraphs);
 
     this.drawSectionTitle(state, fonts, "Resumo da Proposta");
     this.drawDetailCards(state, fonts, payload.eventDetails);
 
-    this.drawSectionTitle(state, fonts, "Servicos Propostos");
+    this.drawSectionTitle(state, fonts, "Serviços Propostos");
+    // store totals value for the items table totals row
+    this._lastPayloadTotals = payload.totals?.total || "";
     this.drawItemsTable(state, fonts, payload.items);
 
     if (payload.notes.length > 0) {
-      this.drawSectionTitle(state, fonts, "Observacoes");
+      this.drawSectionTitle(state, fonts, "Observações");
       this.drawBulletNotes(state, fonts, payload.notes);
     }
-
-    this.drawTotalsCard(state, fonts, payload);
 
     for (let index = 0; index < state.pages.length; index += 1) {
       this.drawFooter(
@@ -323,10 +324,16 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
       color: PDF_COLORS.text,
     });
 
+    const specialTitles = ["Apresentação", "Resumo da Proposta"];
+    const baseWidth = 125;
+    const underlineWidth = specialTitles.includes(title)
+      ? Math.round(baseWidth * 1.3)
+      : baseWidth;
+
     state.page.drawRectangle({
       x: PDF_LAYOUT.marginX,
       y: state.cursorY - 5,
-      width: 40,
+      width: underlineWidth,
       height: 2,
       color: PDF_COLORS.gold,
     });
@@ -487,7 +494,7 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
 
       if (state.cursorY - rowHeight < FOOTER_RESERVED_HEIGHT) {
         this.addPage(state);
-        this.drawSectionTitle(state, fonts, "Servicos Propostos");
+        this.drawSectionTitle(state, fonts, "Serviços Propostos");
         this.drawTableHeader(state.page, fonts, state.cursorY);
         state.cursorY -= TABLE_HEADER_HEIGHT;
       }
@@ -503,7 +510,56 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
       state.cursorY -= rowHeight;
     });
 
-    state.cursorY -= 8;
+    // add an extra row for the total value under the 'Total' column
+    const totalRowHeight = 22;
+    if (state.cursorY - totalRowHeight < FOOTER_RESERVED_HEIGHT) {
+      this.addPage(state);
+      this.drawSectionTitle(state, fonts, "Serviços Propostos");
+      this.drawTableHeader(state.page, fonts, state.cursorY);
+      state.cursorY -= TABLE_HEADER_HEIGHT;
+    }
+
+    const totalTopY = state.cursorY;
+    const totalBottomY = totalTopY - totalRowHeight;
+    const x = PDF_LAYOUT.marginX;
+    const totalCenterX =
+      x +
+      TABLE_DESCRIPTION_WIDTH +
+      TABLE_QTY_WIDTH +
+      TABLE_UNIT_WIDTH +
+      TABLE_TOTAL_WIDTH / 2;
+
+    state.page.drawRectangle({
+      x,
+      y: totalBottomY,
+      width: PDF_LAYOUT.contentWidth,
+      height: totalRowHeight,
+      color: PDF_COLORS.rowAlt,
+      borderColor: PDF_COLORS.border,
+      borderWidth: 0.6,
+    });
+
+    // label on the left (bold)
+    state.page.drawText("Total", {
+      x: x + 10,
+      y: totalTopY - 14,
+      font: fonts.bold,
+      size: PDF_FONT_SIZES.body,
+      color: PDF_COLORS.text,
+    });
+
+    // total value centered in the total column
+    this.drawCenteredText(
+      state.page,
+      fonts.bold,
+      this._lastPayloadTotals || "",
+      totalCenterX,
+      totalTopY - 14,
+      PDF_FONT_SIZES.body,
+      PDF_COLORS.text,
+    );
+
+    state.cursorY = totalBottomY - 8;
   }
 
   private drawTableHeader(page: PDFPage, fonts: FontSet, topY: number) {
@@ -530,7 +586,7 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
       borderWidth: 1,
     });
 
-    page.drawText("Descricao", {
+    page.drawText("Descrição", {
       x: descriptionX,
       y: topY - 16,
       font: fonts.bold,
@@ -550,7 +606,7 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     this.drawCenteredText(
       page,
       fonts.bold,
-      "Unitario",
+      "Unitário",
       unitCenterX,
       topY - 16,
       PDF_FONT_SIZES.small,
