@@ -8,8 +8,8 @@ import {
 } from "../../../../utils/pdf";
 
 const INTRODUCTION_PARAGRAPHS = [
-  "A Royal Copeiras se dedica a oferecer um serviço exclusivo de copeiragem para eventos sofisticados, contando com profissionais altamente qualificados para assegurar a organizacao e a impecavel higienizacao dos ambientes. Nossa equipe e treinada para atender com discricao e eficiencia.",
-  "Oferecemos profissionais uniformizados que zelam pelo bem-estar dos convidados, mantendo a organizacao com kits funcionais e materiais de excelencia.",
+  "A Royal Copeiras se dedica a oferecer um serviço exclusivo de copeiragem para eventos sofisticados, contando com profissionais altamente qualificados para assegurar a organização e a impecável higienização dos ambientes. Nossa equipe é treinada para atender com discrição e eficiência.",
+  "Oferecemos profissionais uniformizados que zelam pelo bem-estar dos convidados, mantendo a organização com kits funcionais e materiais de excelência.",
 ];
 
 const PROPOSAL_VALIDITY_DAYS = 15;
@@ -55,19 +55,19 @@ export class BuildBudgetProposalPdfPayloadService {
     return {
       companyName: "Royal Copeiras",
       companySubtitle:
-        "Servicos de copeiragem e apoio para eventos sofisticados",
-      documentTitle: "Orcamento",
+        "Serviços de copeiragem e apoio para eventos sofisticados",
+      documentTitle: "Orçamento",
       documentSubtitle: "Proposta comercial",
       logoPlaceholderLabel: "Logo da empresa",
       introductionParagraphs: INTRODUCTION_PARAGRAPHS,
       metadata: [
-        { label: "Numero", value: snapshot.budget.budgetNumber },
+        { label: "Número", value: snapshot.budget.budgetNumber },
         {
           label: "Emitido em",
           value: formatDateBR(snapshot.budget.issueDate),
         },
         {
-          label: "Valido ate",
+          label: "Válido até",
           value: formatDateBR(snapshot.budget.validUntil),
         },
       ],
@@ -84,17 +84,17 @@ export class BuildBudgetProposalPdfPayloadService {
             : "Nao informado",
         },
         {
-          label: "Duracao",
+          label: "Duração",
           value: snapshot.budget.durationHours
             ? `${snapshot.budget.durationHours} horas`
-            : "Nao informada",
+            : "Não informada",
         },
         {
           label: "Entrada",
           value:
             snapshot.budget.advancePercentage !== undefined
               ? `${snapshot.budget.advancePercentage}%`
-              : "Nao informada",
+              : "Não informada",
         },
       ],
       items: [...snapshot.items]
@@ -112,13 +112,13 @@ export class BuildBudgetProposalPdfPayloadService {
         total: formatCurrencyBRL(snapshot.budget.totalAmount),
       },
       footer: {
-        cityAndIssueDate: `Goiania, ${formatLongDateBR(today)}`,
+        cityAndIssueDate: `Goiânia, ${formatLongDateBR(today)}`,
         validity: `Validade da proposta: ${PROPOSAL_VALIDITY_DAYS} dias`,
         reservationPolicy:
-          "A confirmacao da reserva depende da disponibilidade na data e do pagamento conforme condicoes.",
+          "A confirmação da reserva depende da disponibilidade na data e do pagamento conforme condições.",
         convenienceMessage:
-          "Para sua comodidade, informamos que o valor ja inclui o deslocamento do funcionario.",
-        paymentMethods: "Formas de Pagamento: Pix ou transferencia bancaria.",
+          "Para sua comodidade, informamos que o valor já inclui o deslocamento do funcionário.",
+        paymentMethods: "Formas de Pagamento: Pix ou transferência bancária.",
       },
       referenceCode: snapshotHash,
     };
