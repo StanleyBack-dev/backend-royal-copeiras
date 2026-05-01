@@ -98,6 +98,8 @@ export class SendContractEmailService {
             : contract.validUntil
               ? String(contract.validUntil)
               : undefined,
+        displacementFee: contract.budget?.displacementFee,
+        totalAmount: contract.budget?.totalAmount,
       });
 
       await this.mailProvider.send({

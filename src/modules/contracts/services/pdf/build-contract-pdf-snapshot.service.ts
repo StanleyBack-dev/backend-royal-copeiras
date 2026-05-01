@@ -67,6 +67,12 @@ export class BuildContractPdfSnapshotService {
           budgetRelation?.advancePercentage,
           budgetSnapshot.advancePercentage,
         ),
+        displacementFee: this.getNumberValue(
+          budgetRelation?.displacementFee,
+          (budgetSnapshot as Record<string, unknown>).displacementFee as
+            | number
+            | undefined,
+        ),
         totalAmount: this.getNumberValue(
           budgetRelation?.totalAmount,
           budgetSnapshot.totalAmount,

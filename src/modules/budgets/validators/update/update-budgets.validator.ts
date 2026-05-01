@@ -178,6 +178,9 @@ export class UpdateBudgetsValidator {
       current.paymentMethod = input.paymentMethod ?? current.paymentMethod;
       current.advancePercentage =
         input.advancePercentage ?? current.advancePercentage;
+      if (input.displacementFee !== undefined) {
+        current.displacementFee = Number(input.displacementFee.toFixed(2));
+      }
 
       if (input.items?.length) {
         const normalizedItems = input.items.map((item) => {
@@ -200,9 +203,12 @@ export class UpdateBudgetsValidator {
             .toFixed(2),
         );
 
+        const displacementFee = Number(
+          (current.displacementFee ?? 0).toFixed(2),
+        );
         current.subtotal = subtotal;
         current.totalAmount = Number(
-          (input.totalAmount ?? subtotal).toFixed(2),
+          (input.totalAmount ?? subtotal + displacementFee).toFixed(2),
         );
 
         await manager.delete(BudgetItemsEntity, {
@@ -251,6 +257,7 @@ export class UpdateBudgetsValidator {
       input.durationHours,
       input.paymentMethod,
       input.advancePercentage,
+      input.displacementFee,
       input.totalAmount,
       input.items,
     ].some((value) => value !== undefined);

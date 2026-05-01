@@ -24,6 +24,7 @@ export class BuildBudgetPdfSnapshotService {
         paymentMethod: entity.paymentMethod,
         advancePercentage: entity.advancePercentage,
         notes: entity.notes,
+        displacementFee: entity.displacementFee ?? 0,
         subtotal: entity.subtotal,
         totalAmount: entity.totalAmount,
       },

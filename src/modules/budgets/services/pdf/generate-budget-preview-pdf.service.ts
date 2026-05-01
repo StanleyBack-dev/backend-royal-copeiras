@@ -156,6 +156,7 @@ export class GenerateBudgetPreviewPdfService {
       durationHours: draft.durationHours,
       paymentMethod: draft.paymentMethod,
       advancePercentage: draft.advancePercentage,
+      displacementFee: Number((draft.displacementFee ?? 0).toFixed(2)),
       notes: undefined,
       subtotal,
       totalAmount: Number((draft.totalAmount ?? subtotal).toFixed(2)),

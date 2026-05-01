@@ -7,6 +7,15 @@ interface ContractProposalTemplateInput {
   budgetNumber: string;
   issueDate: string;
   validUntil?: string;
+  displacementFee?: number;
+  totalAmount?: number;
+}
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
 }
 
 function formatDate(iso: string): string {
@@ -28,8 +37,19 @@ function buildPlainText(input: ContractProposalTemplateInput): string {
   }
 
   lines.push(
+    `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
+  );
+
+  if (typeof input.totalAmount === "number") {
+    lines.push(`Valor total: ${formatCurrency(input.totalAmount)}`);
+  }
+
+  lines.push(
     "",
     "Este e-mail é uma prévia do contrato.",
+    input.displacementFee && input.displacementFee > 0
+      ? `O valor total do contrato contempla a taxa de deslocamento de ${formatCurrency(input.displacementFee)}.`
+      : "O valor total do contrato segue as condições previstas no orçamento aprovado.",
     "Se estiver de acordo, a Royal enviará o link de assinatura online por e-mail.",
     "",
     "Em caso de dúvidas, entre em contato conosco.",
@@ -55,9 +75,12 @@ export function buildContractProposalEmail(
       <p style="margin:0 0 6px 0;font-size:14px;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Orçamento:</strong> ${input.budgetNumber}</p>
       <p style="margin:0 0 6px 0;font-size:14px;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Data de emissão:</strong> ${formatDate(input.issueDate)}</p>
       ${input.validUntil ? `<p style="margin:0 0 6px 0;font-size:14px;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Válido até:</strong> ${formatDate(input.validUntil)}</p>` : ""}
+      <p style="margin:0 0 6px 0;font-size:14px;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Taxa de deslocamento:</strong> ${formatCurrency(input.displacementFee ?? 0)}</p>
+      ${typeof input.totalAmount === "number" ? `<p style="margin:0 0 6px 0;font-size:14px;color:${EMAIL_BRAND.text};"><strong style="color:${EMAIL_BRAND.accentDark};">Valor total:</strong> ${formatCurrency(input.totalAmount)}</p>` : ""}
     </div>
     <p style="margin:0 0 12px 0;font-size:14px;color:${EMAIL_BRAND.textMuted};">
       Este e-mail é uma <strong>prévia do contrato</strong>.
+      ${input.displacementFee && input.displacementFee > 0 ? ` O valor total contempla a taxa de deslocamento de <strong>${formatCurrency(input.displacementFee)}</strong>.` : ""}
       Se estiver de acordo, a Royal enviará o link de assinatura online por e-mail.
     </p>
     <p style="margin:20px 0 0 0;font-size:14px;color:${EMAIL_BRAND.textMuted};">Em caso de dúvidas, entre em contato conosco. Teremos prazer em atendê-lo(a).</p>

@@ -91,6 +91,7 @@ export class SendBudgetEmailService {
       guestCount: budget.guestCount,
       durationHours: budget.durationHours,
       advancePercentage: budget.advancePercentage,
+      displacementFee: budget.displacementFee,
       subtotal: budget.subtotal,
       totalAmount: budget.totalAmount,
       items: items.map((item) => ({
