@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { CurrentUser } from "../../../common/decorators/current-user.decorator";
-import { AuthPermission } from "../../auth/enums/auth-permission.enum";
-import { RequirePermissions } from "../../auth/decorators/require-permissions.decorator";
+import { PageAccessKey } from "../../auth/enums/page-access-key.enum";
+import { RequirePageAccess } from "../../auth/decorators/require-page-access.decorator";
 import { RESPONSE_MESSAGES } from "../../../common/responses/catalogs/response-messages.catalog";
 import {
   buildPaginatedListResponse,
@@ -31,7 +31,7 @@ export class SignatureResolver {
   ) {}
 
   @Query(() => GetSignaturesListResponseDto, { name: "getSignatures" })
-  @RequirePermissions(AuthPermission.READ_BUDGETS)
+  @RequirePageAccess(PageAccessKey.BUDGETS)
   async getSignatures(
     @CurrentUser() user: unknown,
     @Args("input", { nullable: true }) input?: GetSignaturesInputDto,
@@ -50,7 +50,7 @@ export class SignatureResolver {
   @Mutation(() => CreateSignatureRequestMutationResponseDto, {
     name: "createSignatureRequest",
   })
-  @RequirePermissions(AuthPermission.MANAGE_BUDGETS)
+  @RequirePageAccess(PageAccessKey.BUDGETS)
   async createSignatureRequest(
     @Args("input") input: CreateSignatureRequestInputDto,
   ) {
@@ -61,7 +61,7 @@ export class SignatureResolver {
   @Mutation(() => GetSignatureStatusMutationResponseDto, {
     name: "getSignatureStatus",
   })
-  @RequirePermissions(AuthPermission.READ_BUDGETS)
+  @RequirePageAccess(PageAccessKey.BUDGETS)
   async getSignatureStatus(@Args("input") input: GetSignatureStatusInputDto) {
     const data = await this.getSignatureStatusService.execute(input.requestId);
     return buildDataResponse(data, RESPONSE_MESSAGES.signatures.statusFetched);
@@ -70,7 +70,7 @@ export class SignatureResolver {
   @Mutation(() => SuccessResponseDto, {
     name: "cancelSignatureRequest",
   })
-  @RequirePermissions(AuthPermission.MANAGE_BUDGETS)
+  @RequirePageAccess(PageAccessKey.BUDGETS)
   async cancelSignatureRequest(
     @Args("input") input: CancelSignatureRequestInputDto,
   ) {

@@ -6,8 +6,8 @@ import { GetEmployeesInputDto } from "../../dtos/get/get-employees-input.dto";
 import { GetEmployeesResponseDto } from "../../dtos/get/get-employees-response.dto";
 import { PaginatedResult } from "../../../../common/responses/interfaces/response.interface";
 import { GetEmployeesValidator } from "../../validators/get/get-employees.validator";
-import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
+import { PageAccessKey } from "../../../auth/enums/page-access-key.enum";
 
 @Injectable()
 export class GetEmployeesService {
@@ -21,9 +21,9 @@ export class GetEmployeesService {
     userId: string,
     input?: GetEmployeesInputDto,
   ): Promise<PaginatedResult<GetEmployeesResponseDto>> {
-    await this.authorizationService.assertPermissionForUserId(
+    await this.authorizationService.assertPageAccessForUserId(
       userId,
-      AuthPermission.READ_EMPLOYEES,
+      PageAccessKey.EMPLOYEES,
     );
 
     const records = await GetEmployeesValidator.validateAndFetchRecords(

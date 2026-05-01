@@ -48,7 +48,7 @@ export class UpdateContractsValidator {
     }
 
     const record = await contractsRepo.findOne({
-      where: { idContracts: input.idContracts, idUsers: userId },
+      where: { idContracts: input.idContracts },
     });
 
     if (!record) {
@@ -100,12 +100,9 @@ export class UpdateContractsValidator {
       : record.expiresAt;
     record.body = input.body ?? record.body;
     record.templateVersion = input.templateVersion ?? record.templateVersion;
-    // Campos de assinatura migrados para SignatureEntity
     record.sentVia = input.sentVia ?? record.sentVia;
     record.sentAt = input.sentAt ? new Date(input.sentAt) : record.sentAt;
     record.notes = input.notes ?? record.notes;
-
-    // Removido: signedAt agora pertence à SignatureEntity
 
     return contractsRepo.save(record);
   }

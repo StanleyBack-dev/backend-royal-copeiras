@@ -62,7 +62,7 @@ export class GenerateBudgetPreviewPdfService {
     }
 
     const lead = await this.leadsRepository.findOne({
-      where: { idLeads: budget.idLeads, idUsers: userId },
+      where: { idLeads: budget.idLeads },
       select: { name: true, idLeads: true, idUsers: true },
     });
 
@@ -77,7 +77,6 @@ export class GenerateBudgetPreviewPdfService {
       const record = await this.budgetsRepository.findOne({
         where: {
           idBudgets: input.idBudgets,
-          idUsers: userId,
         },
         relations: { items: true, lead: true },
       });

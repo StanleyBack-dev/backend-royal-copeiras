@@ -23,15 +23,11 @@ export class UpdateLeadsValidator {
     }
 
     const record = await leadsRepo.findOne({
-      where: { idLeads: input.idLeads, idUsers: userId },
+      where: { idLeads: input.idLeads },
     });
 
     if (!record) {
       throw AppException.from(APP_ERRORS.leads.notFound, undefined);
-    }
-
-    if (record.idUsers !== userId) {
-      throw AppException.from(APP_ERRORS.leads.editForbidden, undefined);
     }
 
     const hasUpdateData = Object.entries(input).some(

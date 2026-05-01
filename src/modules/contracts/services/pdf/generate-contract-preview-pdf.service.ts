@@ -26,14 +26,8 @@ export class GenerateContractPreviewPdfService {
     );
 
     const contract = await this.contractsRepository.findOne({
-      where: {
-        idContracts: input.idContracts,
-        idUsers: userId,
-      },
-      relations: {
-        budget: true,
-        lead: true,
-      },
+      where: { idContracts: input.idContracts },
+      relations: { budget: true, lead: true },
     });
 
     if (!contract) {

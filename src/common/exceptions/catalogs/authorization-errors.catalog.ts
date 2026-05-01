@@ -19,4 +19,10 @@ export const authorizationErrors = {
     message:
       "Somente ADMIN_MASTER pode gerenciar permissões de páginas dos usuários.",
   },
+  missingPageAccess: {
+    code: "AUTHZ_MISSING_PAGE_ACCESS",
+    status: HttpStatus.FORBIDDEN,
+    message: ({ page }: { page: string }) =>
+      `Usuário não possui acesso à página ${page}.`,
+  },
 } as const;

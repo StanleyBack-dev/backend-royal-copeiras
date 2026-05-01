@@ -18,7 +18,7 @@ export class GetBudgetsValidator {
   ): Promise<PaginatedResult<BudgetsEntity>> {
     if (input.idBudgets) {
       const record = await repo.findOne({
-        where: { idBudgets: input.idBudgets, idUsers: userId },
+        where: { idBudgets: input.idBudgets },
         relations: { items: true },
       });
 
@@ -40,8 +40,7 @@ export class GetBudgetsValidator {
 
     const queryBuilder = repo
       .createQueryBuilder("budget")
-      .leftJoinAndSelect("budget.items", "item")
-      .where("budget.idUsers = :userId", { userId });
+      .leftJoinAndSelect("budget.items", "item");
 
     if (input.idLeads) {
       queryBuilder.andWhere("budget.idLeads = :idLeads", {
