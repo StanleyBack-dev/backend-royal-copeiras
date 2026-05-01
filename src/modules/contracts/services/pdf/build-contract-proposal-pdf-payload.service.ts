@@ -91,26 +91,46 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     const serviceLabel =
       (it.serviceType && String(it.serviceType).trim()) || "serviço";
     const lowerService = serviceLabel.toLowerCase();
+    const rawDescription = String(it.description || "")
+      .replace(/\r?\n+/g, " ")
+      .trim();
+
+    if (/^Prestação de serviço de/i.test(rawDescription)) {
+      return rawDescription;
+    }
+
     const descFragment =
-      (it.description && String(it.description).trim()) ||
-      getFragmentForServiceType(it.serviceType) ||
-      fragment;
-    // produce a single canonical sentence per item (no leading dot)
+      rawDescription || getFragmentForServiceType(it.serviceType) || fragment;
+
     return `Prestação de serviço de ${qty} (${qtyWords}) ${lowerService} para atuação durante o evento, com foco em ${descFragment}.`;
   };
 
   const servicesBlock = items.length
-    ? `1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada consistentes na disponibilização:\n\n${items.map(buildItemLine).join("\n")}\n`
-    : `1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada consistentes na disponibilização de 1 - serviço, cuja função será ${fragment},`;
+    ? items
+        .map((item, index) => `1.1.${index + 1}. ${buildItemLine(item)}`)
+        .join("\n")
+    : `1.1.1. Prestação de serviço de 1 (um) serviço para atuação durante o evento, com foco em ${fragment}.`;
+
+  const displacementFee =
+    typeof snapshot.budget?.displacementFee === "number"
+      ? snapshot.budget.displacementFee
+      : 0;
+  const displacementFeeLabel = formatCurrencyBRL(displacementFee);
+  const displacementClause =
+    displacementFee > 0
+      ? `\n1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.`
+      : "";
 
   return `CLAUSULA 1a - SERVIÇOS CONTRATADOS:
 
-${servicesBlock}pelo período de ${eventHours} horas consecutivas.
-1.2. O evento está previsto para ocorrer ${eventDatesText}.
+1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada, consistentes na disponibilização de:
+${servicesBlock}
+1.2. Pelo período de ${eventHours} horas consecutivas.
+1.3. O evento está previsto para ocorrer ${eventDatesText}.${displacementClause}
 
 CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 
-2.1. O valor dos serviços prestados é de ${totalAmountLabel}.
+2.1. O valor dos serviços prestados é de ${totalAmountLabel}${displacementFee > 0 ? `, sendo ${displacementFeeLabel} referente à taxa de deslocamento` : ""}.
 2.2. O pagamento deverá ser realizado à vista, via pix (CNPJ 64.062.038/0001-71) ou dinheiro. Sendo ${advancePercentage}% do valor antes do evento para confirmação do mesmo e ${100 - advancePercentage}% após o evento.
 
 CLAUSULA 3a - RESPONSABILIDADES DO CONTRATANTE:

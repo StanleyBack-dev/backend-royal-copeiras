@@ -83,6 +83,11 @@ export class CreateBudgetsInputDto {
   @Min(0)
   totalAmount?: number;
 
+  @Field(() => Float, { defaultValue: 0 })
+  @IsNumber()
+  @Min(0)
+  displacementFee: number = 0;
+
   @Field(() => [CreateBudgetItemInputDto])
   @IsArray()
   @ArrayMinSize(1)

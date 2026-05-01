@@ -71,7 +71,10 @@ export class CreateBudgetsValidator {
         .toFixed(2),
     );
 
-    const totalAmount = Number((input.totalAmount ?? subtotal).toFixed(2));
+    const displacementFee = Number((input.displacementFee ?? 0).toFixed(2));
+    const totalAmount = Number(
+      (input.totalAmount ?? subtotal + displacementFee).toFixed(2),
+    );
 
     return budgetsRepo.manager.transaction(async (manager) => {
       const budgetNumber = await this.generateBudgetNumber(manager);
@@ -89,6 +92,7 @@ export class CreateBudgetsValidator {
         durationHours: input.durationHours,
         paymentMethod: input.paymentMethod,
         advancePercentage: input.advancePercentage,
+        displacementFee,
         subtotal,
         totalAmount,
       });

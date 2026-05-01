@@ -26,6 +26,7 @@ export interface ContractPdfSnapshot {
     durationHours?: number;
     paymentMethod?: string;
     advancePercentage?: number;
+    displacementFee?: number;
     totalAmount?: number;
     items?: Array<{
       serviceType?: string;

@@ -25,6 +25,7 @@ export interface BudgetProposalPdfPayload {
   documentTitle: string;
   documentSubtitle: string;
   logoPlaceholderLabel: string;
+  itemsSectionTitle: string;
   introductionParagraphs: string[];
   metadata: BudgetProposalPdfPayloadDetail[];
   eventDetails: BudgetProposalPdfPayloadDetail[];

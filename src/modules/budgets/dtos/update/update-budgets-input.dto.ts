@@ -93,6 +93,12 @@ export class UpdateBudgetsInputDto {
   @Min(0)
   totalAmount?: number;
 
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  displacementFee?: number;
+
   @Field(() => [UpdateBudgetItemInputDto], { nullable: true })
   @IsOptional()
   @IsArray()

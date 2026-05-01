@@ -19,13 +19,14 @@ interface BudgetProposalTemplateInput {
   guestCount?: number;
   durationHours?: number;
   advancePercentage?: number;
+  displacementFee?: number;
   subtotal: number;
   totalAmount: number;
   items: BudgetProposalItem[];
 }
 
 const FIXED_BUDGET_NOTE =
-  "Para sua comodidade, informamos que o valor já inclui o deslocamento do funcionário(a).";
+  "Os valores apresentados consideram as taxas e encargos informados na proposta.";
 const FIXED_PAYMENT_METHOD = "Pix ou transferência bancária.";
 
 function normalizeText(value: string): string {
@@ -136,6 +137,9 @@ function buildPlainText(input: BudgetProposalTemplateInput): string {
   if (input.advancePercentage !== undefined) {
     lines.push(`Entrada: ${input.advancePercentage}%`);
   }
+  lines.push(
+    `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
+  );
 
   lines.push("", "Itens:");
   input.items.forEach((item) => {
@@ -148,6 +152,9 @@ function buildPlainText(input: BudgetProposalTemplateInput): string {
   });
 
   lines.push("", `Subtotal: ${formatCurrency(input.subtotal)}`);
+  lines.push(
+    `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
+  );
   lines.push(`Total: ${formatCurrency(input.totalAmount)}`);
 
   lines.push("", FIXED_BUDGET_NOTE);
@@ -192,6 +199,10 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
     input.advancePercentage !== undefined
       ? buildDetailRow("Entrada", `${input.advancePercentage}%`)
       : "",
+    buildDetailRow(
+      "Taxa de deslocamento",
+      formatCurrency(input.displacementFee ?? 0),
+    ),
   ]
     .filter(Boolean)
     .join("");
@@ -201,6 +212,10 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
       <tr>
         <td style="font-size:14px;color:${EMAIL_BRAND.text};">Subtotal</td>
         <td style="font-size:14px;color:${EMAIL_BRAND.text};text-align:right;">${formatCurrency(input.subtotal)}</td>
+      </tr>
+      <tr>
+        <td style="font-size:14px;color:${EMAIL_BRAND.text};padding-top:6px;">Taxa de deslocamento</td>
+        <td style="font-size:14px;color:${EMAIL_BRAND.text};text-align:right;padding-top:6px;">${formatCurrency(input.displacementFee ?? 0)}</td>
       </tr>
       <tr>
         <td style="font-size:16px;font-weight:700;color:${EMAIL_BRAND.text};padding-top:6px;">Total</td>

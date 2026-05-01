@@ -34,6 +34,7 @@ export const budgetMock: BudgetsEntity = {
   durationHours: 6,
   paymentMethod: "PIX",
   advancePercentage: 30,
+  displacementFee: 0,
   notes: "obs",
   subtotal: 1000,
   totalAmount: 1000,

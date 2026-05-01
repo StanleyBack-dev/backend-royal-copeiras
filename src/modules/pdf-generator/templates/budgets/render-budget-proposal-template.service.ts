@@ -76,10 +76,10 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     this.drawSectionTitle(state, fonts, "Resumo da Proposta");
     this.drawDetailCards(state, fonts, payload.eventDetails);
 
-    this.drawSectionTitle(state, fonts, "Serviços Propostos");
+    this.drawSectionTitle(state, fonts, payload.itemsSectionTitle);
     // store totals value for the items table totals row
     this._lastPayloadTotals = payload.totals?.total || "";
-    this.drawItemsTable(state, fonts, payload.items);
+    this.drawItemsTable(state, fonts, payload.items, payload.itemsSectionTitle);
 
     if (payload.notes.length > 0) {
       this.drawSectionTitle(state, fonts, "Observações");
@@ -485,6 +485,7 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     state: RenderState,
     fonts: FontSet,
     items: BudgetProposalPdfPayloadItem[],
+    sectionTitle: string,
   ) {
     this.drawTableHeader(state.page, fonts, state.cursorY);
     state.cursorY -= TABLE_HEADER_HEIGHT;
@@ -494,7 +495,7 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
 
       if (state.cursorY - rowHeight < FOOTER_RESERVED_HEIGHT) {
         this.addPage(state);
-        this.drawSectionTitle(state, fonts, "Serviços Propostos");
+        this.drawSectionTitle(state, fonts, sectionTitle);
         this.drawTableHeader(state.page, fonts, state.cursorY);
         state.cursorY -= TABLE_HEADER_HEIGHT;
       }
@@ -514,7 +515,7 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     const totalRowHeight = 22;
     if (state.cursorY - totalRowHeight < FOOTER_RESERVED_HEIGHT) {
       this.addPage(state);
-      this.drawSectionTitle(state, fonts, "Serviços Propostos");
+      this.drawSectionTitle(state, fonts, sectionTitle);
       this.drawTableHeader(state.page, fonts, state.cursorY);
       state.cursorY -= TABLE_HEADER_HEIGHT;
     }

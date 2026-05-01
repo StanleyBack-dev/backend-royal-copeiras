@@ -32,6 +32,7 @@ describe("CreateBudgetsService", () => {
       durationHours: 6,
       paymentMethod: "PIX",
       advancePercentage: 30,
+      displacementFee: 0,
       items: [
         {
           description: "2 copeiras",
@@ -61,6 +62,7 @@ describe("CreateBudgetsService", () => {
         durationHours: 6,
         paymentMethod: "PIX",
         advancePercentage: 30,
+        displacementFee: 0,
         items: [
           {
             description: "2 copeiras",

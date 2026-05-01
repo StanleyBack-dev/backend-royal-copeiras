@@ -5,7 +5,6 @@ export const BUDGET_ALLOWED_SERVICE_TYPES = [
   "seguranca",
   "monitor",
   "recepcionista",
-  "deslocamento",
 ] as const;
 
 export type BudgetServiceType = (typeof BUDGET_ALLOWED_SERVICE_TYPES)[number];
@@ -20,7 +19,6 @@ const BUDGET_SERVICE_TYPE_KEYWORDS: Record<
   seguranca: ["seguranca", "segurancas"],
   monitor: ["monitor", "monitores"],
   recepcionista: ["recepcionista", "recepcionistas"],
-  deslocamento: ["deslocamento"],
 };
 
 function normalize(value: string): string {
