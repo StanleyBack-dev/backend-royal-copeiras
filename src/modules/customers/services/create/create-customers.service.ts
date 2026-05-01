@@ -14,6 +14,8 @@ export class CreateCustomersService {
     userId: string,
     _input: CreateCustomersInputDto,
   ): Promise<ICustomer> {
+    void _input;
+
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.MANAGE_CUSTOMERS,
