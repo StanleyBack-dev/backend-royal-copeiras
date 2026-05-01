@@ -605,6 +605,7 @@ type CreateBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
+  displacementFee: Float!
   subtotal: Float!
   totalAmount: Float!
   sentVia: String
@@ -649,6 +650,7 @@ type GetBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
+  displacementFee: Float!
   subtotal: Float!
   totalAmount: Float!
   sentVia: String
@@ -683,6 +685,7 @@ type UpdateBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
+  displacementFee: Float!
   subtotal: Float!
   totalAmount: Float!
   sentVia: String
@@ -1076,6 +1079,7 @@ input CreateBudgetsInputDto {
   paymentMethod: String!
   advancePercentage: Float!
   totalAmount: Float
+  displacementFee: Float! = 0
   items: [CreateBudgetItemInputDto!]!
 }
 
@@ -1100,6 +1104,7 @@ input UpdateBudgetsInputDto {
   paymentMethod: String
   advancePercentage: Float
   totalAmount: Float
+  displacementFee: Float
   items: [UpdateBudgetItemInputDto!]
   sentVia: String
   sentAt: String

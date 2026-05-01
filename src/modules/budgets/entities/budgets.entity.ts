@@ -94,6 +94,16 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   notes?: string;
 
   @Column({
+    name: "displacement_fee",
+    type: "numeric",
+    precision: 12,
+    scale: 2,
+    default: 0,
+    transformer: numericTransformer,
+  })
+  displacementFee!: number;
+
+  @Column({
     name: "subtotal",
     type: "numeric",
     precision: 12,

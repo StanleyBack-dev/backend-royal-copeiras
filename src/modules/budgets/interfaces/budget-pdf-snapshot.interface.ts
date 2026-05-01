@@ -27,6 +27,7 @@ export interface BudgetPdfSnapshot {
     paymentMethod?: string;
     advancePercentage?: number;
     notes?: string;
+    displacementFee: number;
     subtotal: number;
     totalAmount: number;
   };

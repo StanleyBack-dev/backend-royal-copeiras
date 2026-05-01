@@ -20,8 +20,6 @@ const SERVICE_FRAGMENT_MAP: Record<string, string> = {
     "promover o controle de acesso, patrulhamento e vigilância das dependências do evento, com foco na preservação da integridade de pessoas e bens",
   porteiro:
     "controlar entradas e saídas, orientar visitantes e supervisionar a guarda de acessos",
-  deslocamento:
-    "efetuar o transporte de equipe e/ou material entre endereços acordados, conforme cronograma e instruções do contratante",
   recepcionista:
     "realizar credenciamento e acolhimento de convidados, fornecendo informações e orientações aos participantes",
   monitor:

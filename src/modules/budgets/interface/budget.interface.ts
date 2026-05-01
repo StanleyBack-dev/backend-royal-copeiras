@@ -14,6 +14,7 @@ export interface IBudget {
   durationHours?: number;
   paymentMethod?: string;
   advancePercentage?: number;
+  displacementFee: number;
   subtotal: number;
   totalAmount: number;
   sentVia?: string;

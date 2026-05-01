@@ -13,6 +13,9 @@ const INTRODUCTION_PARAGRAPHS = [
 ];
 
 const PROPOSAL_VALIDITY_DAYS = 15;
+const ITEMS_SECTION_TITLE = "Serviços e Taxas Propostos";
+const DISPLACEMENT_FEE_DESCRIPTION =
+  "Taxa de deslocamento da equipe para atendimento no local do evento.";
 
 function sanitizeBudgetItemDescription(description: string): string {
   const trimmed = description.trim();
@@ -42,6 +45,7 @@ export class BuildBudgetProposalPdfPayloadService {
     snapshotHash: string,
   ): BudgetProposalPdfPayload {
     const today = new Date();
+    const displacementFee = snapshot.budget.displacementFee ?? 0;
     const eventDates = snapshot.budget.eventDates.length
       ? snapshot.budget.eventDates
           .map((value) => formatDateBR(value))
@@ -59,6 +63,7 @@ export class BuildBudgetProposalPdfPayloadService {
       documentTitle: "Orçamento",
       documentSubtitle: "Proposta comercial",
       logoPlaceholderLabel: "Logo da empresa",
+      itemsSectionTitle: ITEMS_SECTION_TITLE,
       introductionParagraphs: INTRODUCTION_PARAGRAPHS,
       metadata: [
         { label: "Número", value: snapshot.budget.budgetNumber },
@@ -96,16 +101,28 @@ export class BuildBudgetProposalPdfPayloadService {
               ? `${snapshot.budget.advancePercentage}%`
               : "Não informada",
         },
+        {
+          label: "Taxa de deslocamento",
+          value: formatCurrencyBRL(displacementFee),
+        },
       ],
-      items: [...snapshot.items]
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => ({
-          description: sanitizeBudgetItemDescription(item.description),
-          quantity: String(item.quantity),
-          unitPrice: formatCurrencyBRL(item.unitPrice),
-          totalPrice: formatCurrencyBRL(item.totalPrice),
-          notes: item.notes,
-        })),
+      items: [
+        ...[...snapshot.items]
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .map((item) => ({
+            description: sanitizeBudgetItemDescription(item.description),
+            quantity: String(item.quantity),
+            unitPrice: formatCurrencyBRL(item.unitPrice),
+            totalPrice: formatCurrencyBRL(item.totalPrice),
+            notes: item.notes,
+          })),
+        {
+          description: DISPLACEMENT_FEE_DESCRIPTION,
+          quantity: "1",
+          unitPrice: formatCurrencyBRL(displacementFee),
+          totalPrice: formatCurrencyBRL(displacementFee),
+        },
+      ],
       notes,
       totals: {
         subtotal: formatCurrencyBRL(snapshot.budget.subtotal),
@@ -117,7 +134,7 @@ export class BuildBudgetProposalPdfPayloadService {
         reservationPolicy:
           "A confirmação da reserva depende da disponibilidade na data e do pagamento conforme condições.",
         convenienceMessage:
-          "Para sua comodidade, informamos que o valor já inclui o deslocamento do funcionário.",
+          "Os valores apresentados já incluem todas as taxas e encargos acordados.",
         paymentMethods: "Formas de Pagamento: Pix ou transferência bancária.",
       },
       referenceCode: snapshotHash,
