@@ -11,23 +11,27 @@ export class CreateEmployeesValidator extends EmployeesBaseValidator {
     input: CreateEmployeesInputDto,
     employeesRepo: Repository<EmployeesEntity>,
   ): Promise<EmployeesEntity> {
-    this.validateDocument(input.document);
+    const normalizedDocument = input.document?.trim();
 
-    const existing = await employeesRepo.findOne({
-      where: { document: input.document },
-    });
+    if (normalizedDocument) {
+      this.validateDocument(normalizedDocument);
 
-    if (existing) {
-      throw AppException.from(
-        APP_ERRORS.employees.duplicateDocument,
-        undefined,
-      );
+      const existing = await employeesRepo.findOne({
+        where: { document: normalizedDocument },
+      });
+
+      if (existing) {
+        throw AppException.from(
+          APP_ERRORS.employees.duplicateDocument,
+          undefined,
+        );
+      }
     }
 
     const newRecord = employeesRepo.create({
       idUsers: userId,
       name: input.name,
-      document: input.document,
+      document: normalizedDocument || null,
       email: input.email,
       phone: input.phone,
       position: input.position,

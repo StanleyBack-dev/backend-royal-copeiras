@@ -5,6 +5,7 @@ import { customersErrors } from "./catalogs/customers-errors.catalog";
 import { budgetsErrors } from "./catalogs/budgetsErrors.catalog";
 import { contractsErrors } from "./catalogs/contracts-errors.catalog";
 import { employeesErrors } from "./catalogs/employees-errors.catalog";
+import { eventsErrors } from "./catalogs/events-errors.catalog";
 import { leadsErrors } from "./catalogs/leadsErrors.catalog";
 import { mailsErrors } from "./catalogs/mails-errors.catalog";
 import { pdfErrors } from "./catalogs/pdf-errors.catalog";
@@ -23,6 +24,7 @@ export const APP_ERRORS = {
   contracts: contractsErrors,
   customers: customersErrors,
   employees: employeesErrors,
+  events: eventsErrors,
   mails: mailsErrors,
   signatures: signaturesErrors,
   pdf: pdfErrors,

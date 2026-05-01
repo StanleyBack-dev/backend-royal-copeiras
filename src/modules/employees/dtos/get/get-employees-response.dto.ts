@@ -31,8 +31,8 @@ export class GetEmployeesResponseDto implements IEmployee {
   @Field()
   name!: string;
 
-  @Field()
-  document!: string;
+  @Field(() => String, { nullable: true })
+  document?: string | null;
 
   @Field({ nullable: true })
   email?: string;

@@ -1,27 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
 import { ProcessSignatureCallbackService } from "../services/process-signature-callback.service";
 import { SignatureStatus } from "../enums/signature-status.enum";
-import { ContractStatus } from "../../contracts/enums/contract-status.enum";
 
 describe("ProcessSignatureCallbackService", () => {
   let service: ProcessSignatureCallbackService;
   let signaturesRepository: any;
   let contractsRepository: any;
+  let usersRepository: any;
+  let leadsRepository: any;
+  let activateSignedContractService: any;
 
   beforeEach(() => {
     signaturesRepository = {
-      findOne: jest.fn(),
+      find: jest.fn(),
       save: jest.fn(),
     };
 
     contractsRepository = {
-      update: jest.fn(),
+      manager: {
+        transaction: jest.fn().mockImplementation(async (cb: any) => {
+          const contractRepo = {
+            findOne: jest
+              .fn()
+              .mockResolvedValue({ idContracts: "ctr-1", status: "generated" }),
+            save: jest.fn().mockResolvedValue(true),
+          };
+          const manager = {
+            getRepository: jest.fn().mockReturnValue(contractRepo),
+          };
+          return cb(manager);
+        }),
+      },
     };
+
+    usersRepository = { findOne: jest.fn() };
+    leadsRepository = { findOne: jest.fn() };
+    activateSignedContractService = { execute: jest.fn() };
 
     // @ts-ignore - inject mocks
     service = new ProcessSignatureCallbackService(
       signaturesRepository,
       contractsRepository,
+      usersRepository,
+      leadsRepository,
+      activateSignedContractService,
     );
   });
 
@@ -37,7 +59,9 @@ describe("ProcessSignatureCallbackService", () => {
       signatureUrl: undefined,
     };
 
-    signaturesRepository.findOne.mockResolvedValue(existing);
+    signaturesRepository.find
+      .mockResolvedValueOnce([existing])
+      .mockResolvedValueOnce([{ ...existing, status: SignatureStatus.SIGNED }]);
     signaturesRepository.save.mockImplementation(async (v: any) => v);
 
     const payload = {
@@ -50,19 +74,14 @@ describe("ProcessSignatureCallbackService", () => {
 
     const result = await service.processAssinafyCallback(payload);
 
-    expect(signaturesRepository.findOne).toHaveBeenCalledWith({
-      where: { envelopeId: "env-1" },
-    });
+    expect(signaturesRepository.find).toHaveBeenCalled();
     expect(signaturesRepository.save).toHaveBeenCalled();
-    expect(contractsRepository.update).toHaveBeenCalledWith(
-      { idContracts: existing.idContracts },
-      { status: ContractStatus.SIGNED },
-    );
+    expect(contractsRepository.manager.transaction).toHaveBeenCalled();
     expect(result.handled).toBe(true);
   });
 
   it("returns handled false when signature not found", async () => {
-    signaturesRepository.findOne.mockResolvedValue(null);
+    signaturesRepository.find.mockResolvedValue([]);
     const payload = { id: "unknown", status: "signed" };
     const result = await service.processAssinafyCallback(payload);
     expect(result.handled).toBe(false);

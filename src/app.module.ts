@@ -19,6 +19,7 @@ import { DatabaseModule } from "./database/database.module";
 import { BudgetsModule } from "./modules/budgets/budgets.module";
 import { PdfGeneratorModule } from "./modules/pdf-generator/pdf-generator.module";
 import { SignatureModule } from "./modules/signature/signature.module";
+import { EventsModule } from "./modules/events/events.module";
 
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 
@@ -43,6 +44,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     BudgetsModule,
     PdfGeneratorModule,
     SignatureModule,
+    EventsModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })

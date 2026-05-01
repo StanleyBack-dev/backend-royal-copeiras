@@ -17,11 +17,16 @@ import { ProcessSignatureCallbackService } from "./services/process-signature-ca
 import { AssinafyWebhookController } from "./controllers/assinafy-webhook.controller";
 import { ProcessSignatureWebhookService } from "./services/process-signature-webhook.service";
 import { SignatureWebhookController } from "./controllers/signature-webhook.controller";
+import { CustomersModule } from "../customers/customers.module";
+import { EventsModule } from "../events/events.module";
+import { ActivateSignedContractService } from "./services/activate-signed-contract.service";
 
 @Module({
   imports: [
     AuthModule,
     LeadsModule,
+    CustomersModule,
+    EventsModule,
     TypeOrmModule.forFeature([
       SignatureEntity,
       ContractsEntity,
@@ -38,6 +43,7 @@ import { SignatureWebhookController } from "./controllers/signature-webhook.cont
     GetSignaturesService,
     ProcessSignatureCallbackService,
     ProcessSignatureWebhookService,
+    ActivateSignedContractService,
     {
       provide: SIGNATURE_PROVIDER_TOKEN,
       useClass: AssinafySignatureProvider,
