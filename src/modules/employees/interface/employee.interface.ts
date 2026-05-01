@@ -1,7 +1,7 @@
 export interface IEmployee {
   idEmployees: string;
   name: string;
-  document: string;
+  document?: string | null;
   email?: string;
   phone?: string;
   position: string;

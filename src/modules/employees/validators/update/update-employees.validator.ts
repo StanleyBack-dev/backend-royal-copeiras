@@ -23,9 +23,11 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
       throw AppException.from(APP_ERRORS.employees.notFound, undefined);
     }
 
-    if (input.document && input.document !== record.document) {
+    const normalizedDocument = input.document?.trim();
+
+    if (normalizedDocument && normalizedDocument !== record.document) {
       const existing = await employeesRepo.findOne({
-        where: { document: input.document },
+        where: { document: normalizedDocument },
       });
 
       if (existing) {
@@ -35,7 +37,11 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
         );
       }
 
-      this.validateDocument(input.document);
+      this.validateDocument(normalizedDocument);
+    }
+
+    if (input.document !== undefined) {
+      input.document = normalizedDocument || undefined;
     }
 
     Object.assign(record, input);

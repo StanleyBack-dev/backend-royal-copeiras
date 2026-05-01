@@ -1,5 +1,6 @@
 import { InputType, Field } from "@nestjs/graphql";
 import {
+  ValidateIf,
   IsOptional,
   IsString,
   IsEmail,
@@ -15,12 +16,16 @@ export class CreateEmployeesInputDto {
   @Length(2, 120)
   name!: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
+  @ValidateIf(
+    (_, value) => value !== null && value !== undefined && value !== "",
+  )
   @IsString()
   @Matches(/^\d{11}$/, {
     message: "Documento deve ser CPF com 11 dígitos",
   })
-  document!: string;
+  document?: string;
 
   @Field({ nullable: true })
   @IsOptional()

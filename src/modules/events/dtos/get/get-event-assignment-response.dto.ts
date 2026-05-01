@@ -1,0 +1,56 @@
+import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { EventAssignmentEntity } from "../../entities/event-assignment.entity";
+
+@ObjectType()
+export class GetEventAssignmentResponseDto {
+  static fromEntity(
+    entity: EventAssignmentEntity,
+  ): GetEventAssignmentResponseDto {
+    const dto = new GetEventAssignmentResponseDto();
+    dto.idEventAssignments = entity.idEventAssignments;
+    dto.idBudgetItems = entity.idBudgetItems;
+    dto.idEmployees = entity.idEmployees;
+    dto.allocationIndex = entity.allocationIndex;
+    dto.employeePayment = entity.employeePayment;
+    dto.isActive = entity.isActive;
+    dto.budgetItemDescription = entity.budgetItem?.description;
+    dto.budgetItemQuantity = entity.budgetItem?.quantity;
+    dto.employeeName = entity.employee?.name;
+    dto.createdAt = entity.createdAt.toISOString();
+    dto.updatedAt = entity.updatedAt.toISOString();
+    return dto;
+  }
+
+  @Field()
+  idEventAssignments!: string;
+
+  @Field()
+  idBudgetItems!: string;
+
+  @Field({ nullable: true })
+  idEmployees?: string;
+
+  @Field()
+  allocationIndex!: number;
+
+  @Field(() => Float)
+  employeePayment!: number;
+
+  @Field()
+  isActive!: boolean;
+
+  @Field({ nullable: true })
+  budgetItemDescription?: string;
+
+  @Field({ nullable: true })
+  budgetItemQuantity?: number;
+
+  @Field({ nullable: true })
+  employeeName?: string;
+
+  @Field()
+  createdAt!: string;
+
+  @Field()
+  updatedAt!: string;
+}

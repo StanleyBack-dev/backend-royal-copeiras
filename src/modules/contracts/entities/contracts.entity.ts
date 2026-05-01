@@ -10,6 +10,7 @@ import {
 import { UserEntity } from "../../users/entities/user.entity";
 import { BudgetsEntity } from "../../budgets/entities/budgets.entity";
 import { LeadsEntity } from "../../leads/entities/leads.entity";
+import { CustomersEntity } from "../../customers/entities/customers.entity";
 import { IContract } from "../interface/contract.interface";
 import { ContractStatus } from "../enums/contract-status.enum";
 
@@ -38,6 +39,13 @@ export class ContractsEntity implements IContract {
 
   @Column({ name: "idtb_leads", type: "uuid", nullable: true })
   idLeads?: string;
+
+  @ManyToOne(() => CustomersEntity, { onDelete: "SET NULL", nullable: true })
+  @JoinColumn({ name: "idtb_customers" })
+  customer?: CustomersEntity;
+
+  @Column({ name: "idtb_customers", type: "uuid", nullable: true })
+  idCustomers?: string;
 
   @Column({ name: "budget_number", type: "varchar", length: 30 })
   budgetNumber!: string;

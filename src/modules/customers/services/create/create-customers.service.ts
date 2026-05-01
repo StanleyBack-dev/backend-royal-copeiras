@@ -1,37 +1,29 @@
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { CustomersEntity } from "../../entities/customers.entity";
 import { CreateCustomersInputDto } from "../../dtos/create/create-customers-input.dto";
-import { CreateCustomersResponseDto } from "../../dtos/create/create-customers-response.dto";
 import { ICustomer } from "../../interface/customer.interface";
-import { CreateCustomersValidator } from "../../validators/create/create-customers.validator";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
+import { AppException } from "../../../../common/exceptions/app-exception";
+import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 
 @Injectable()
 export class CreateCustomersService {
-  constructor(
-    @InjectRepository(CustomersEntity)
-    private readonly customersRepository: Repository<CustomersEntity>,
-    private readonly authorizationService: AuthorizationService,
-  ) {}
+  constructor(private readonly authorizationService: AuthorizationService) {}
 
   async execute(
     userId: string,
-    input: CreateCustomersInputDto,
+    _input: CreateCustomersInputDto,
   ): Promise<ICustomer> {
+    void _input;
+
     await this.authorizationService.assertPermissionForUserId(
       userId,
       AuthPermission.MANAGE_CUSTOMERS,
     );
 
-    const saved = await CreateCustomersValidator.validateAndCreate(
-      userId,
-      input,
-      this.customersRepository,
+    throw AppException.from(
+      APP_ERRORS.customers.manualCreateForbidden,
+      undefined,
     );
-
-    return CreateCustomersResponseDto.fromEntity(saved);
   }
 }
