@@ -40,7 +40,7 @@ export class SendContractSignatureRequestService {
     );
 
     const contract = await this.contractsRepository.findOne({
-      where: { idContracts: input.idContracts, idUsers: userId },
+      where: { idContracts: input.idContracts },
       relations: { lead: true },
     });
 
@@ -66,7 +66,7 @@ export class SendContractSignatureRequestService {
     const lead =
       contract.lead ||
       (await this.leadsRepository.findOne({
-        where: { idLeads: contract.idLeads, idUsers: userId },
+        where: { idLeads: contract.idLeads },
       }));
 
     if (!lead) {

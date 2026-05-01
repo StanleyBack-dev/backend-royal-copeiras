@@ -16,15 +16,11 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
     }
 
     const record = await employeesRepo.findOne({
-      where: { idEmployees: input.idEmployees, idUsers: userId },
+      where: { idEmployees: input.idEmployees },
     });
 
     if (!record) {
       throw AppException.from(APP_ERRORS.employees.notFound, undefined);
-    }
-
-    if (record.idUsers !== userId) {
-      throw AppException.from(APP_ERRORS.employees.editForbidden, undefined);
     }
 
     if (input.document && input.document !== record.document) {

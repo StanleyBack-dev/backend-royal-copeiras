@@ -6,8 +6,8 @@ import { GetCustomersInputDto } from "../../dtos/get/get-customers-input.dto";
 import { GetCustomersResponseDto } from "../../dtos/get/get-customers-response.dto";
 import { PaginatedResult } from "../../../../common/responses/interfaces/response.interface";
 import { GetCustomersValidator } from "../../validators/get/get-customers.validator";
-import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
+import { PageAccessKey } from "../../../auth/enums/page-access-key.enum";
 
 @Injectable()
 export class GetCustomersService {
@@ -21,13 +21,10 @@ export class GetCustomersService {
     userId: string,
     input?: GetCustomersInputDto,
   ): Promise<PaginatedResult<GetCustomersResponseDto>> {
-    await this.authorizationService.assertPermissionForUserId(
+    await this.authorizationService.assertPageAccessForUserId(
       userId,
-      AuthPermission.READ_CUSTOMERS,
+      PageAccessKey.CLIENTS,
     );
-
-    // const cacheKey = `customers:list:user:${userId}`;
-
     const records = await GetCustomersValidator.validateAndFetchRecords(
       userId,
       input ?? {},

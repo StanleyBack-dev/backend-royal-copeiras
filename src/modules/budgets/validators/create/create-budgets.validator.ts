@@ -42,10 +42,7 @@ export class CreateBudgetsValidator {
     }
 
     const lead = await leadsRepo.findOne({
-      where: {
-        idLeads: input.idLeads,
-        idUsers: userId,
-      },
+      where: { idLeads: input.idLeads },
     });
 
     if (!lead) {

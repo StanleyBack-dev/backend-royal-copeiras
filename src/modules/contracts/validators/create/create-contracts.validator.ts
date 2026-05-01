@@ -47,7 +47,7 @@ export class CreateContractsValidator {
     }
 
     const budget = await budgetsRepo.findOne({
-      where: { idBudgets: input.idBudgets, idUsers: userId },
+      where: { idBudgets: input.idBudgets },
       relations: { lead: true },
     });
 
@@ -63,7 +63,7 @@ export class CreateContractsValidator {
     }
 
     const existing = await contractsRepo.findOne({
-      where: { idBudgets: budget.idBudgets, idUsers: userId },
+      where: { idBudgets: budget.idBudgets },
     });
 
     if (existing) {

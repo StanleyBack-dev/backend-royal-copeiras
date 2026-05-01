@@ -35,7 +35,6 @@ export class GetSignaturesService {
     const query = this.signaturesRepository
       .createQueryBuilder("signature")
       .leftJoinAndSelect("signature.contract", "contract")
-      .where("contract.idUsers = :userId", { userId })
       .orderBy("signature.updatedAt", "DESC")
       .skip(skip)
       .take(limit);

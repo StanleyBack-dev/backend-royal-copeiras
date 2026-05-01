@@ -18,7 +18,7 @@ export class GetCustomersValidator {
   ): Promise<PaginatedResult<CustomersEntity>> {
     if (input.idCustomers) {
       const record = await repo.findOne({
-        where: { idCustomers: input.idCustomers, idUsers: userId },
+        where: { idCustomers: input.idCustomers },
       });
       if (!record) {
         throw AppException.from(APP_ERRORS.customers.notFound, undefined);
@@ -36,7 +36,6 @@ export class GetCustomersValidator {
     const { page, limit, skip } = resolvePagination(input.page, input.limit);
 
     const [records, total] = await repo.findAndCount({
-      where: { idUsers: userId },
       order: { createdAt: "DESC" },
       skip,
       take: limit,

@@ -42,7 +42,7 @@ export class SendContractEmailService {
     );
 
     const contract = await this.contractsRepository.findOne({
-      where: { idContracts: input.idContracts, idUsers: userId },
+      where: { idContracts: input.idContracts },
       relations: { budget: true, lead: true },
     });
 
@@ -68,7 +68,7 @@ export class SendContractEmailService {
     const lead =
       contract.lead ||
       (await this.leadsRepository.findOne({
-        where: { idLeads: contract.idLeads, idUsers: userId },
+        where: { idLeads: contract.idLeads },
       }));
 
     if (!lead) {
@@ -123,7 +123,6 @@ export class SendContractEmailService {
         sentAt: new Date(),
       });
     } catch (error) {
-      // Mantém forte coesão do domínio: AppException já possui código/status/mensagem corretos.
       if (error instanceof AppException) {
         const response = error.getResponse();
         this.logger.warn("Falha ao enviar contrato por e-mail (AppException)", {

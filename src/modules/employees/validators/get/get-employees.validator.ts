@@ -24,7 +24,7 @@ export class GetEmployeesValidator {
   ): Promise<PaginatedResult<EmployeesEntity>> {
     if (input.idEmployees) {
       const record = await repo.findOne({
-        where: { idEmployees: input.idEmployees, idUsers: userId },
+        where: { idEmployees: input.idEmployees },
       });
 
       if (!record) {
@@ -41,7 +41,7 @@ export class GetEmployeesValidator {
       };
     }
 
-    const where: FindOptionsWhere<EmployeesEntity> = { idUsers: userId };
+    const where: FindOptionsWhere<EmployeesEntity> = {};
 
     if (input.startDate && input.endDate) {
       where.createdAt = Between(
