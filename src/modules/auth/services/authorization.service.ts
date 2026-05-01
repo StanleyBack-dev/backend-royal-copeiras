@@ -81,14 +81,14 @@ export class AuthorizationService {
     }
 
     if (!this.userPageAccessRepository) {
-      // If repository is not available, fall back to group defaults
       const defaultPermissions = new Set(
         GROUP_DEFAULT_PAGE_ACCESS[user.group] ?? [],
       );
       if (!defaultPermissions.has(pageKey)) {
-        throw AppException.from(APP_ERRORS.authorization.missingPageAccess, {
-          page: pageKey,
-        } as any);
+        throw AppException.from<{ page: string }>(
+          APP_ERRORS.authorization.missingPageAccess,
+          { page: pageKey },
+        );
       }
       return;
     }
@@ -100,9 +100,10 @@ export class AuthorizationService {
 
     if (override) {
       if (!override.allowed) {
-        throw AppException.from(APP_ERRORS.authorization.missingPageAccess, {
-          page: pageKey,
-        } as any);
+        throw AppException.from<{ page: string }>(
+          APP_ERRORS.authorization.missingPageAccess,
+          { page: pageKey },
+        );
       }
       return;
     }
@@ -111,9 +112,10 @@ export class AuthorizationService {
       GROUP_DEFAULT_PAGE_ACCESS[user.group] ?? [],
     );
     if (!defaultPermissions.has(pageKey)) {
-      throw AppException.from(APP_ERRORS.authorization.missingPageAccess, {
-        page: pageKey,
-      } as any);
+      throw AppException.from<{ page: string }>(
+        APP_ERRORS.authorization.missingPageAccess,
+        { page: pageKey },
+      );
     }
   }
 }
