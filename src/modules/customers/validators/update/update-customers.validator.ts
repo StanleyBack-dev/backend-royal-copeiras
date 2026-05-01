@@ -16,14 +16,10 @@ export class UpdateCustomersValidator extends CustomersBaseValidator {
     }
 
     const record = await customersRepo.findOne({
-      where: { idCustomers: input.idCustomers, idUsers: userId },
+      where: { idCustomers: input.idCustomers },
     });
     if (!record) {
       throw AppException.from(APP_ERRORS.customers.notFound, undefined);
-    }
-
-    if (record.idUsers !== userId) {
-      throw AppException.from(APP_ERRORS.customers.editForbidden, undefined);
     }
 
     Object.assign(record, input);

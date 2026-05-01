@@ -40,7 +40,7 @@ export class SendBudgetEmailService {
     );
 
     const budget = await this.budgetsRepository.findOne({
-      where: { idBudgets: input.idBudgets, idUsers: userId },
+      where: { idBudgets: input.idBudgets },
       relations: { items: true },
     });
 
@@ -60,7 +60,7 @@ export class SendBudgetEmailService {
     }
 
     const lead = await this.leadsRepository.findOne({
-      where: { idLeads: budget.idLeads, idUsers: userId },
+      where: { idLeads: budget.idLeads },
     });
 
     if (!lead) {

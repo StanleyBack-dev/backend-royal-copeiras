@@ -18,7 +18,7 @@ export class GetLeadsValidator {
   ): Promise<PaginatedResult<LeadsEntity>> {
     if (input.idLeads) {
       const record = await repo.findOne({
-        where: { idLeads: input.idLeads, idUsers: userId },
+        where: { idLeads: input.idLeads },
       });
 
       if (!record) {
@@ -37,9 +37,7 @@ export class GetLeadsValidator {
 
     const { page, limit, skip } = resolvePagination(input.page, input.limit);
 
-    const queryBuilder = repo
-      .createQueryBuilder("lead")
-      .where("lead.idUsers = :userId", { userId });
+    const queryBuilder = repo.createQueryBuilder("lead");
 
     if (input.status) {
       queryBuilder.andWhere("lead.status = :status", { status: input.status });

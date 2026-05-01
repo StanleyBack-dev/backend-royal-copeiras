@@ -18,7 +18,7 @@ export class GetContractsValidator {
   ): Promise<PaginatedResult<ContractsEntity>> {
     if (input.idContracts) {
       const record = await repo.findOne({
-        where: { idContracts: input.idContracts, idUsers: userId },
+        where: { idContracts: input.idContracts },
       });
 
       if (!record) {
@@ -37,9 +37,7 @@ export class GetContractsValidator {
 
     const { page, limit, skip } = resolvePagination(input.page, input.limit);
 
-    const queryBuilder = repo
-      .createQueryBuilder("contract")
-      .where("contract.idUsers = :userId", { userId });
+    const queryBuilder = repo.createQueryBuilder("contract");
 
     if (input.idBudgets) {
       queryBuilder.andWhere("contract.idBudgets = :idBudgets", {

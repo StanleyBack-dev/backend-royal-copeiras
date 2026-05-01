@@ -70,7 +70,7 @@ export class UpdateBudgetsValidator {
     }
 
     const current = await deps.budgetsRepo.findOne({
-      where: { idBudgets: input.idBudgets, idUsers: userId },
+      where: { idBudgets: input.idBudgets },
       relations: { items: true },
     });
 
@@ -124,10 +124,7 @@ export class UpdateBudgetsValidator {
 
     if (input.idLeads) {
       const lead = await deps.leadsRepo.findOne({
-        where: {
-          idLeads: input.idLeads,
-          idUsers: userId,
-        },
+        where: { idLeads: input.idLeads },
       });
 
       if (!lead) {
@@ -141,10 +138,7 @@ export class UpdateBudgetsValidator {
 
     if (input.status === BudgetStatus.GENERATED) {
       const lead = await deps.leadsRepo.findOne({
-        where: {
-          idLeads: input.idLeads ?? current.idLeads,
-          idUsers: userId,
-        },
+        where: { idLeads: input.idLeads ?? current.idLeads },
       });
 
       if (!lead) {

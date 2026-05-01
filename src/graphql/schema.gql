@@ -47,6 +47,30 @@ type VerifyPasswordRecoveryCodeMutationResponseDto {
   data: VerifyPasswordRecoveryCodeResponseDto!
 }
 
+type GroupDefaultDto {
+  group: UserGroup!
+  defaultPermissions: [PageAccessKey!]!
+}
+
+enum PageAccessKey {
+  DASHBOARD
+  LEADS
+  BUDGETS
+  CONTRACTS
+  CLIENTS
+  EMPLOYEES
+  USERS
+  EVENTS
+  FINANCES
+  DEBTS
+  INVESTMENTS
+}
+
+type PageAccessMetadataResponseDto {
+  allKeys: [PageAccessKey!]!
+  groupDefaults: [GroupDefaultDto!]!
+}
+
 type GetUserResponseDto {
   idUsers: String!
   name: String!
@@ -145,20 +169,6 @@ type UserPagePermissionsResponseDto {
   defaultPermissions: [PageAccessKey!]!
   useGroupDefaults: Boolean!
   updatedAt: DateTime
-}
-
-enum PageAccessKey {
-  DASHBOARD
-  LEADS
-  BUDGETS
-  CONTRACTS
-  CLIENTS
-  EMPLOYEES
-  USERS
-  EVENTS
-  FINANCES
-  DEBTS
-  INVESTMENTS
 }
 
 type SetUserPagePermissionsMutationResponseDto {
@@ -723,6 +733,7 @@ type GenerateBudgetPreviewMutationResponseDto {
 }
 
 type Query {
+  getPageAccessMetadata: PageAccessMetadataResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
