@@ -5,6 +5,7 @@ import { SignatureEntity } from "../entities/signature.entity";
 import { ContractsEntity } from "../../contracts/entities/contracts.entity";
 import { SignatureStatus } from "../enums/signature-status.enum";
 import { ContractStatus } from "../../contracts/enums/contract-status.enum";
+import { ActivateSignedContractService } from "./activate-signed-contract.service";
 
 @Injectable()
 export class ProcessSignatureWebhookService {
@@ -15,7 +16,50 @@ export class ProcessSignatureWebhookService {
     private readonly signaturesRepository: Repository<SignatureEntity>,
     @InjectRepository(ContractsEntity)
     private readonly contractsRepository: Repository<ContractsEntity>,
+    private readonly activateSignedContractService: ActivateSignedContractService,
   ) {}
+
+  private resolveContractStatusFromSignatures(
+    signatures: SignatureEntity[],
+  ): ContractStatus {
+    if (!signatures.length) {
+      return ContractStatus.PENDING_SIGNATURE;
+    }
+
+    if (
+      signatures.every(
+        (signature) => signature.status === SignatureStatus.SIGNED,
+      )
+    ) {
+      return ContractStatus.SIGNED;
+    }
+
+    if (
+      signatures.some(
+        (signature) => signature.status === SignatureStatus.REJECTED,
+      )
+    ) {
+      return ContractStatus.REJECTED;
+    }
+
+    if (
+      signatures.some(
+        (signature) => signature.status === SignatureStatus.CANCELLED,
+      )
+    ) {
+      return ContractStatus.CANCELED;
+    }
+
+    if (
+      signatures.some(
+        (signature) => signature.status === SignatureStatus.EXPIRED,
+      )
+    ) {
+      return ContractStatus.EXPIRED;
+    }
+
+    return ContractStatus.PENDING_SIGNATURE;
+  }
 
   private mapProviderStatus(providerStatus?: string): SignatureStatus {
     if (!providerStatus) return SignatureStatus.UNKNOWN;
@@ -132,7 +176,9 @@ export class ProcessSignatureWebhookService {
     const updated = matches.map((m) => {
       m.status = providerStatus;
       m.signatureUrl = signatureUrl ?? m.signatureUrl;
-      m.signedAt = completedAt ? new Date(completedAt) : m.signedAt;
+      if (providerStatus === SignatureStatus.SIGNED && completedAt) {
+        m.signedAt = new Date(completedAt);
+      }
       if (eventId) m.providerEventId = eventId;
       return m;
     });
@@ -146,11 +192,8 @@ export class ProcessSignatureWebhookService {
     const allSigs = await this.signaturesRepository.find({
       where: { idContracts: contractId },
     });
-    const everySigned =
-      allSigs.length > 0 &&
-      allSigs.every((s) => s.status === SignatureStatus.SIGNED);
-
-    if (!everySigned) return;
+    const nextContractStatus =
+      this.resolveContractStatusFromSignatures(allSigs);
 
     // update contract status inside a transaction using repo.manager.transaction
     await this.contractsRepository.manager.transaction(async (manager) => {
@@ -158,9 +201,18 @@ export class ProcessSignatureWebhookService {
         where: { idContracts: contractId },
       });
       if (!contract) return;
-      if (contract.status === ContractStatus.SIGNED) return;
-      contract.status = ContractStatus.SIGNED;
-      await manager.save(ContractsEntity, contract);
+
+      if (contract.status !== nextContractStatus) {
+        contract.status = nextContractStatus;
+        await manager.save(ContractsEntity, contract);
+      }
+
+      if (nextContractStatus === ContractStatus.SIGNED) {
+        await this.activateSignedContractService.execute(
+          contract.idContracts,
+          manager,
+        );
+      }
     });
   }
 }

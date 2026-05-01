@@ -12,6 +12,7 @@ export class GetContractsResponseDto implements IContract {
     dto.idContracts = entity.idContracts;
     dto.idBudgets = entity.idBudgets;
     dto.idLeads = entity.idLeads;
+    dto.idCustomers = entity.idCustomers;
     dto.budgetNumber = entity.budgetNumber;
     dto.contractNumber = entity.contractNumber;
     dto.status = entity.status;
@@ -30,7 +31,6 @@ export class GetContractsResponseDto implements IContract {
     dto.retentionUntil = entity.retentionUntil
       ? formatContractDateOnly(entity.retentionUntil)
       : undefined;
-    // Todos os campos de assinatura migrados para SignatureEntity
     dto.sentVia = entity.sentVia;
     dto.sentAt = entity.sentAt ? entity.sentAt.toISOString() : undefined;
     dto.notes = entity.notes;
@@ -47,6 +47,9 @@ export class GetContractsResponseDto implements IContract {
 
   @Field({ nullable: true })
   idLeads?: string;
+
+  @Field({ nullable: true })
+  idCustomers?: string;
 
   @Field()
   budgetNumber!: string;
@@ -77,8 +80,6 @@ export class GetContractsResponseDto implements IContract {
 
   @Field({ nullable: true })
   retentionUntil?: string;
-
-  // Todos os campos de assinatura migrados para SignatureEntity
 
   @Field({ nullable: true })
   sentVia?: string;

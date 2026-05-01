@@ -8,10 +8,12 @@ describe("ProcessSignatureWebhookService", () => {
   it("returns gracefully when payload lacks envelope id", async () => {
     const mockSigRepo1 = { find: jest.fn() };
     const mockContractsRepo1 = { manager: { transaction: jest.fn() } };
+    const mockActivationService1 = { execute: jest.fn() };
 
     const svc = new ProcessSignatureWebhookService(
       mockSigRepo1 as unknown as Repository<SignatureEntity>,
       mockContractsRepo1 as unknown as Repository<ContractsEntity>,
+      mockActivationService1 as never,
     );
 
     await expect(svc.execute({})).resolves.toBeUndefined();
@@ -55,10 +57,12 @@ describe("ProcessSignatureWebhookService", () => {
           ),
       },
     } as unknown as Repository<ContractsEntity>;
+    const mockActivationService2 = { execute: jest.fn() };
 
     const svc2 = new ProcessSignatureWebhookService(
       mockSignaturesRepo as unknown as Repository<SignatureEntity>,
       mockContractsRepo2,
+      mockActivationService2 as never,
     );
 
     await expect(

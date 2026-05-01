@@ -178,19 +178,6 @@ type SetUserPagePermissionsMutationResponseDto {
   data: UserPagePermissionsResponseDto!
 }
 
-type CreateCustomersResponseDto {
-  idCustomers: String!
-  name: String!
-  document: String!
-  type: String!
-  email: String
-  phone: String
-  address: String
-  isActive: Boolean!
-  createdAt: String!
-  updatedAt: String!
-}
-
 type GetCustomersResponseDto {
   idCustomers: String!
   name: String!
@@ -229,6 +216,19 @@ type GetCustomersListResponseDto {
   hasNextPage: Boolean!
 }
 
+type CreateCustomersResponseDto {
+  idCustomers: String!
+  name: String!
+  document: String!
+  type: String!
+  email: String
+  phone: String
+  address: String
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
 type CreateCustomersMutationResponseDto {
   success: Boolean!
   message: String
@@ -246,7 +246,7 @@ type UpdateCustomersMutationResponseDto {
 type CreateEmployeesResponseDto {
   idEmployees: String!
   name: String!
-  document: String!
+  document: String
   email: String
   phone: String
   position: String!
@@ -258,7 +258,7 @@ type CreateEmployeesResponseDto {
 type GetEmployeesResponseDto {
   idEmployees: String!
   name: String!
-  document: String!
+  document: String
   email: String
   phone: String
   position: String!
@@ -270,7 +270,7 @@ type GetEmployeesResponseDto {
 type UpdateEmployeesResponseDto {
   idEmployees: String!
   name: String!
-  document: String!
+  document: String
   email: String
   phone: String
   position: String!
@@ -457,10 +457,97 @@ type GetSignaturesListResponseDto {
   hasNextPage: Boolean!
 }
 
+type GetEventAssignmentResponseDto {
+  idEventAssignments: String!
+  idBudgetItems: String!
+  idEmployees: String
+  allocationIndex: Float!
+  employeePayment: Float!
+  isActive: Boolean!
+  budgetItemDescription: String
+  budgetItemQuantity: Float
+  employeeName: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetEventServiceLineResponseDto {
+  idBudgetItems: String!
+  serviceDescription: String!
+  quantity: Float!
+  unitPrice: Float!
+  totalPrice: Float!
+  sortOrder: Float!
+}
+
+type GetEventsResponseDto {
+  idEvents: String!
+  idContracts: String!
+  idBudgets: String!
+  idLeads: String
+  idCustomers: String
+  status: EventStatus!
+  notes: String
+  contractNumber: String
+  budgetNumber: String
+  customerName: String
+  leadName: String
+  eventDates: [String!]!
+  eventLocation: String
+  displacementFee: Float!
+  serviceBreakdown: [GetEventServiceLineResponseDto!]!
+  totalRevenue: Float!
+  totalCost: Float!
+  companyReceivable: Float!
+  assignments: [GetEventAssignmentResponseDto!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum EventStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+type UpdateEventAssignmentResponseDto {
+  idEventAssignments: String!
+  idEvents: String!
+  idBudgetItems: String!
+  idEmployees: String
+  allocationIndex: Float!
+  employeePayment: Float!
+  isActive: Boolean!
+  employeeName: String
+  budgetItemDescription: String
+  updatedAt: String!
+}
+
+type GetEventsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetEventsResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateEventAssignmentMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateEventAssignmentResponseDto!
+}
+
 type CreateContractsResponseDto {
   idContracts: String!
   idBudgets: String!
   idLeads: String
+  idCustomers: String
   budgetNumber: String!
   contractNumber: String!
   status: ContractStatus!
@@ -492,6 +579,7 @@ type GetContractsResponseDto {
   idContracts: String!
   idBudgets: String!
   idLeads: String
+  idCustomers: String
   budgetNumber: String!
   contractNumber: String!
   status: ContractStatus!
@@ -513,6 +601,7 @@ type UpdateContractsResponseDto {
   idContracts: String!
   idBudgets: String!
   idLeads: String
+  idCustomers: String
   budgetNumber: String!
   contractNumber: String!
   status: ContractStatus!
@@ -749,6 +838,7 @@ type Query {
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
   getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
   getSignatures(input: GetSignaturesInputDto): GetSignaturesListResponseDto!
+  getEvents(input: GetEventsInputDto): GetEventsListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
 }
 
@@ -806,6 +896,16 @@ input GetSignaturesInputDto {
   limit: Int = 10
   idContracts: String
   status: SignatureStatus
+}
+
+input GetEventsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idEvents: String
+  idContracts: String
+  status: EventStatus
+  startDate: String
+  endDate: String
 }
 
 input GetBudgetsInputDto {
@@ -879,6 +979,9 @@ type Mutation {
   cancelSignatureRequest(
     input: CancelSignatureRequestInputDto!
   ): SuccessResponseDto!
+  updateEventAssignment(
+    input: UpdateEventAssignmentInputDto!
+  ): UpdateEventAssignmentMutationResponseDto!
   createBudgets(
     input: CreateBudgetsInputDto!
   ): CreateBudgetsMutationResponseDto!
@@ -972,7 +1075,7 @@ input UpdateCustomersInputDto {
 
 input CreateEmployeesInputDto {
   name: String!
-  document: String!
+  document: String
   email: String
   phone: String
   position: String!
@@ -1065,6 +1168,13 @@ input GetSignatureStatusInputDto {
 
 input CancelSignatureRequestInputDto {
   requestId: String!
+}
+
+input UpdateEventAssignmentInputDto {
+  idEventAssignments: String!
+  idEmployees: String
+  employeePayment: Float
+  isActive: Boolean
 }
 
 input CreateBudgetsInputDto {

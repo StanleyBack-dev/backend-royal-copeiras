@@ -40,11 +40,31 @@ async function main() {
   if (sigRes.rows.length > 0) {
     const contractId = sigRes.rows[0].idtb_contracts;
     const cRes = await client.query(
-      "SELECT idtb_contracts, contract_number, status, sent_via, sent_at, created_at, updated_at FROM tb_contracts WHERE idtb_contracts = $1",
+      "SELECT idtb_contracts, idtb_customers, idtb_budgets, idtb_leads, contract_number, status, sent_via, sent_at, created_at, updated_at FROM tb_contracts WHERE idtb_contracts = $1",
       [contractId],
     );
     console.log("Contract:");
     console.table(cRes.rows);
+
+    const eRes = await client.query(
+      "SELECT idtb_events, idtb_contracts, idtb_budgets, idtb_customers, status, created_at, updated_at FROM tb_events WHERE idtb_contracts = $1 ORDER BY created_at DESC",
+      [contractId],
+    );
+    console.log("Events linked to contract:");
+    console.table(eRes.rows);
+
+    const customerId = cRes.rows[0]?.idtb_customers;
+    if (customerId) {
+      const customerRes = await client.query(
+        "SELECT idtb_customers, idtb_users, name, document, email, phone, type, is_active, created_at, updated_at FROM tb_customers WHERE idtb_customers = $1",
+        [customerId],
+      );
+      console.log("Linked customer:");
+      console.table(customerRes.rows);
+    } else {
+      console.log("Linked customer:");
+      console.log("(none)");
+    }
   }
 
   await client.end();

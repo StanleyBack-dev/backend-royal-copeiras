@@ -156,6 +156,16 @@ export const RESPONSE_MESSAGES = {
       message: "Funcionários carregados com sucesso.",
     },
   },
+  events: {
+    listed: {
+      code: "EVENTS_LISTED",
+      message: "Eventos carregados com sucesso.",
+    },
+    assignmentUpdated: {
+      code: "EVENT_ASSIGNMENT_UPDATED",
+      message: "Alocação do evento atualizada com sucesso.",
+    },
+  },
   profiles: {
     updated: {
       code: "PROFILE_UPDATED",

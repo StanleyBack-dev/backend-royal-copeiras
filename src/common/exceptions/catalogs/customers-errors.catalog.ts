@@ -26,4 +26,10 @@ export const customersErrors = {
     status: HttpStatus.FORBIDDEN,
     message: "Você não tem permissão para editar este cliente.",
   },
+  manualCreateForbidden: {
+    code: "CUSTOMERS_MANUAL_CREATE_FORBIDDEN",
+    status: HttpStatus.FORBIDDEN,
+    message:
+      "A criação manual de clientes não é permitida. Clientes são criados automaticamente a partir de contratos assinados.",
+  },
 } as const;

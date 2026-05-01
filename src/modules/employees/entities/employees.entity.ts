@@ -25,8 +25,14 @@ export class EmployeesEntity implements IEmployee {
   @Column({ name: "name", type: "varchar", length: 120 })
   name!: string;
 
-  @Column({ name: "document", type: "varchar", length: 20, unique: true })
-  document!: string;
+  @Column({
+    name: "document",
+    type: "varchar",
+    length: 20,
+    unique: true,
+    nullable: true,
+  })
+  document?: string | null;
 
   @Column({ name: "email", type: "varchar", length: 120, nullable: true })
   email?: string;

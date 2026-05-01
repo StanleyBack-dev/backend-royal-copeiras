@@ -4,6 +4,7 @@ export interface IContract {
   idContracts: string;
   idBudgets: string;
   idLeads?: string;
+  idCustomers?: string;
   budgetNumber: string;
   contractNumber: string;
   status: ContractStatus;

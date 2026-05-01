@@ -12,6 +12,7 @@ export class UpdateContractsResponseDto implements IContract {
     dto.idContracts = entity.idContracts;
     dto.idBudgets = entity.idBudgets;
     dto.idLeads = entity.idLeads;
+    dto.idCustomers = entity.idCustomers;
     dto.budgetNumber = entity.budgetNumber;
     dto.contractNumber = entity.contractNumber;
     dto.status = entity.status;
@@ -46,6 +47,9 @@ export class UpdateContractsResponseDto implements IContract {
 
   @Field({ nullable: true })
   idLeads?: string;
+
+  @Field({ nullable: true })
+  idCustomers?: string;
 
   @Field()
   budgetNumber!: string;
