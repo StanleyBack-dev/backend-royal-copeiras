@@ -4,16 +4,16 @@ import { envValidationSchema } from "./env.validation";
 import { resolve } from "path";
 import corsConfig from "./cors.config";
 
-const envFile =
-  process.env.NODE_ENV === "production"
-    ? ".env.production"
-    : ".env.development";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: resolve(process.cwd(), envFile),
+      ignoreEnvFile: IS_PRODUCTION,
+      envFilePath: IS_PRODUCTION
+        ? undefined
+        : resolve(process.cwd(), ".env.development"),
       validationSchema: envValidationSchema,
       load: [corsConfig],
     }),
