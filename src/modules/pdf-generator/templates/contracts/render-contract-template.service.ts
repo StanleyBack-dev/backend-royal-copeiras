@@ -25,9 +25,26 @@ const HEADER_HEIGHT = 68;
 const LOGO_BOX_WIDTH = 80;
 const LOGO_BOX_HEIGHT = 48;
 const META_BOX_WIDTH = 180;
-const HEADER_DIVIDER_Y = PDF_LAYOUT.pageHeight - 132;
-const CONTENT_START_Y = HEADER_DIVIDER_Y - 30;
-const FOOTER_RESERVED_HEIGHT = 84;
+const HEADER_DIVIDER_Y = PDF_LAYOUT.pageHeight - 126;
+const CONTENT_START_Y = HEADER_DIVIDER_Y - 22;
+const FOOTER_RESERVED_HEIGHT = 68;
+const SECTION_TITLE_SIZE = 9;
+const SECTION_TITLE_GAP = 11;
+const PARTY_CARD_GAP = 8;
+const PARTY_ROLE_SIZE = 6.5;
+const PARTY_TEXT_SIZE = 7.2;
+const PARTY_LINE_HEIGHT = 8.2;
+const BODY_TEXT_SIZE = 7.6;
+const BODY_LINE_HEIGHT = 8.6;
+const CLAUSE_TITLE_SIZE = 8.2;
+const CLAUSE_TITLE_LINE_HEIGHT = 9.2;
+const PARAGRAPH_GAP = 2;
+const BODY_INSET_X = 12;
+const BODY_FIRST_PARAGRAPH_GAP = 7;
+const FINAL_SECTION_TOP_GAP = 10;
+const FINAL_SECTION_PADDING_X = 12;
+const FINAL_SECTION_PADDING_Y = 10;
+const FINAL_SECTION_LINE_GAP = 3;
 const LOGO_IMAGE_PATH = resolve(process.cwd(), "src/assets/images/logo.png");
 
 interface FontSet {
@@ -314,7 +331,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     options?: { topSpacing?: number },
   ) {
     const topSpacing = options?.topSpacing ?? 0;
-    this.ensureSpace(state, 18 + topSpacing);
+    this.ensureSpace(state, 14 + topSpacing);
     if (topSpacing > 0) {
       state.cursorY -= topSpacing;
     }
@@ -323,19 +340,19 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       x: PDF_LAYOUT.marginX,
       y: state.cursorY,
       font: fonts.bold,
-      size: 10,
+      size: SECTION_TITLE_SIZE,
       color: PDF_COLORS.text,
     });
 
     state.page.drawRectangle({
       x: PDF_LAYOUT.marginX,
-      y: state.cursorY - 5,
+      y: state.cursorY - 4,
       width: PDF_LAYOUT.contentWidth * 0.15,
       height: 2,
       color: PDF_COLORS.gold,
     });
 
-    state.cursorY -= 13;
+    state.cursorY -= SECTION_TITLE_GAP;
   }
 
   private drawParties(
@@ -343,7 +360,7 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     fonts: FontSet,
     parties: ContractPdfPayloadParty[],
   ) {
-    const cardGap = 10;
+    const cardGap = PARTY_CARD_GAP;
     const cardWidth = (PDF_LAYOUT.contentWidth - cardGap) / 2;
 
     for (let index = 0; index < parties.length; index += 2) {
@@ -355,13 +372,13 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
         ].filter((value): value is string => Boolean(value));
 
         const lines = details.flatMap((detail) =>
-          wrapText(detail, cardWidth - 20, fonts.regular, 9),
+          wrapText(detail, cardWidth - 16, fonts.regular, PARTY_TEXT_SIZE),
         );
 
         return {
           party,
           lines,
-          height: 20 + lines.length * 9,
+          height: 18 + lines.length * PARTY_LINE_HEIGHT,
         };
       });
 
@@ -386,26 +403,26 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
 
         state.page.drawText(card.party.role.toUpperCase(), {
           x: cardX + 10,
-          y: topY - 13,
+          y: topY - 11,
           font: fonts.bold,
-          size: 7,
+          size: PARTY_ROLE_SIZE,
           color: PDF_COLORS.textMuted,
         });
 
-        let y = topY - 24;
+        let y = topY - 20;
         for (const line of card.lines) {
           state.page.drawText(line, {
             x: cardX + 10,
             y,
             font: fonts.regular,
-            size: 8,
+            size: PARTY_TEXT_SIZE,
             color: PDF_COLORS.text,
           });
-          y -= 9;
+          y -= PARTY_LINE_HEIGHT;
         }
       });
 
-      state.cursorY = bottomY - 4;
+      state.cursorY = bottomY - 2;
     }
   }
 
@@ -414,28 +431,59 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     fonts: FontSet,
     paragraphs: string[],
   ) {
-    for (const paragraph of paragraphs) {
+    const finalSectionIndex = paragraphs.findIndex(
+      (paragraph) => paragraph.trim().toUpperCase() === "DISPOSIÇÕES FINAIS:",
+    );
+
+    const regularParagraphs =
+      finalSectionIndex >= 0
+        ? paragraphs.slice(0, finalSectionIndex)
+        : paragraphs;
+
+    regularParagraphs.forEach((paragraph, index) => {
+      if (index === 0) {
+        this.ensureSpace(state, BODY_FIRST_PARAGRAPH_GAP);
+        state.cursorY -= BODY_FIRST_PARAGRAPH_GAP;
+      }
+
+      const isClauseTitle = /^CL[ÁA]USULA\s+/i.test(paragraph.trim());
+      const paragraphFont = isClauseTitle ? fonts.bold : fonts.regular;
+      const paragraphSize = isClauseTitle ? CLAUSE_TITLE_SIZE : BODY_TEXT_SIZE;
+      const paragraphLineHeight = isClauseTitle
+        ? CLAUSE_TITLE_LINE_HEIGHT
+        : BODY_LINE_HEIGHT;
+
       const lines = wrapText(
         paragraph,
-        PDF_LAYOUT.contentWidth,
-        fonts.regular,
-        8,
+        PDF_LAYOUT.contentWidth - BODY_INSET_X * 2,
+        paragraphFont,
+        paragraphSize,
       );
-      const requiredHeight = lines.length * 10 + 3;
+      const requiredHeight = lines.length * paragraphLineHeight + PARAGRAPH_GAP;
       this.ensureSpace(state, requiredHeight);
 
       for (const line of lines) {
         state.page.drawText(line, {
-          x: PDF_LAYOUT.marginX,
+          x: PDF_LAYOUT.marginX + BODY_INSET_X,
           y: state.cursorY,
-          font: fonts.regular,
-          size: 8,
+          font: paragraphFont,
+          size: paragraphSize,
           color: PDF_COLORS.text,
         });
-        state.cursorY -= 10;
+        state.cursorY -= paragraphLineHeight;
       }
 
-      state.cursorY -= 3;
+      state.cursorY -= PARAGRAPH_GAP;
+
+      return undefined;
+    });
+
+    if (finalSectionIndex >= 0) {
+      this.drawFinalSection(
+        state,
+        fonts,
+        paragraphs.slice(finalSectionIndex + 1),
+      );
     }
   }
 
@@ -446,9 +494,9 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
         `${prefix}${clauses[index]}`,
         PDF_LAYOUT.contentWidth - 6,
         fonts.regular,
-        8,
+        BODY_TEXT_SIZE,
       );
-      const requiredHeight = lines.length * 10 + 3;
+      const requiredHeight = lines.length * BODY_LINE_HEIGHT + PARAGRAPH_GAP;
       this.ensureSpace(state, requiredHeight);
 
       for (const line of lines) {
@@ -456,14 +504,83 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
           x: PDF_LAYOUT.marginX,
           y: state.cursorY,
           font: fonts.regular,
-          size: 8,
+          size: BODY_TEXT_SIZE,
           color: PDF_COLORS.text,
         });
-        state.cursorY -= 10;
+        state.cursorY -= BODY_LINE_HEIGHT;
       }
 
-      state.cursorY -= 3;
+      state.cursorY -= PARAGRAPH_GAP;
     }
+  }
+
+  private drawFinalSection(
+    state: RenderState,
+    fonts: FontSet,
+    paragraphs: string[],
+  ) {
+    state.cursorY -= FINAL_SECTION_TOP_GAP;
+    this.drawSectionTitle(state, fonts, "Disposições Finais");
+
+    const wrappedParagraphs = paragraphs.map((paragraph) =>
+      wrapText(
+        paragraph,
+        PDF_LAYOUT.contentWidth - FINAL_SECTION_PADDING_X * 2,
+        fonts.regular,
+        BODY_TEXT_SIZE,
+      ),
+    );
+
+    const textHeight = wrappedParagraphs.reduce(
+      (total, lines) => total + lines.length * BODY_LINE_HEIGHT,
+      0,
+    );
+    const interParagraphSpacing =
+      Math.max(wrappedParagraphs.length - 1, 0) * FINAL_SECTION_LINE_GAP;
+    const boxHeight =
+      textHeight + interParagraphSpacing + FINAL_SECTION_PADDING_Y * 2;
+
+    this.ensureSpace(state, boxHeight + 4);
+
+    const boxX = PDF_LAYOUT.marginX + BODY_INSET_X;
+    const boxWidth = PDF_LAYOUT.contentWidth - BODY_INSET_X * 2;
+    const boxY = state.cursorY - boxHeight + 2;
+
+    state.page.drawRectangle({
+      x: boxX,
+      y: boxY,
+      width: boxWidth,
+      height: boxHeight,
+      borderColor: PDF_COLORS.gold,
+      borderWidth: 1,
+      color: PDF_COLORS.rowAlt,
+      opacity: 0.95,
+    });
+
+    let currentY = state.cursorY - FINAL_SECTION_PADDING_Y;
+    wrappedParagraphs.forEach((lines, paragraphIndex) => {
+      const font =
+        paragraphIndex === wrappedParagraphs.length - 1
+          ? fonts.bold
+          : fonts.regular;
+
+      for (const line of lines) {
+        state.page.drawText(line, {
+          x: boxX + FINAL_SECTION_PADDING_X,
+          y: currentY,
+          font,
+          size: BODY_TEXT_SIZE,
+          color: PDF_COLORS.text,
+        });
+        currentY -= BODY_LINE_HEIGHT;
+      }
+
+      if (paragraphIndex < wrappedParagraphs.length - 1) {
+        currentY -= FINAL_SECTION_LINE_GAP;
+      }
+    });
+
+    state.cursorY = boxY - 4;
   }
 
   private drawFooter(
