@@ -30,7 +30,10 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     MailModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), "src/graphql/schema.gql"),
+      autoSchemaFile:
+        process.env.NODE_ENV === "production"
+          ? true
+          : join(process.cwd(), "src/graphql/schema.gql"),
       playground: true,
       context: ({ req, res }) => ({ req, res }),
       formatError: formatGraphqlError,
