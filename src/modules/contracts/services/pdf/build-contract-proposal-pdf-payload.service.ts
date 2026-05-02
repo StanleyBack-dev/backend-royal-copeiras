@@ -132,6 +132,7 @@ CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 
 2.1. O valor dos serviços prestados é de ${totalAmountLabel}${displacementFee > 0 ? `, sendo ${displacementFeeLabel} referente à taxa de deslocamento` : ""}.
 2.2. O pagamento deverá ser realizado à vista, via pix (CNPJ 64.062.038/0001-71) ou dinheiro. Sendo ${advancePercentage}% do valor antes do evento para confirmação do mesmo e ${100 - advancePercentage}% após o evento.
+2.3. Caso a prestação dos serviços ultrapasse o horário previamente acordado, será necessário contratar horas adicionais, no valor de R$ 90,00 (noventa reais) por hora extra, por profissional.
 
 CLAUSULA 3a - RESPONSABILIDADES DO CONTRATANTE:
 
@@ -156,6 +157,11 @@ CLAUSULA 7a - VIGÊNCIA:
 CLAUSULA 8a - CONDIÇÕES GERAIS:
 
 8.1. O contratante declara que todas as suas dúvidas foram devidamente esclarecidas.
+
+CLAUSULA 9a - DOS MATERIAIS DE LIMPEZA:
+
+9.1. A CONTRATADA se responsabiliza por disponibilizar, para a adequada execução dos serviços durante o evento, os seguintes materiais de limpeza: desinfetante, aromatizante de ambiente (cheirinho de banheiro), pano de chão, rodo, vassoura, pá de lixo, sacos de lixo, luvas e álcool.
+9.2. Caso o CONTRATANTE deseje a inclusão de papel toalha e papel higiênico, este valor será cobrado à parte e adicionado ao valor total do serviço. Ressalta-se que os materiais mencionados acima serão utilizados exclusivamente para a manutenção da organização, higiene e limpeza dos ambientes relacionados ao serviço contratado.
 
 
 DISPOSIÇÕES FINAIS:
