@@ -40,17 +40,22 @@ export class SignatureWebhookController {
       this.config.get<string>("ASSINAFY_WEBHOOK_SECRET") ||
       this.config.get<string>("SIGNATURE_WEBHOOK_SECRET");
 
-    if (secret) {
-      const signatureHeader =
-        headers["x-assinafy-signature"] ||
-        headers["x-signature"] ||
-        headers["x-hub-signature"] ||
-        headers["x-hub-signature-256"];
+    const signatureHeader =
+      headers["x-assinafy-signature"] ||
+      headers["x-assinafy-signature-256"] ||
+      headers["x-webhook-signature"] ||
+      headers["x-signature"] ||
+      headers["x-hub-signature"] ||
+      headers["x-hub-signature-256"];
+    const tokenHeader =
+      headers["x-assinafy-token"] ||
+      headers["x-webhook-token"] ||
+      headers["x-signature-token"];
+    const expectedToken =
+      this.config.get<string>("ASSINAFY_WEBHOOK_TOKEN") ||
+      this.config.get<string>("SIGNATURE_WEBHOOK_TOKEN");
 
-      if (!signatureHeader) {
-        throw new UnauthorizedException();
-      }
-
+    if (secret && signatureHeader) {
       const raw: Buffer | undefined = req.rawBody;
       const payloadBuffer = raw ?? Buffer.from(JSON.stringify(body ?? ""));
 
@@ -72,19 +77,9 @@ export class SignatureWebhookController {
       ) {
         throw new UnauthorizedException();
       }
-    } else {
-      // fallback: simple token header
-      const tokenHeader =
-        headers["x-assinafy-token"] ||
-        headers["x-webhook-token"] ||
-        headers["x-signature-token"];
-      const expected =
-        this.config.get<string>("ASSINAFY_WEBHOOK_TOKEN") ||
-        this.config.get<string>("SIGNATURE_WEBHOOK_TOKEN");
-
-      if (expected && tokenHeader !== expected) {
-        throw new UnauthorizedException();
-      }
+    } else if (expectedToken && tokenHeader !== expectedToken) {
+      // If HMAC signature is absent, validate token when configured.
+      throw new UnauthorizedException();
     }
 
     await this.processor.execute(body);
