@@ -103,9 +103,9 @@ export class ProcessSignatureWebhookService {
           ? (p["id"] as string)
           : typeof p["id"] === "number"
             ? String(p["id"])
-          : typeof p["event_id"] === "string"
-            ? (p["event_id"] as string)
-            : undefined;
+            : typeof p["event_id"] === "string"
+              ? (p["event_id"] as string)
+              : undefined;
     const envelopeId =
       toStringOrUndefined(p["requestId"]) ||
       toStringOrUndefined(p["request_id"]) ||
@@ -162,16 +162,16 @@ export class ProcessSignatureWebhookService {
             ? (p["signing_url"] as string)
             : typeof objectPayload?.["signing_url"] === "string"
               ? (objectPayload["signing_url"] as string)
-          : undefined;
+              : undefined;
     const completedAt =
-      typeof
-        (p["completedAt"] ??
-          p["completed_at"] ??
-          p["signedAt"] ??
-          p["updated_at"] ??
-          objectPayload?.["updated_at"] ??
-          objectPayload?.["updatedAt"])
-        === "string"
+      typeof (
+        p["completedAt"] ??
+        p["completed_at"] ??
+        p["signedAt"] ??
+        p["updated_at"] ??
+        objectPayload?.["updated_at"] ??
+        objectPayload?.["updatedAt"]
+      ) === "string"
         ? ((p["completedAt"] ??
             p["completed_at"] ??
             p["signedAt"] ??

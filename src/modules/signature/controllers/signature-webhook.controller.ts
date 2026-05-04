@@ -56,7 +56,6 @@ export class SignatureWebhookController {
       this.config.get<string>("SIGNATURE_WEBHOOK_TOKEN");
 
     if (secret && signatureHeader) {
-
       const raw: Buffer | undefined = req.rawBody;
       const payloadBuffer = raw ?? Buffer.from(JSON.stringify(body ?? ""));
 
