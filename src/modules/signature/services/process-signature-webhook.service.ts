@@ -63,20 +63,28 @@ export class ProcessSignatureWebhookService {
 
   async execute(payload: unknown): Promise<void> {
     const p = (payload as Record<string, unknown>) ?? {};
+    const originPayload = p["origin"] as Record<string, unknown> | undefined;
+    const signerIp =
+      typeof originPayload?.["ip"] === "string"
+        ? originPayload["ip"]
+        : undefined;
+    const signerUserAgent =
+      typeof originPayload?.["user-agent"] === "string"
+        ? originPayload["user-agent"].slice(0, 255)
+        : typeof originPayload?.["user_agent"] === "string"
+          ? originPayload["user_agent"].slice(0, 255)
+          : undefined;
 
-    // object = the Assinafy document object
     const objectPayload = (p["object"] ?? p["objeto"]) as
       | Record<string, unknown>
       | undefined;
 
-    // assignment.items = list of signers with their individual sign status
     const assignment = (objectPayload?.["assignment"] ??
       objectPayload?.["atribuição"]) as Record<string, unknown> | undefined;
     const assignmentItems = Array.isArray(assignment?.["items"])
       ? (assignment!["items"] as Record<string, unknown>[])
       : [];
 
-    // envelopeId = Assinafy document id (stored as requestId on signature creation)
     const envelopeId =
       typeof objectPayload?.["id"] === "string"
         ? objectPayload["id"]
@@ -91,7 +99,6 @@ export class ProcessSignatureWebhookService {
       return;
     }
 
-    // event id for idempotency — Assinafy sends a numeric id at root
     const eventId =
       typeof p["id"] === "number"
         ? String(p["id"])
@@ -105,8 +112,13 @@ export class ProcessSignatureWebhookService {
         : typeof p["created_at"] === "string"
           ? (p["created_at"] as string)
           : undefined;
+    const eventAt = completedAt;
+    const subjectPayload = p["subject"] as Record<string, unknown> | undefined;
+    const subjectSignerId =
+      typeof subjectPayload?.["id"] === "string"
+        ? subjectPayload["id"]
+        : undefined;
 
-    // Fetch all signature records for this envelope from DB
     const allEnvelopeSignatures = await this.signaturesRepository.find({
       where: { envelopeId },
     });
@@ -118,7 +130,6 @@ export class ProcessSignatureWebhookService {
       return;
     }
 
-    // idempotency: skip only if ALL records already carry this eventId
     if (eventId) {
       const alreadyAll = allEnvelopeSignatures.every(
         (m) => m.providerEventId === eventId,
@@ -134,11 +145,11 @@ export class ProcessSignatureWebhookService {
     const toUpdate: SignatureEntity[] = [];
 
     if (assignmentItems.length > 0) {
-      // Primary path: iterate assignment.items and update each completed signer
       for (const item of assignmentItems) {
         const signer = item["signer"] as Record<string, unknown> | undefined;
         const signerId =
           typeof signer?.["id"] === "string" ? signer["id"] : undefined;
+        const acceptedTerms = signer?.["has_accepted_terms"] === true;
         const completed = item["completed"] === true;
         const value =
           typeof item["value"] === "string" ? item["value"].toUpperCase() : "";
@@ -153,7 +164,16 @@ export class ProcessSignatureWebhookService {
 
         if (isSigned) {
           record.status = SignatureStatus.SIGNED;
-          if (completedAt) record.signedAt = new Date(completedAt);
+          if (completedAt && !record.signedAt) {
+            record.signedAt = new Date(completedAt);
+          }
+        }
+        if (acceptedTerms && eventAt && !record.consentAt) {
+          record.consentAt = new Date(eventAt);
+        }
+        if (subjectSignerId && signerId === subjectSignerId) {
+          if (signerIp) record.signerIp = signerIp;
+          if (signerUserAgent) record.signerUserAgent = signerUserAgent;
         }
         if (eventId) record.providerEventId = eventId;
         if (typeof signer?.["email"] === "string")
@@ -165,17 +185,10 @@ export class ProcessSignatureWebhookService {
       }
     }
 
-    // Fallback: no items matched — update via subject (the signer who triggered the event)
     if (toUpdate.length === 0) {
       const eventName =
         typeof p["event"] === "string" ? p["event"].toLowerCase() : "";
-      const subjectPayload = p["subject"] as
-        | Record<string, unknown>
-        | undefined;
-      const subjectSignerId =
-        typeof subjectPayload?.["id"] === "string"
-          ? subjectPayload["id"]
-          : undefined;
+      const acceptedTerms = subjectPayload?.["has_accepted_terms"] === true;
       const isSigned =
         eventName.includes("sign") || eventName.includes("assinad");
 
@@ -188,7 +201,16 @@ export class ProcessSignatureWebhookService {
       for (const record of target ? [target] : allEnvelopeSignatures) {
         if (isSigned) {
           record.status = SignatureStatus.SIGNED;
-          if (completedAt) record.signedAt = new Date(completedAt);
+          if (completedAt && !record.signedAt) {
+            record.signedAt = new Date(completedAt);
+          }
+        }
+        if (acceptedTerms && eventAt && !record.consentAt) {
+          record.consentAt = new Date(eventAt);
+        }
+        if (target) {
+          if (signerIp) record.signerIp = signerIp;
+          if (signerUserAgent) record.signerUserAgent = signerUserAgent;
         }
         if (eventId) record.providerEventId = eventId;
         toUpdate.push(record);
@@ -205,7 +227,6 @@ export class ProcessSignatureWebhookService {
       `Updated ${toUpdate.length} signature record(s) for envelopeId=${envelopeId}`,
     );
 
-    // Re-fetch all signatures for the contract and update contract status
     const contractId = allEnvelopeSignatures[0].idContracts;
     if (!contractId) return;
 
