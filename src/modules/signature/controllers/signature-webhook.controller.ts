@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   Post,
@@ -19,6 +20,13 @@ export class SignatureWebhookController {
     private readonly processor: ProcessSignatureWebhookService,
     private readonly config: ConfigService,
   ) {}
+
+  @Get("/webhook")
+  @Public()
+  @HttpCode(200)
+  verifyWebhook() {
+    return { ok: true };
+  }
 
   @Post("/webhook")
   @Public()
