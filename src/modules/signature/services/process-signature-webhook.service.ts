@@ -64,32 +64,59 @@ export class ProcessSignatureWebhookService {
   private mapProviderStatus(providerStatus?: string): SignatureStatus {
     if (!providerStatus) return SignatureStatus.UNKNOWN;
     const s = providerStatus.toLowerCase();
-    if (s.includes("sign")) return SignatureStatus.SIGNED;
+    if (s.includes("sign") || s.includes("assinad"))
+      return SignatureStatus.SIGNED;
     if (s.includes("pending") || s.includes("created") || s.includes("waiting"))
       return SignatureStatus.PENDING;
+    if (s.includes("pendente")) return SignatureStatus.PENDING;
     if (s.includes("cancel")) return SignatureStatus.CANCELLED;
-    if (s.includes("reject")) return SignatureStatus.REJECTED;
+    if (s.includes("reject") || s.includes("recus"))
+      return SignatureStatus.REJECTED;
     if (s.includes("expire")) return SignatureStatus.EXPIRED;
+    if (s.includes("expir")) return SignatureStatus.EXPIRED;
     if (s.includes("draft")) return SignatureStatus.DRAFT;
+    if (s.includes("rascunho")) return SignatureStatus.DRAFT;
     return SignatureStatus.UNKNOWN;
   }
 
   async execute(payload: unknown): Promise<void> {
     const p = (payload as Record<string, unknown>) ?? {};
+    const objectPayload =
+      (p["object"] as Record<string, unknown> | undefined) ||
+      (p["objeto"] as Record<string, unknown> | undefined);
+    const subjectPayload =
+      (p["subject"] as Record<string, unknown> | undefined) ||
+      (p["assunto"] as Record<string, unknown> | undefined);
+
+    const toStringOrUndefined = (value: unknown): string | undefined => {
+      if (typeof value === "string") return value;
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return String(value);
+      }
+      return undefined;
+    };
+
     const eventId =
       typeof p["eventId"] === "string"
         ? (p["eventId"] as string)
         : typeof p["id"] === "string"
           ? (p["id"] as string)
+          : typeof p["id"] === "number"
+            ? String(p["id"])
           : typeof p["event_id"] === "string"
             ? (p["event_id"] as string)
             : undefined;
-    const envelopeId = (p["requestId"] ??
-      p["request_id"] ??
-      p["envelopeId"] ??
-      p["envelope_id"]) as string | undefined;
+    const envelopeId =
+      toStringOrUndefined(p["requestId"]) ||
+      toStringOrUndefined(p["request_id"]) ||
+      toStringOrUndefined(p["envelopeId"]) ||
+      toStringOrUndefined(p["envelope_id"]) ||
+      toStringOrUndefined(objectPayload?.["id"]) ||
+      toStringOrUndefined(p["documentId"]);
 
-    const signerObj = p["signer"] as Record<string, unknown> | undefined;
+    const signerObj =
+      (p["signer"] as Record<string, unknown> | undefined) ||
+      (objectPayload?.["signer"] as Record<string, unknown> | undefined);
     const providerSignerId =
       (typeof p["signerId"] === "string"
         ? (p["signerId"] as string)
@@ -101,6 +128,9 @@ export class ProcessSignatureWebhookService {
       signerObj &&
       typeof signerObj["id"] === "string"
         ? (signerObj["id"] as string)
+        : undefined) ??
+      (typeof subjectPayload?.["id"] === "string"
+        ? (subjectPayload["id"] as string)
         : undefined);
 
     const signerIndexRaw = p["signerIndex"] ?? p["signer_index"];
@@ -111,7 +141,13 @@ export class ProcessSignatureWebhookService {
           ? Number(signerIndexRaw)
           : undefined;
 
-    const statusRaw = p["status"] ?? p["state"] ?? p["event"];
+    const statusRaw =
+      p["status"] ??
+      p["state"] ??
+      p["event"] ??
+      p["evento"] ??
+      objectPayload?.["status"] ??
+      objectPayload?.["state"];
     const providerStatus =
       typeof statusRaw === "string"
         ? this.mapProviderStatus(statusRaw)
@@ -122,11 +158,26 @@ export class ProcessSignatureWebhookService {
         ? (p["signatureUrl"] as string)
         : typeof p["url"] === "string"
           ? (p["url"] as string)
+          : typeof p["signing_url"] === "string"
+            ? (p["signing_url"] as string)
+            : typeof objectPayload?.["signing_url"] === "string"
+              ? (objectPayload["signing_url"] as string)
           : undefined;
     const completedAt =
-      typeof (p["completedAt"] ?? p["completed_at"] ?? p["signedAt"]) ===
-      "string"
-        ? ((p["completedAt"] ?? p["completed_at"] ?? p["signedAt"]) as string)
+      typeof
+        (p["completedAt"] ??
+          p["completed_at"] ??
+          p["signedAt"] ??
+          p["updated_at"] ??
+          objectPayload?.["updated_at"] ??
+          objectPayload?.["updatedAt"])
+        === "string"
+        ? ((p["completedAt"] ??
+            p["completed_at"] ??
+            p["signedAt"] ??
+            p["updated_at"] ??
+            objectPayload?.["updated_at"] ??
+            objectPayload?.["updatedAt"]) as string)
         : undefined;
 
     if (!envelopeId) {
