@@ -2,20 +2,21 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   HttpCode,
+  Logger,
   Post,
-  Req,
+  Query,
   UnauthorizedException,
 } from "@nestjs/common";
 import { Public } from "../../../common/decorators/public.decorator";
-import { Request } from "express";
 import { ConfigService } from "@nestjs/config";
 import { ProcessSignatureWebhookService } from "../services/process-signature-webhook.service";
 import * as crypto from "crypto";
 
 @Controller("api/signatures")
 export class SignatureWebhookController {
+  private readonly logger = new Logger(SignatureWebhookController.name);
+
   constructor(
     private readonly processor: ProcessSignatureWebhookService,
     private readonly config: ConfigService,
@@ -24,7 +25,11 @@ export class SignatureWebhookController {
   @Get("/webhook")
   @Public()
   @HttpCode(200)
-  verifyWebhook() {
+  verifyWebhook(@Query("token") token?: string) {
+    const expected = this.config.get<string>("ASSINAFY_WEBHOOK_SECRET");
+    if (expected && token !== expected) {
+      throw new UnauthorizedException();
+    }
     return { ok: true };
   }
 
@@ -32,54 +37,36 @@ export class SignatureWebhookController {
   @Public()
   @HttpCode(200)
   async handleWebhook(
-    @Req() req: Request & { rawBody?: Buffer },
-    @Headers() headers: Record<string, string>,
+    @Query("token") token: string | undefined,
     @Body() body: unknown,
   ) {
-    const secret =
-      this.config.get<string>("ASSINAFY_WEBHOOK_SECRET") ||
-      this.config.get<string>("SIGNATURE_WEBHOOK_SECRET");
+    const expectedSecret = this.config.get<string>("ASSINAFY_WEBHOOK_SECRET");
+    const expectedAccountId = this.config.get<string>("ASSINAFY_ACCOUNT_ID");
 
-    const signatureHeader =
-      headers["x-assinafy-signature"] ||
-      headers["x-assinafy-signature-256"] ||
-      headers["x-webhook-signature"] ||
-      headers["x-signature"] ||
-      headers["x-hub-signature"] ||
-      headers["x-hub-signature-256"];
-    const tokenHeader =
-      headers["x-assinafy-token"] ||
-      headers["x-webhook-token"] ||
-      headers["x-signature-token"];
-    const expectedToken =
-      this.config.get<string>("ASSINAFY_WEBHOOK_TOKEN") ||
-      this.config.get<string>("SIGNATURE_WEBHOOK_TOKEN");
-
-    if (secret && signatureHeader) {
-      const raw: Buffer | undefined = req.rawBody;
-      const payloadBuffer = raw ?? Buffer.from(JSON.stringify(body ?? ""));
-
-      const hmac = crypto
-        .createHmac("sha256", secret)
-        .update(payloadBuffer)
-        .digest("hex");
-      // accept headers like "sha256=..." or raw hex
-      const expectedSig = signatureHeader.startsWith("sha256=")
-        ? signatureHeader.split("=")[1]
-        : signatureHeader;
-
-      const aBuff = Buffer.from(hmac, "hex");
-      const bBuff = Buffer.from(expectedSig, "hex");
-
+    // Primary security: secret token in the webhook URL query string.
+    // Register the URL as: https://api-royalcopeiras.vercel.app/api/signatures/webhook?token=<ASSINAFY_WEBHOOK_SECRET>
+    if (expectedSecret) {
       if (
-        aBuff.length !== bBuff.length ||
-        !crypto.timingSafeEqual(aBuff, bBuff)
+        !token ||
+        !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expectedSecret))
       ) {
+        this.logger.warn("Webhook rejected: invalid or missing token");
         throw new UnauthorizedException();
       }
-    } else if (expectedToken && tokenHeader !== expectedToken) {
-      // If HMAC signature is absent, validate token when configured.
-      throw new UnauthorizedException();
+    }
+
+    // Secondary validation: account_id in payload must match configured account.
+    if (expectedAccountId) {
+      const p = body as Record<string, unknown> | null;
+      const incomingAccountId =
+        typeof p?.["account_id"] === "string" ? p["account_id"] : undefined;
+
+      if (!incomingAccountId || incomingAccountId !== expectedAccountId) {
+        this.logger.warn(
+          `Webhook rejected: account_id mismatch (received: ${incomingAccountId ?? "none"})`,
+        );
+        throw new UnauthorizedException();
+      }
     }
 
     await this.processor.execute(body);
