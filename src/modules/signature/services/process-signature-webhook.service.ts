@@ -61,192 +61,160 @@ export class ProcessSignatureWebhookService {
     return ContractStatus.PENDING_SIGNATURE;
   }
 
-  private mapProviderStatus(providerStatus?: string): SignatureStatus {
-    if (!providerStatus) return SignatureStatus.UNKNOWN;
-    const s = providerStatus.toLowerCase();
-    if (s.includes("sign") || s.includes("assinad"))
-      return SignatureStatus.SIGNED;
-    if (s.includes("pending") || s.includes("created") || s.includes("waiting"))
-      return SignatureStatus.PENDING;
-    if (s.includes("pendente")) return SignatureStatus.PENDING;
-    if (s.includes("cancel")) return SignatureStatus.CANCELLED;
-    if (s.includes("reject") || s.includes("recus"))
-      return SignatureStatus.REJECTED;
-    if (s.includes("expire")) return SignatureStatus.EXPIRED;
-    if (s.includes("expir")) return SignatureStatus.EXPIRED;
-    if (s.includes("draft")) return SignatureStatus.DRAFT;
-    if (s.includes("rascunho")) return SignatureStatus.DRAFT;
-    return SignatureStatus.UNKNOWN;
-  }
-
   async execute(payload: unknown): Promise<void> {
     const p = (payload as Record<string, unknown>) ?? {};
-    const objectPayload =
-      (p["object"] as Record<string, unknown> | undefined) ||
-      (p["objeto"] as Record<string, unknown> | undefined);
-    const subjectPayload =
-      (p["subject"] as Record<string, unknown> | undefined) ||
-      (p["assunto"] as Record<string, unknown> | undefined);
 
-    const toStringOrUndefined = (value: unknown): string | undefined => {
-      if (typeof value === "string") return value;
-      if (typeof value === "number" && Number.isFinite(value)) {
-        return String(value);
-      }
-      return undefined;
-    };
+    // object = the Assinafy document object
+    const objectPayload = (p["object"] ?? p["objeto"]) as
+      | Record<string, unknown>
+      | undefined;
 
-    const eventId =
-      typeof p["eventId"] === "string"
-        ? (p["eventId"] as string)
-        : typeof p["id"] === "string"
-          ? (p["id"] as string)
-          : typeof p["id"] === "number"
-            ? String(p["id"])
-            : typeof p["event_id"] === "string"
-              ? (p["event_id"] as string)
-              : undefined;
+    // assignment.items = list of signers with their individual sign status
+    const assignment = (objectPayload?.["assignment"] ??
+      objectPayload?.["atribuição"]) as Record<string, unknown> | undefined;
+    const assignmentItems = Array.isArray(assignment?.["items"])
+      ? (assignment!["items"] as Record<string, unknown>[])
+      : [];
+
+    // envelopeId = Assinafy document id (stored as requestId on signature creation)
     const envelopeId =
-      toStringOrUndefined(p["requestId"]) ||
-      toStringOrUndefined(p["request_id"]) ||
-      toStringOrUndefined(p["envelopeId"]) ||
-      toStringOrUndefined(p["envelope_id"]) ||
-      toStringOrUndefined(objectPayload?.["id"]) ||
-      toStringOrUndefined(p["documentId"]);
-
-    const signerObj =
-      (p["signer"] as Record<string, unknown> | undefined) ||
-      (objectPayload?.["signer"] as Record<string, unknown> | undefined);
-    const providerSignerId =
-      (typeof p["signerId"] === "string"
-        ? (p["signerId"] as string)
-        : undefined) ??
-      (typeof p["signer_id"] === "string"
-        ? (p["signer_id"] as string)
-        : undefined) ??
-      (typeof signerObj === "object" &&
-      signerObj &&
-      typeof signerObj["id"] === "string"
-        ? (signerObj["id"] as string)
-        : undefined) ??
-      (typeof subjectPayload?.["id"] === "string"
-        ? (subjectPayload["id"] as string)
-        : undefined);
-
-    const signerIndexRaw = p["signerIndex"] ?? p["signer_index"];
-    const signerIndex =
-      typeof signerIndexRaw === "number"
-        ? signerIndexRaw
-        : typeof signerIndexRaw === "string" && /^[0-9]+$/.test(signerIndexRaw)
-          ? Number(signerIndexRaw)
-          : undefined;
-
-    const statusRaw =
-      p["status"] ??
-      p["state"] ??
-      p["event"] ??
-      p["evento"] ??
-      objectPayload?.["status"] ??
-      objectPayload?.["state"];
-    const providerStatus =
-      typeof statusRaw === "string"
-        ? this.mapProviderStatus(statusRaw)
-        : this.mapProviderStatus(undefined);
-
-    const signatureUrl =
-      typeof p["signatureUrl"] === "string"
-        ? (p["signatureUrl"] as string)
-        : typeof p["url"] === "string"
-          ? (p["url"] as string)
-          : typeof p["signing_url"] === "string"
-            ? (p["signing_url"] as string)
-            : typeof objectPayload?.["signing_url"] === "string"
-              ? (objectPayload["signing_url"] as string)
-              : undefined;
-    const completedAt =
-      typeof (
-        p["completedAt"] ??
-        p["completed_at"] ??
-        p["signedAt"] ??
-        p["updated_at"] ??
-        objectPayload?.["updated_at"] ??
-        objectPayload?.["updatedAt"]
-      ) === "string"
-        ? ((p["completedAt"] ??
-            p["completed_at"] ??
-            p["signedAt"] ??
-            p["updated_at"] ??
-            objectPayload?.["updated_at"] ??
-            objectPayload?.["updatedAt"]) as string)
-        : undefined;
+      typeof objectPayload?.["id"] === "string"
+        ? objectPayload["id"]
+        : typeof p["requestId"] === "string"
+          ? (p["requestId"] as string)
+          : typeof p["request_id"] === "string"
+            ? (p["request_id"] as string)
+            : undefined;
 
     if (!envelopeId) {
       this.logger.warn("Webhook payload missing envelope/request id");
       return;
     }
 
-    let matches: SignatureEntity[] = [];
+    // event id for idempotency — Assinafy sends a numeric id at root
+    const eventId =
+      typeof p["id"] === "number"
+        ? String(p["id"])
+        : typeof p["id"] === "string"
+          ? p["id"]
+          : undefined;
 
-    if (providerSignerId) {
-      matches = await this.signaturesRepository.find({
-        where: { envelopeId, providerSignerId },
-      });
-    }
+    const completedAt =
+      typeof objectPayload?.["updated_at"] === "string"
+        ? objectPayload["updated_at"]
+        : typeof p["created_at"] === "string"
+          ? (p["created_at"] as string)
+          : undefined;
 
-    if ((!matches || matches.length === 0) && signerIndex !== undefined) {
-      matches = await this.signaturesRepository.find({
-        where: { envelopeId, signerIndex },
-      });
-    }
+    // Fetch all signature records for this envelope from DB
+    const allEnvelopeSignatures = await this.signaturesRepository.find({
+      where: { envelopeId },
+    });
 
-    if (!matches || matches.length === 0) {
-      matches = await this.signaturesRepository.find({
-        where: { envelopeId },
-      });
-    }
-
-    if (!matches || matches.length === 0) {
+    if (!allEnvelopeSignatures.length) {
       this.logger.debug(
         `No signature records found for envelopeId=${envelopeId}`,
       );
       return;
     }
 
-    // idempotency: if event already applied to any of the matched rows, skip
+    // idempotency: skip only if ALL records already carry this eventId
     if (eventId) {
-      const already = matches.find((m) => m.providerEventId === eventId);
-      if (already) {
+      const alreadyAll = allEnvelopeSignatures.every(
+        (m) => m.providerEventId === eventId,
+      );
+      if (alreadyAll) {
         this.logger.debug(
-          `Event ${eventId} already processed for envelope ${envelopeId}`,
+          `Event ${eventId} already fully processed for envelope ${envelopeId}`,
         );
         return;
       }
     }
 
-    // update matched signatures
-    const updated = matches.map((m) => {
-      m.status = providerStatus;
-      m.signatureUrl = signatureUrl ?? m.signatureUrl;
-      if (providerStatus === SignatureStatus.SIGNED && completedAt) {
-        m.signedAt = new Date(completedAt);
+    const toUpdate: SignatureEntity[] = [];
+
+    if (assignmentItems.length > 0) {
+      // Primary path: iterate assignment.items and update each completed signer
+      for (const item of assignmentItems) {
+        const signer = item["signer"] as Record<string, unknown> | undefined;
+        const signerId =
+          typeof signer?.["id"] === "string" ? signer["id"] : undefined;
+        const completed = item["completed"] === true;
+        const value =
+          typeof item["value"] === "string" ? item["value"].toUpperCase() : "";
+        const isSigned = completed || value === "SIGNED";
+
+        if (!signerId) continue;
+
+        const record = allEnvelopeSignatures.find(
+          (s) => s.providerSignerId === signerId,
+        );
+        if (!record) continue;
+
+        if (isSigned) {
+          record.status = SignatureStatus.SIGNED;
+          if (completedAt) record.signedAt = new Date(completedAt);
+        }
+        if (eventId) record.providerEventId = eventId;
+        if (typeof signer?.["email"] === "string")
+          record.signedByEmail = signer["email"];
+        if (typeof signer?.["full_name"] === "string")
+          record.signedByName = signer["full_name"];
+
+        toUpdate.push(record);
       }
-      if (eventId) m.providerEventId = eventId;
-      return m;
-    });
+    }
 
-    await this.signaturesRepository.save(updated);
+    // Fallback: no items matched — update via subject (the signer who triggered the event)
+    if (toUpdate.length === 0) {
+      const eventName =
+        typeof p["event"] === "string" ? p["event"].toLowerCase() : "";
+      const subjectPayload = p["subject"] as
+        | Record<string, unknown>
+        | undefined;
+      const subjectSignerId =
+        typeof subjectPayload?.["id"] === "string"
+          ? subjectPayload["id"]
+          : undefined;
+      const isSigned =
+        eventName.includes("sign") || eventName.includes("assinad");
 
-    // Check contract status: if ALL signatures for same contract are SIGNED -> update contract
-    const contractId = matches[0].idContracts;
+      const target = subjectSignerId
+        ? allEnvelopeSignatures.find(
+            (s) => s.providerSignerId === subjectSignerId,
+          )
+        : undefined;
+
+      for (const record of target ? [target] : allEnvelopeSignatures) {
+        if (isSigned) {
+          record.status = SignatureStatus.SIGNED;
+          if (completedAt) record.signedAt = new Date(completedAt);
+        }
+        if (eventId) record.providerEventId = eventId;
+        toUpdate.push(record);
+      }
+    }
+
+    if (toUpdate.length === 0) {
+      this.logger.debug(`No records to update for envelopeId=${envelopeId}`);
+      return;
+    }
+
+    await this.signaturesRepository.save(toUpdate);
+    this.logger.log(
+      `Updated ${toUpdate.length} signature record(s) for envelopeId=${envelopeId}`,
+    );
+
+    // Re-fetch all signatures for the contract and update contract status
+    const contractId = allEnvelopeSignatures[0].idContracts;
     if (!contractId) return;
 
-    const allSigs = await this.signaturesRepository.find({
+    const allContractSigs = await this.signaturesRepository.find({
       where: { idContracts: contractId },
     });
     const nextContractStatus =
-      this.resolveContractStatusFromSignatures(allSigs);
+      this.resolveContractStatusFromSignatures(allContractSigs);
 
-    // update contract status inside a transaction using repo.manager.transaction
     await this.contractsRepository.manager.transaction(async (manager) => {
       const contract = await manager.findOne(ContractsEntity, {
         where: { idContracts: contractId },
@@ -256,6 +224,9 @@ export class ProcessSignatureWebhookService {
       if (contract.status !== nextContractStatus) {
         contract.status = nextContractStatus;
         await manager.save(ContractsEntity, contract);
+        this.logger.log(
+          `Contract ${contractId} status updated to ${nextContractStatus}`,
+        );
       }
 
       if (nextContractStatus === ContractStatus.SIGNED) {
