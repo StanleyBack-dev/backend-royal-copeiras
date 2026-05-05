@@ -151,6 +151,8 @@ export class GenerateBudgetPreviewPdfService {
       issueDate,
       validUntil,
       eventDates: draft.eventDates ?? [],
+      eventArrivalTimes: draft.eventArrivalTimes ?? [],
+      eventDepartureTimes: draft.eventDepartureTimes ?? [],
       eventLocation: draft.eventLocation,
       guestCount: draft.guestCount,
       durationHours: draft.durationHours,

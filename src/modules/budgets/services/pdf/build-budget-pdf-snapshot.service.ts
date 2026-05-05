@@ -18,6 +18,8 @@ export class BuildBudgetPdfSnapshotService {
         issueDate: formatBudgetDateOnly(entity.issueDate),
         validUntil: formatBudgetDateOnly(entity.validUntil),
         eventDates: entity.eventDates ?? [],
+        eventArrivalTimes: entity.eventArrivalTimes ?? [],
+        eventDepartureTimes: entity.eventDepartureTimes ?? [],
         eventLocation: entity.eventLocation,
         guestCount: entity.guestCount,
         durationHours: entity.durationHours,

@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsIn,
   IsInt,
+  IsMilitaryTime,
   IsNumber,
   IsOptional,
   IsString,
@@ -55,6 +56,20 @@ export class UpdateBudgetsInputDto {
   @ArrayMinSize(1)
   @IsDateString({}, { each: true })
   eventDates?: string[];
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMilitaryTime({ each: true })
+  eventArrivalTimes?: string[];
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMilitaryTime({ each: true })
+  eventDepartureTimes?: string[];
 
   @Field({ nullable: true })
   @IsOptional()

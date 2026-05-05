@@ -29,6 +29,8 @@ export const budgetMock: BudgetsEntity = {
   issueDate: new Date("2026-04-10"),
   validUntil: new Date("2026-04-20"),
   eventDates: ["2026-04-19"],
+  eventArrivalTimes: ["08:00"],
+  eventDepartureTimes: ["14:00"],
   eventLocation: "Polo Empresarial",
   guestCount: 150,
   durationHours: 6,

@@ -114,6 +114,8 @@ export class CreateContractsValidator {
             issueDate: formatContractDateOnly(budget.issueDate),
             validUntil: formatContractDateOnly(budget.validUntil),
             eventDates: budget.eventDates,
+            eventArrivalTimes: budget.eventArrivalTimes,
+            eventDepartureTimes: budget.eventDepartureTimes,
             eventLocation: budget.eventLocation,
             durationHours: budget.durationHours,
             totalAmount: budget.totalAmount,

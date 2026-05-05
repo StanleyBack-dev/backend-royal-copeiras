@@ -59,6 +59,22 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   eventDates!: string[];
 
   @Column({
+    name: "event_arrival_times",
+    type: "text",
+    array: true,
+    default: "{}",
+  })
+  eventArrivalTimes!: string[];
+
+  @Column({
+    name: "event_departure_times",
+    type: "text",
+    array: true,
+    default: "{}",
+  })
+  eventDepartureTimes!: string[];
+
+  @Column({
     name: "event_location",
     type: "varchar",
     length: 255,

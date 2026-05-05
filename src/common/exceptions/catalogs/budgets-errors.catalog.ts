@@ -36,6 +36,22 @@ export const budgetsErrors = {
     status: HttpStatus.BAD_REQUEST,
     message: "Informe pelo menos uma data válida para o evento.",
   },
+  eventArrivalTimesRequired: {
+    code: "BUDGETS_EVENT_ARRIVAL_TIMES_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe pelo menos um horário de chegada para o evento.",
+  },
+  eventDepartureTimesRequired: {
+    code: "BUDGETS_EVENT_DEPARTURE_TIMES_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe pelo menos um horário de partida para o evento.",
+  },
+  eventTimesLengthMismatch: {
+    code: "BUDGETS_EVENT_TIMES_LENGTH_MISMATCH",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "A quantidade de horários de chegada e partida deve ser igual à quantidade de datas do evento.",
+  },
   eventLocationRequired: {
     code: "BUDGETS_EVENT_LOCATION_REQUIRED",
     status: HttpStatus.BAD_REQUEST,

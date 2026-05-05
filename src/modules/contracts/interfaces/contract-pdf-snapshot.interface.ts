@@ -22,6 +22,8 @@ export interface ContractPdfSnapshot {
     issueDate?: string;
     validUntil?: string;
     eventDates: string[];
+    eventArrivalTimes: string[];
+    eventDepartureTimes: string[];
     eventLocation?: string;
     durationHours?: number;
     paymentMethod?: string;

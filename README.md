@@ -59,6 +59,34 @@ $ npm run test:cov
 
 ## Deployment
 
+## Database Migrations (Production-safe)
+
+Este backend segue estrategia migration-first em producao:
+
+- Em desenvolvimento: `synchronize` pode ficar ativo apenas com `NODE_ENV=development`.
+- Em producao: `synchronize` deve permanecer desativado.
+- Alteracoes de schema devem ser versionadas em `src/database/migrations`.
+
+Scripts principais:
+
+```bash
+# gerar migration no ambiente local
+npm run migration:generate:dev
+
+# executar migrations local
+npm run migration:run:dev
+
+# executar migrations em producao
+npm run migration:run:prod
+```
+
+Deploy automatico no GitHub Actions:
+
+- O workflow de deploy (merge em `master`) executa `npm run migration:run:prod` antes do deploy.
+- Nao e executado `schema:sync` em producao.
+
+Com isso, o fluxo fica desacoplado do ciclo de build da aplicacao, reproduzivel por ambiente e escalavel para multiplos deploys sem risco de drift de schema.
+
 ## Authorization Architecture
 
 O projeto usa autenticacao por JWT em cookie HttpOnly e autorizacao por permissao.
