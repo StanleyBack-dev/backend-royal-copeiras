@@ -11,6 +11,37 @@ import { ActivateSignedContractService } from "./activate-signed-contract.servic
 export class ProcessSignatureWebhookService {
   private readonly logger = new Logger(ProcessSignatureWebhookService.name);
 
+  private getString(value: unknown): string | undefined {
+    return typeof value === "string" && value.trim() ? value : undefined;
+  }
+
+  private resolveEventTimestamp(
+    payload: Record<string, unknown>,
+    objectPayload?: Record<string, unknown>,
+    subjectPayload?: Record<string, unknown>,
+  ): Date | undefined {
+    const candidates = [
+      this.getString(objectPayload?.["updated_at"]),
+      this.getString(objectPayload?.["completed_at"]),
+      this.getString(payload["updated_at"]),
+      this.getString(payload["completed_at"]),
+      this.getString(payload["completedAt"]),
+      this.getString(payload["created_at"]),
+      this.getString(subjectPayload?.["updated_at"]),
+      this.getString(subjectPayload?.["completed_at"]),
+    ];
+
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+      const parsed = new Date(candidate);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+
+    return undefined;
+  }
+
   constructor(
     @InjectRepository(SignatureEntity)
     private readonly signaturesRepository: Repository<SignatureEntity>,
@@ -106,18 +137,22 @@ export class ProcessSignatureWebhookService {
           ? p["id"]
           : undefined;
 
-    const completedAt =
-      typeof objectPayload?.["updated_at"] === "string"
-        ? objectPayload["updated_at"]
-        : typeof p["created_at"] === "string"
-          ? (p["created_at"] as string)
-          : undefined;
-    const eventAt = completedAt;
     const subjectPayload = p["subject"] as Record<string, unknown> | undefined;
     const subjectSignerId =
       typeof subjectPayload?.["id"] === "string"
         ? subjectPayload["id"]
         : undefined;
+    const payloadSignerId =
+      this.getString(p["signerId"]) ??
+      this.getString(p["signer_id"]) ??
+      this.getString(
+        (p["signer"] as Record<string, unknown> | undefined)?.["id"],
+      );
+    const eventAt = this.resolveEventTimestamp(
+      p,
+      objectPayload,
+      subjectPayload,
+    );
 
     const allEnvelopeSignatures = await this.signaturesRepository.find({
       where: { envelopeId },
@@ -164,12 +199,12 @@ export class ProcessSignatureWebhookService {
 
         if (isSigned) {
           record.status = SignatureStatus.SIGNED;
-          if (completedAt && !record.signedAt) {
-            record.signedAt = new Date(completedAt);
+          if (!record.signedAt) {
+            record.signedAt = eventAt ?? new Date();
           }
         }
         if (acceptedTerms && eventAt && !record.consentAt) {
-          record.consentAt = new Date(eventAt);
+          record.consentAt = eventAt;
         }
         if (subjectSignerId && signerId === subjectSignerId) {
           if (signerIp) record.signerIp = signerIp;
@@ -192,21 +227,28 @@ export class ProcessSignatureWebhookService {
       const isSigned =
         eventName.includes("sign") || eventName.includes("assinad");
 
-      const target = subjectSignerId
+      const targetSignerId = subjectSignerId ?? payloadSignerId;
+      const target = targetSignerId
         ? allEnvelopeSignatures.find(
-            (s) => s.providerSignerId === subjectSignerId,
+            (s) => s.providerSignerId === targetSignerId,
           )
         : undefined;
 
-      for (const record of target ? [target] : allEnvelopeSignatures) {
+      if (!target) {
+        this.logger.warn(
+          `Skipping broad signature update for envelopeId=${envelopeId}: signer target not identified`,
+        );
+      }
+
+      for (const record of target ? [target] : []) {
         if (isSigned) {
           record.status = SignatureStatus.SIGNED;
-          if (completedAt && !record.signedAt) {
-            record.signedAt = new Date(completedAt);
+          if (!record.signedAt) {
+            record.signedAt = eventAt ?? new Date();
           }
         }
         if (acceptedTerms && eventAt && !record.consentAt) {
-          record.consentAt = new Date(eventAt);
+          record.consentAt = eventAt;
         }
         if (target) {
           if (signerIp) record.signerIp = signerIp;
