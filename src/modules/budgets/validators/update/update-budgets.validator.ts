@@ -11,7 +11,10 @@ import {
   BUDGET_DURATION_HOURS_MAX,
   BUDGET_DURATION_HOURS_MIN,
 } from "../../constants/budget-form-rules.constant";
-import { inferServiceTypeFromDescription } from "../../constants/budget-service-types.constant";
+import {
+  inferServiceTypeFromDescription,
+  inferServiceComboFromDescription,
+} from "../../constants/budget-service-types.constant";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
@@ -389,8 +392,11 @@ export class UpdateBudgetsValidator {
       );
     }
 
-    const uniqueServiceTypes = new Set(serviceTypes);
-    if (uniqueServiceTypes.size !== serviceTypes.length) {
+    const serviceCombos = data.items.map((item) =>
+      inferServiceComboFromDescription(item.description),
+    );
+    const uniqueCombos = new Set(serviceCombos);
+    if (uniqueCombos.size !== serviceCombos.length) {
       throw AppException.from(
         APP_ERRORS.budgets.itemServiceTypeDuplicated,
         undefined,
