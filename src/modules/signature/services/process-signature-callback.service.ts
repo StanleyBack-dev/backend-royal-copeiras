@@ -17,6 +17,7 @@ type WebhookPayload = {
   status?: string;
   state?: string;
   updated_at?: string;
+  completed_at?: string;
   signer?: {
     name?: string;
     email?: string;
@@ -143,25 +144,37 @@ export class ProcessSignatureCallbackService {
     const signerEmail = getString(payload?.signer?.email);
     const signerDocument = getString(payload?.signer?.identifier);
 
+    const existingByEmail = signatures.find(
+      (signature) =>
+        Boolean(signerEmail) &&
+        signature.signedByEmail?.toLowerCase() === signerEmail?.toLowerCase(),
+    );
+    const existingByDocument = signatures.find(
+      (signature) =>
+        Boolean(signerDocument) &&
+        signature.signedByDocument === signerDocument,
+    );
     const existing =
-      signatures.find(
-        (signature) =>
-          Boolean(signerEmail) &&
-          signature.signedByEmail?.toLowerCase() === signerEmail?.toLowerCase(),
-      ) ||
-      signatures.find(
-        (signature) =>
-          Boolean(signerDocument) &&
-          signature.signedByDocument === signerDocument,
-      ) ||
-      signatures[0];
+      existingByEmail ||
+      existingByDocument ||
+      (signatures.length === 1 ? signatures[0] : undefined);
+
+    if (!existing) {
+      return { handled: false };
+    }
 
     existing.status = signatureStatus;
     if (signatureStatus === SignatureStatus.SIGNED) {
       if (getString(payload?.updated_at)) {
         existing.signedAt = new Date(getString(payload?.updated_at)!);
+      } else if (getString(payload?.completed_at)) {
+        existing.signedAt = new Date(getString(payload?.completed_at)!);
       } else if (getString(payload?.data?.updated_at)) {
         existing.signedAt = new Date(getString(payload.data!.updated_at)!);
+      } else if (getString(payload?.data?.completed_at)) {
+        existing.signedAt = new Date(getString(payload.data!.completed_at)!);
+      } else {
+        existing.signedAt = new Date();
       }
     }
 
