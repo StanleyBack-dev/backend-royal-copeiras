@@ -46,6 +46,8 @@ export class UpdateBudgetsResponseDto implements IBudget {
     dto.issueDate = formatBudgetDateOnly(entity.issueDate);
     dto.validUntil = formatBudgetDateOnly(entity.validUntil);
     dto.eventDates = entity.eventDates ?? [];
+    dto.eventArrivalTimes = entity.eventArrivalTimes ?? [];
+    dto.eventDepartureTimes = entity.eventDepartureTimes ?? [];
     dto.eventLocation = entity.eventLocation;
     dto.guestCount = entity.guestCount;
     dto.durationHours = entity.durationHours;
@@ -110,6 +112,12 @@ export class UpdateBudgetsResponseDto implements IBudget {
 
   @Field(() => [String])
   eventDates!: string[];
+
+  @Field(() => [String])
+  eventArrivalTimes!: string[];
+
+  @Field(() => [String])
+  eventDepartureTimes!: string[];
 
   @Field({ nullable: true })
   eventLocation?: string;

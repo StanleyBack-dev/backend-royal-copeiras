@@ -17,6 +17,39 @@ const ITEMS_SECTION_TITLE = "Serviços e Taxas Propostos";
 const DISPLACEMENT_FEE_DESCRIPTION =
   "Taxa de deslocamento da equipe para atendimento no local do evento.";
 
+function parseTimeToMinutes(time?: string): number | undefined {
+  if (!time || !/^\d{2}:\d{2}$/.test(time)) {
+    return undefined;
+  }
+
+  const [hours, minutes] = time.split(":").map(Number);
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return undefined;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function addOneDayIsoDate(date: string): string {
+  const parsed = new Date(`${date}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+
+  parsed.setDate(parsed.getDate() + 1);
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function sanitizeBudgetItemDescription(description: string): string {
   const trimmed = description.trim();
   const canonicalMatch = trimmed.match(
@@ -51,6 +84,15 @@ export class BuildBudgetProposalPdfPayloadService {
           .map((value) => formatDateBR(value))
           .join(" | ")
       : "A definir";
+    const eventArrivalTimes = this.buildEventTimesLabel(
+      snapshot.budget.eventDates,
+      snapshot.budget.eventArrivalTimes,
+    );
+    const eventDepartureTimes = this.buildEventTimesLabel(
+      snapshot.budget.eventDates,
+      snapshot.budget.eventDepartureTimes,
+      snapshot.budget.eventArrivalTimes,
+    );
 
     const notes = [snapshot.budget.notes]
       .filter((value): value is string => Boolean(value?.trim()))
@@ -82,6 +124,8 @@ export class BuildBudgetProposalPdfPayloadService {
           label: "Local",
           value: snapshot.budget.eventLocation || "A definir",
         },
+        { label: "Horário de chegada", value: eventArrivalTimes },
+        { label: "Horário de partida", value: eventDepartureTimes },
         {
           label: "Convidados",
           value: snapshot.budget.guestCount
@@ -139,5 +183,40 @@ export class BuildBudgetProposalPdfPayloadService {
       },
       referenceCode: snapshotHash,
     };
+  }
+
+  private buildEventTimesLabel(
+    dates: string[],
+    times: string[],
+    referenceTimes: string[] = [],
+  ): string {
+    if (!times.length) {
+      return "A definir";
+    }
+
+    return times
+      .map((time, index) => {
+        const arrival = referenceTimes[index];
+        const departure = times[index];
+        const arrivalMinutes = parseTimeToMinutes(arrival);
+        const departureMinutes = parseTimeToMinutes(departure);
+        const isNextDay =
+          arrivalMinutes !== undefined &&
+          departureMinutes !== undefined &&
+          departureMinutes > 0 &&
+          departureMinutes < arrivalMinutes;
+
+        const date = dates[index];
+        if (!date) {
+          return `${index + 1}o dia: ${time}`;
+        }
+
+        if (isNextDay) {
+          return `${formatDateBR(addOneDayIsoDate(date))}: ${time} (dia seguinte)`;
+        }
+
+        return `${formatDateBR(date)}: ${time}`;
+      })
+      .join(" | ");
   }
 }

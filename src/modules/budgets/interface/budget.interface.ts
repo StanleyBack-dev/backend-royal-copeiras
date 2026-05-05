@@ -9,6 +9,8 @@ export interface IBudget {
   issueDate: Date | string;
   validUntil: Date | string;
   eventDates: string[];
+  eventArrivalTimes: string[];
+  eventDepartureTimes: string[];
   eventLocation?: string;
   guestCount?: number;
   durationHours?: number;

@@ -87,6 +87,8 @@ export class CreateBudgetsValidator {
         issueDate,
         validUntil,
         eventDates: input.eventDates ?? [],
+        eventArrivalTimes: input.eventArrivalTimes ?? [],
+        eventDepartureTimes: input.eventDepartureTimes ?? [],
         eventLocation: input.eventLocation,
         guestCount: input.guestCount,
         durationHours: input.durationHours,
@@ -129,6 +131,30 @@ export class CreateBudgetsValidator {
 
     if (!input.eventDates?.length) {
       throw AppException.from(APP_ERRORS.budgets.eventDatesRequired, undefined);
+    }
+
+    if (!input.eventArrivalTimes?.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventArrivalTimesRequired,
+        undefined,
+      );
+    }
+
+    if (!input.eventDepartureTimes?.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventDepartureTimesRequired,
+        undefined,
+      );
+    }
+
+    if (
+      input.eventDates.length !== input.eventArrivalTimes.length ||
+      input.eventDates.length !== input.eventDepartureTimes.length
+    ) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventTimesLengthMismatch,
+        undefined,
+      );
     }
 
     if (!input.eventLocation?.trim()) {

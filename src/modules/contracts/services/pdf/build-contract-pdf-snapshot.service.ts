@@ -51,6 +51,18 @@ export class BuildContractPdfSnapshotService {
           budgetRelation?.eventDates,
           budgetSnapshot.eventDates,
         ),
+        eventArrivalTimes: this.getStringArrayValue(
+          budgetRelation?.eventArrivalTimes,
+          (budgetSnapshot as Record<string, unknown>).eventArrivalTimes as
+            | string[]
+            | undefined,
+        ),
+        eventDepartureTimes: this.getStringArrayValue(
+          budgetRelation?.eventDepartureTimes,
+          (budgetSnapshot as Record<string, unknown>).eventDepartureTimes as
+            | string[]
+            | undefined,
+        ),
         eventLocation: this.getStringValue(
           budgetRelation?.eventLocation,
           budgetSnapshot.eventLocation,

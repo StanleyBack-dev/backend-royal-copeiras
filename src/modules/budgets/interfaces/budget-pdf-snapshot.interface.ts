@@ -21,6 +21,8 @@ export interface BudgetPdfSnapshot {
     issueDate: string;
     validUntil: string;
     eventDates: string[];
+    eventArrivalTimes: string[];
+    eventDepartureTimes: string[];
     eventLocation?: string;
     guestCount?: number;
     durationHours?: number;

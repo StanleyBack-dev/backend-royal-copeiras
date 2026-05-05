@@ -689,6 +689,8 @@ type CreateBudgetsResponseDto {
   issueDate: String!
   validUntil: String!
   eventDates: [String!]!
+  eventArrivalTimes: [String!]!
+  eventDepartureTimes: [String!]!
   eventLocation: String
   guestCount: Float
   durationHours: Float
@@ -734,6 +736,8 @@ type GetBudgetsResponseDto {
   issueDate: String!
   validUntil: String!
   eventDates: [String!]!
+  eventArrivalTimes: [String!]!
+  eventDepartureTimes: [String!]!
   eventLocation: String
   guestCount: Float
   durationHours: Float
@@ -769,6 +773,8 @@ type UpdateBudgetsResponseDto {
   issueDate: String!
   validUntil: String!
   eventDates: [String!]!
+  eventArrivalTimes: [String!]!
+  eventDepartureTimes: [String!]!
   eventLocation: String
   guestCount: Float
   durationHours: Float
@@ -1183,6 +1189,8 @@ input CreateBudgetsInputDto {
   issueDate: String
   validUntil: String!
   eventDates: [String!]!
+  eventArrivalTimes: [String!]!
+  eventDepartureTimes: [String!]!
   eventLocation: String!
   guestCount: Int!
   durationHours: Int!
@@ -1208,6 +1216,8 @@ input UpdateBudgetsInputDto {
   issueDate: String
   validUntil: String
   eventDates: [String!]
+  eventArrivalTimes: [String!]
+  eventDepartureTimes: [String!]
   eventLocation: String
   guestCount: Int
   durationHours: Int

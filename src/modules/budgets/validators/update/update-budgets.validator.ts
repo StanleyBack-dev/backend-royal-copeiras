@@ -48,6 +48,8 @@ interface UpdateBudgetDeps {
 interface BudgetRulesSnapshot {
   idLeads?: string | null;
   eventDates?: string[] | null;
+  eventArrivalTimes?: string[] | null;
+  eventDepartureTimes?: string[] | null;
   eventLocation?: string | null;
   guestCount?: number | null;
   durationHours?: number | null;
@@ -98,6 +100,9 @@ export class UpdateBudgetsValidator {
       this.validateBusinessRules({
         idLeads: input.idLeads ?? current.idLeads,
         eventDates: input.eventDates ?? current.eventDates,
+        eventArrivalTimes: input.eventArrivalTimes ?? current.eventArrivalTimes,
+        eventDepartureTimes:
+          input.eventDepartureTimes ?? current.eventDepartureTimes,
         eventLocation: input.eventLocation ?? current.eventLocation,
         guestCount: input.guestCount ?? current.guestCount,
         durationHours: input.durationHours ?? current.durationHours,
@@ -172,6 +177,10 @@ export class UpdateBudgetsValidator {
       current.issueDate = updatedIssueDate;
       current.validUntil = updatedValidUntil;
       current.eventDates = input.eventDates ?? current.eventDates;
+      current.eventArrivalTimes =
+        input.eventArrivalTimes ?? current.eventArrivalTimes;
+      current.eventDepartureTimes =
+        input.eventDepartureTimes ?? current.eventDepartureTimes;
       current.eventLocation = input.eventLocation ?? current.eventLocation;
       current.guestCount = input.guestCount ?? current.guestCount;
       current.durationHours = input.durationHours ?? current.durationHours;
@@ -252,6 +261,8 @@ export class UpdateBudgetsValidator {
       input.issueDate,
       input.validUntil,
       input.eventDates,
+      input.eventArrivalTimes,
+      input.eventDepartureTimes,
       input.eventLocation,
       input.guestCount,
       input.durationHours,
@@ -274,6 +285,30 @@ export class UpdateBudgetsValidator {
 
     if (!data.eventDates?.length) {
       throw AppException.from(APP_ERRORS.budgets.eventDatesRequired, undefined);
+    }
+
+    if (!data.eventArrivalTimes?.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventArrivalTimesRequired,
+        undefined,
+      );
+    }
+
+    if (!data.eventDepartureTimes?.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventDepartureTimesRequired,
+        undefined,
+      );
+    }
+
+    if (
+      data.eventDates.length !== data.eventArrivalTimes.length ||
+      data.eventDates.length !== data.eventDepartureTimes.length
+    ) {
+      throw AppException.from(
+        APP_ERRORS.budgets.eventTimesLengthMismatch,
+        undefined,
+      );
     }
 
     if (!data.eventLocation?.trim()) {
