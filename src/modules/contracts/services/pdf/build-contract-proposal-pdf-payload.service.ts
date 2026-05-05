@@ -2,11 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { ContractPdfPayload } from "../../../pdf-generator/templates/contracts/interfaces/contract-pdf-payload.interface";
 import { ContractPdfSnapshot } from "../../interfaces/contract-pdf-snapshot.interface";
 import {
-  formatCurrencyBRL,
+  formatCurrencyExtended,
   formatDateBR,
   formatLongDateBR,
 } from "../../../../utils/pdf";
-import { getFragmentForServiceType } from "../../constants/service-fragments";
+import {
+  getFragmentForServiceType,
+  getServiceGender,
+} from "../../constants/service-fragments";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
 function splitBodyIntoParagraphs(body?: string): string[] {
@@ -151,8 +154,8 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
       : "08";
   const totalAmountLabel =
     typeof snapshot.budget?.totalAmount === "number"
-      ? formatCurrencyBRL(snapshot.budget.totalAmount)
-      : "R$ 0,00";
+      ? formatCurrencyExtended(snapshot.budget.totalAmount)
+      : "R$ 0,00 (zero reais)";
   const advancePercentage =
     typeof snapshot.budget?.advancePercentage === "number"
       ? snapshot.budget.advancePercentage
@@ -167,8 +170,11 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
   // build a services block listing each budget item as a separate line
   const items = snapshot.budget?.items || [];
 
-  function numberToPtWords(n: number): string {
-    const map: Record<number, string> = {
+  function numberToPtWords(
+    n: number,
+    gender: "masculine" | "feminine" = "masculine",
+  ): string {
+    const base: Record<number, string> = {
       0: "zero",
       1: "um",
       2: "dois",
@@ -181,7 +187,11 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
       9: "nove",
       10: "dez",
     };
-    return map[n] || String(n);
+    if (gender === "feminine") {
+      if (n === 1) return "uma";
+      if (n === 2) return "duas";
+    }
+    return base[n] ?? String(n);
   }
 
   const buildItemLine = (it: {
@@ -193,7 +203,8 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
       it.quantity && Number.isFinite(it.quantity) && it.quantity > 0
         ? it.quantity
         : 1;
-    const qtyWords = numberToPtWords(qty);
+    const gender = getServiceGender(it.serviceType);
+    const qtyWords = numberToPtWords(qty, gender);
     const serviceLabel =
       (it.serviceType && String(it.serviceType).trim()) || "serviço";
     const lowerService = serviceLabel.toLowerCase();
@@ -221,7 +232,7 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     typeof snapshot.budget?.displacementFee === "number"
       ? snapshot.budget.displacementFee
       : 0;
-  const displacementFeeLabel = formatCurrencyBRL(displacementFee);
+  const displacementFeeLabel = formatCurrencyExtended(displacementFee);
   const displacementClause =
     displacementFee > 0
       ? `\n1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.`

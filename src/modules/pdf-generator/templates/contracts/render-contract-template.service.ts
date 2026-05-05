@@ -5,6 +5,7 @@ import {
   PDFFont,
   PDFPage,
   StandardFonts,
+  Color,
 } from "pdf-lib";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -462,14 +463,31 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
       const requiredHeight = lines.length * paragraphLineHeight + PARAGRAPH_GAP;
       this.ensureSpace(state, requiredHeight);
 
-      for (const line of lines) {
-        state.page.drawText(line, {
-          x: PDF_LAYOUT.marginX + BODY_INSET_X,
-          y: state.cursorY,
-          font: paragraphFont,
-          size: paragraphSize,
-          color: PDF_COLORS.text,
-        });
+      for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+        const line = lines[lineIndex];
+        const isLastLine = lineIndex === lines.length - 1;
+
+        if (isClauseTitle || isLastLine) {
+          state.page.drawText(line, {
+            x: PDF_LAYOUT.marginX + BODY_INSET_X,
+            y: state.cursorY,
+            font: paragraphFont,
+            size: paragraphSize,
+            color: PDF_COLORS.text,
+          });
+        } else {
+          this.drawJustifiedLine(
+            state.page,
+            line,
+            PDF_LAYOUT.marginX + BODY_INSET_X,
+            state.cursorY,
+            paragraphFont,
+            paragraphSize,
+            PDF_LAYOUT.contentWidth - BODY_INSET_X * 2,
+            PDF_COLORS.text,
+          );
+        }
+
         state.cursorY -= paragraphLineHeight;
       }
 
@@ -484,6 +502,36 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
         fonts,
         paragraphs.slice(finalSectionIndex + 1),
       );
+    }
+  }
+
+  private drawJustifiedLine(
+    page: PDFPage,
+    line: string,
+    x: number,
+    y: number,
+    font: PDFFont,
+    size: number,
+    availableWidth: number,
+    color: Color,
+  ): void {
+    const words = line.trim().split(/\s+/);
+    if (words.length <= 1) {
+      page.drawText(line, { x, y, font, size, color });
+      return;
+    }
+
+    const wordWidths = words.map((w) => font.widthOfTextAtSize(w, size));
+    const totalWordWidth = wordWidths.reduce((acc, w) => acc + w, 0);
+    const totalGap = availableWidth - totalWordWidth;
+    const gapWidth = totalGap / (words.length - 1);
+
+    let curX = x;
+    for (let i = 0; i < words.length; i += 1) {
+      page.drawText(words[i], { x: curX, y, font, size, color });
+      if (i < words.length - 1) {
+        curX += wordWidths[i] + gapWidth;
+      }
     }
   }
 

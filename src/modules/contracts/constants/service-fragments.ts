@@ -33,3 +33,16 @@ export function getFragmentForServiceType(value?: string): string {
     "atuar durante o evento, com foco na execucao do servico contratado"
   );
 }
+
+const SERVICE_GENDER_MAP: Record<string, "masculine" | "feminine"> = {
+  copeira: "feminine",
+  garcom: "masculine",
+  seguranca: "masculine",
+  porteiro: "masculine",
+  monitor: "masculine",
+  recepcionista: "feminine",
+};
+
+export function getServiceGender(value?: string): "masculine" | "feminine" {
+  return SERVICE_GENDER_MAP[normalizeServiceType(value)] ?? "masculine";
+}
