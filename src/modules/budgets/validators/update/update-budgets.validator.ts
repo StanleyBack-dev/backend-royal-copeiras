@@ -25,6 +25,7 @@ const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   ],
   [BudgetStatus.GENERATED]: [
     BudgetStatus.SENT,
+    BudgetStatus.APPROVED,
     BudgetStatus.DRAFT,
     BudgetStatus.CANCELED,
     BudgetStatus.EXPIRED,
