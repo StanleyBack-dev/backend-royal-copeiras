@@ -1,5 +1,6 @@
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { EventAssignmentEntity } from "../../entities/event-assignment.entity";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class GetEventAssignmentResponseDto {
@@ -16,8 +17,10 @@ export class GetEventAssignmentResponseDto {
     dto.budgetItemDescription = entity.budgetItem?.description;
     dto.budgetItemQuantity = entity.budgetItem?.quantity;
     dto.employeeName = entity.employee?.name;
-    dto.createdAt = entity.createdAt.toISOString();
-    dto.updatedAt = entity.updatedAt.toISOString();
+    dto.createdAt =
+      formatLocalDateTime(entity.createdAt) || String(entity.createdAt);
+    dto.updatedAt =
+      formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt);
     return dto;
   }
 

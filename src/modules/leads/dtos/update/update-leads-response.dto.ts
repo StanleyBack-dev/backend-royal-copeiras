@@ -2,6 +2,7 @@ import { Field, ObjectType } from "@nestjs/graphql";
 import { ILead } from "../../interface/lead.interface";
 import { LeadStatus } from "../../enums/lead-status.enum";
 import { LeadSource, normalizeLeadSource } from "../../enums/lead-source.enum";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class UpdateLeadsResponseDto implements ILead {
@@ -20,11 +21,11 @@ export class UpdateLeadsResponseDto implements ILead {
     dto.isActive = entity.isActive;
     dto.createdAt =
       entity.createdAt instanceof Date
-        ? entity.createdAt.toISOString()
+        ? formatLocalDateTime(entity.createdAt) || String(entity.createdAt)
         : String(entity.createdAt);
     dto.updatedAt =
       entity.updatedAt instanceof Date
-        ? entity.updatedAt.toISOString()
+        ? formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt)
         : String(entity.updatedAt);
 
     return dto;

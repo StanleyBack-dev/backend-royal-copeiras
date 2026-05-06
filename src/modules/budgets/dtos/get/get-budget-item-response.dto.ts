@@ -1,5 +1,6 @@
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { IBudgetItem } from "../../interface/budget-item.interface";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class GetBudgetItemResponseDto implements IBudgetItem {
@@ -16,11 +17,11 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
     dto.sortOrder = entity.sortOrder;
     dto.createdAt =
       entity.createdAt instanceof Date
-        ? entity.createdAt.toISOString()
+        ? formatLocalDateTime(entity.createdAt) || String(entity.createdAt)
         : String(entity.createdAt);
     dto.updatedAt =
       entity.updatedAt instanceof Date
-        ? entity.updatedAt.toISOString()
+        ? formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt)
         : String(entity.updatedAt);
     return dto;
   }

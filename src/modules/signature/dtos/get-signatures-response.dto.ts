@@ -1,6 +1,7 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { SignatureStatus } from "../enums/signature-status.enum";
 import { SignatureEntity } from "../entities/signature.entity";
+import { formatLocalDateTime } from "../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class GetSignaturesResponseDto {
@@ -17,10 +18,14 @@ export class GetSignaturesResponseDto {
     dto.signedByEmail = entity.signedByEmail;
     dto.signedByDocument = entity.signedByDocument;
     dto.signerIp = entity.signerIp;
-    dto.signedAt = entity.signedAt ? entity.signedAt.toISOString() : undefined;
+    dto.signedAt = entity.signedAt
+      ? formatLocalDateTime(entity.signedAt)
+      : undefined;
     dto.signatureUrl = entity.signatureUrl;
-    dto.createdAt = entity.createdAt.toISOString();
-    dto.updatedAt = entity.updatedAt.toISOString();
+    dto.createdAt =
+      formatLocalDateTime(entity.createdAt) || String(entity.createdAt);
+    dto.updatedAt =
+      formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt);
     return dto;
   }
 

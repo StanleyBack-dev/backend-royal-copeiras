@@ -2,6 +2,7 @@ import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { IBudget } from "../../interface/budget.interface";
 import { formatBudgetDateOnly } from "../../utils/budget-date.util";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 class UpdateBudgetItemResponseDto {
@@ -59,7 +60,7 @@ export class UpdateBudgetsResponseDto implements IBudget {
     dto.sentVia = entity.sentVia;
     dto.sentAt =
       entity.sentAt instanceof Date
-        ? entity.sentAt.toISOString()
+        ? formatLocalDateTime(entity.sentAt)
         : entity.sentAt
           ? String(entity.sentAt)
           : undefined;
@@ -73,20 +74,20 @@ export class UpdateBudgetsResponseDto implements IBudget {
       sortOrder: item.sortOrder,
       createdAt:
         item.createdAt instanceof Date
-          ? item.createdAt.toISOString()
+          ? formatLocalDateTime(item.createdAt) || String(item.createdAt)
           : String(item.createdAt),
       updatedAt:
         item.updatedAt instanceof Date
-          ? item.updatedAt.toISOString()
+          ? formatLocalDateTime(item.updatedAt) || String(item.updatedAt)
           : String(item.updatedAt),
     }));
     dto.createdAt =
       entity.createdAt instanceof Date
-        ? entity.createdAt.toISOString()
+        ? formatLocalDateTime(entity.createdAt) || String(entity.createdAt)
         : String(entity.createdAt);
     dto.updatedAt =
       entity.updatedAt instanceof Date
-        ? entity.updatedAt.toISOString()
+        ? formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt)
         : String(entity.updatedAt);
 
     return dto;

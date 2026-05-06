@@ -1,5 +1,6 @@
 import { ObjectType, Field } from "@nestjs/graphql";
 import { IEmployee } from "../../interface/employee.interface";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class GetEmployeesResponseDto implements IEmployee {
@@ -16,11 +17,11 @@ export class GetEmployeesResponseDto implements IEmployee {
     dto.isActive = entity.isActive;
     dto.createdAt =
       entity.createdAt instanceof Date
-        ? entity.createdAt.toISOString()
+        ? formatLocalDateTime(entity.createdAt) || String(entity.createdAt)
         : String(entity.createdAt);
     dto.updatedAt =
       entity.updatedAt instanceof Date
-        ? entity.updatedAt.toISOString()
+        ? formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt)
         : String(entity.updatedAt);
     return dto;
   }

@@ -4,6 +4,7 @@ import { IEvent } from "../../interface/event.interface";
 import { EventEntity } from "../../entities/event.entity";
 import { GetEventAssignmentResponseDto } from "./get-event-assignment-response.dto";
 import { GetEventServiceLineResponseDto } from "./get-event-service-line-response.dto";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class GetEventsResponseDto implements IEvent {
@@ -44,8 +45,10 @@ export class GetEventsResponseDto implements IEvent {
       GetEventAssignmentResponseDto.fromEntity,
     );
 
-    dto.createdAt = entity.createdAt.toISOString();
-    dto.updatedAt = entity.updatedAt.toISOString();
+    dto.createdAt =
+      formatLocalDateTime(entity.createdAt) || String(entity.createdAt);
+    dto.updatedAt =
+      formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt);
     return dto;
   }
 

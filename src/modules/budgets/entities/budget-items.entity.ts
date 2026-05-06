@@ -59,9 +59,9 @@ export class BudgetItemsEntity implements IBudgetItem {
   @Column({ name: "sort_order", type: "int", default: 0 })
   sortOrder!: number;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
   updatedAt!: Date;
 }
