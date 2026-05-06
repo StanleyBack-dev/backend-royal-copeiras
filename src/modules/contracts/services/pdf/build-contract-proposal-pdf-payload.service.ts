@@ -143,6 +143,8 @@ function buildEventScheduleText(
 
 function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
   const eventDatesText = buildEventDatesText(snapshot.budget?.eventDates || []);
+  const eventLocationText =
+    snapshot.budget?.eventLocation?.trim() || "local a definir";
   const eventScheduleText = buildEventScheduleText(
     snapshot.budget?.eventDates || [],
     snapshot.budget?.eventArrivalTimes || [],
@@ -243,7 +245,7 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
 1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada, consistentes na disponibilização de:
 ${servicesBlock}
 1.2. Pelo período de ${eventHours} horas consecutivas.
-1.3. O evento está previsto para ocorrer ${eventDatesText}, ${eventScheduleText}.${displacementClause}
+1.3. O evento está previsto para ocorrer ${eventDatesText}, ${eventScheduleText}, no local ${eventLocationText}.${displacementClause}
 
 CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 
