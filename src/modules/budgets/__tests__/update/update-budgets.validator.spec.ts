@@ -165,6 +165,27 @@ describe("UpdateBudgetsValidator", () => {
     expect(deps.managerImpl.save).toHaveBeenCalled();
   });
 
+  it("should allow generated to approved as status-only update", async () => {
+    const deps = makeDeps(makeBudget({ status: BudgetStatus.GENERATED }));
+
+    const input = new UpdateBudgetsInputDto();
+    input.idBudgets = "budget-1";
+    input.status = BudgetStatus.APPROVED;
+
+    const result = await UpdateBudgetsValidator.validateAndUpdate(
+      userId,
+      input,
+      {
+        budgetsRepo: deps.budgetsRepo,
+        budgetItemsRepo: deps.budgetItemsRepo,
+        leadsRepo: deps.leadsRepo,
+      },
+    );
+
+    expect(result.status).toBe(BudgetStatus.APPROVED);
+    expect(deps.managerImpl.save).toHaveBeenCalled();
+  });
+
   it("should update draft budget items and recalculate totals", async () => {
     const deps = makeDeps(makeBudget({ status: BudgetStatus.DRAFT }));
 
