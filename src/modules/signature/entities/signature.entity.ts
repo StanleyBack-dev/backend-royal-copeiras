@@ -79,13 +79,11 @@ export class SignatureEntity {
   })
   signerUserAgent?: string;
 
-  @Column({ name: "signed_at", type: "timestamptz", nullable: true })
+  @Column({ name: "signed_at", type: "timestamp", nullable: true })
   signedAt?: Date;
 
-  @Column({ name: "consent_at", type: "timestamptz", nullable: true })
+  @Column({ name: "consent_at", type: "timestamp", nullable: true })
   consentAt?: Date;
-
-  // Campos sentVia e sentAt movidos para ContractsEntity
 
   @Column({
     name: "signature_url",
@@ -114,9 +112,9 @@ export class SignatureEntity {
   @Column({ name: "signer_index", type: "int", nullable: true })
   signerIndex?: number;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
   updatedAt!: Date;
 }

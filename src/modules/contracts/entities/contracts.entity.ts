@@ -90,7 +90,7 @@ export class ContractsEntity implements IContract {
   @Column({ name: "sent_via", type: "varchar", length: 20, nullable: true })
   sentVia?: string;
 
-  @Column({ name: "sent_at", type: "timestamptz", nullable: true })
+  @Column({ name: "sent_at", type: "timestamp", nullable: true })
   sentAt?: Date;
 
   @Column({ name: "notes", type: "text", nullable: true })
@@ -103,9 +103,9 @@ export class ContractsEntity implements IContract {
   })
   contractSnapshot!: Record<string, unknown>;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
   updatedAt!: Date;
 }

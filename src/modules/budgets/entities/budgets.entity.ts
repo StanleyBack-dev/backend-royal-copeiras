@@ -142,7 +142,7 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   @Column({ name: "sent_via", type: "varchar", length: 20, nullable: true })
   sentVia?: string;
 
-  @Column({ name: "sent_at", type: "timestamptz", nullable: true })
+  @Column({ name: "sent_at", type: "timestamp", nullable: true })
   sentAt?: Date;
 
   @OneToMany(
@@ -154,9 +154,9 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   )
   items?: BudgetItemsEntity[];
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", type: "timestamp" })
   updatedAt!: Date;
 }

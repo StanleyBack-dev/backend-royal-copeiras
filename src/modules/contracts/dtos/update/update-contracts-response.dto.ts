@@ -2,6 +2,7 @@ import { Field, ObjectType, Int } from "@nestjs/graphql";
 import { ContractStatus } from "../../enums/contract-status.enum";
 import { IContract } from "../../interface/contract.interface";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
+import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
 export class UpdateContractsResponseDto implements IContract {
@@ -32,10 +33,12 @@ export class UpdateContractsResponseDto implements IContract {
       ? formatContractDateOnly(entity.retentionUntil)
       : undefined;
     dto.sentVia = entity.sentVia;
-    dto.sentAt = entity.sentAt ? entity.sentAt.toISOString() : undefined;
+    dto.sentAt = entity.sentAt ? formatLocalDateTime(entity.sentAt) : undefined;
     dto.notes = entity.notes;
-    dto.createdAt = entity.createdAt.toISOString();
-    dto.updatedAt = entity.updatedAt.toISOString();
+    dto.createdAt =
+      formatLocalDateTime(entity.createdAt) || String(entity.createdAt);
+    dto.updatedAt =
+      formatLocalDateTime(entity.updatedAt) || String(entity.updatedAt);
     return dto;
   }
 
