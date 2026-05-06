@@ -38,13 +38,6 @@ export class UpdateEventAssignmentService {
       throw AppException.from(APP_ERRORS.events.assignmentNotFound, undefined);
     }
 
-    if (record.event.idUsers !== userId) {
-      throw AppException.from(
-        APP_ERRORS.events.forbiddenEventAccess,
-        undefined,
-      );
-    }
-
     if (input.idEmployees !== undefined) {
       if (!input.idEmployees) {
         record.idEmployees = undefined;
@@ -63,13 +56,6 @@ export class UpdateEventAssignmentService {
         if (!employee.isActive) {
           throw AppException.from(
             APP_ERRORS.events.employeeInactive,
-            undefined,
-          );
-        }
-
-        if (employee.idUsers !== userId) {
-          throw AppException.from(
-            APP_ERRORS.events.forbiddenEventAccess,
             undefined,
           );
         }

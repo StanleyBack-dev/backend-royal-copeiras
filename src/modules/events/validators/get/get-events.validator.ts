@@ -18,13 +18,12 @@ import { GetEventsInputDto } from "../../dtos/get/get-events-input.dto";
 
 export class GetEventsValidator {
   static async validateAndFetchRecords(
-    userId: string,
     input: GetEventsInputDto,
     repository: Repository<EventEntity>,
   ): Promise<PaginatedResult<EventEntity>> {
     if (input.idEvents) {
       const record = await repository.findOne({
-        where: { idEvents: input.idEvents, idUsers: userId },
+        where: { idEvents: input.idEvents },
         relations: {
           contract: true,
           budget: { items: true },
@@ -48,9 +47,7 @@ export class GetEventsValidator {
       };
     }
 
-    const where: FindOptionsWhere<EventEntity> = {
-      idUsers: userId,
-    };
+    const where: FindOptionsWhere<EventEntity> = {};
 
     if (input.idContracts) {
       where.idContracts = input.idContracts;

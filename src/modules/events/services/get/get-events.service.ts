@@ -27,7 +27,6 @@ export class GetEventsService {
     );
 
     const records = await GetEventsValidator.validateAndFetchRecords(
-      userId,
       input ?? {},
       this.eventsRepository,
     );
