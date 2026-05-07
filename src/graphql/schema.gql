@@ -570,6 +570,7 @@ enum ContractStatus {
   GENERATED
   PENDING_SIGNATURE
   SIGNED
+  CLOSED_WITHOUT_SIGNATURE
   REJECTED
   EXPIRED
   CANCELED
@@ -976,6 +977,9 @@ type Mutation {
   sendContractSignatureRequest(
     input: SendContractSignatureRequestInputDto!
   ): SuccessResponseDto!
+  closeContractWithoutSignature(
+    input: CloseContractWithoutSignatureInputDto!
+  ): SuccessResponseDto!
   createSignatureRequest(
     input: CreateSignatureRequestInputDto!
   ): CreateSignatureRequestMutationResponseDto!
@@ -1151,6 +1155,10 @@ input SendContractEmailInputDto {
 }
 
 input SendContractSignatureRequestInputDto {
+  idContracts: String!
+}
+
+input CloseContractWithoutSignatureInputDto {
   idContracts: String!
 }
 

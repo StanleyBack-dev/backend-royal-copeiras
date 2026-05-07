@@ -22,6 +22,8 @@ import { SendContractEmailService } from "./services/pdf/send-contract-email.ser
 import { SendContractEmailResolver } from "./resolvers/pdf/send-contract-email.resolver";
 import { SendContractSignatureRequestService } from "./services/pdf/send-contract-signature-request.service";
 import { SendContractSignatureRequestResolver } from "./resolvers/pdf/send-contract-signature-request.resolver";
+import { CloseContractWithoutSignatureService } from "./services/pdf/close-contract-without-signature.service";
+import { CloseContractWithoutSignatureResolver } from "./resolvers/pdf/close-contract-without-signature.resolver";
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { SendContractSignatureRequestResolver } from "./resolvers/pdf/send-contr
     SendContractEmailResolver,
     SendContractSignatureRequestService,
     SendContractSignatureRequestResolver,
+    CloseContractWithoutSignatureService,
+    CloseContractWithoutSignatureResolver,
   ],
   exports: [
     CreateContractsService,

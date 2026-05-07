@@ -123,6 +123,10 @@ export const RESPONSE_MESSAGES = {
       code: "CONTRACT_SIGNATURE_REQUESTED",
       message: "Contrato enviado para assinatura com sucesso.",
     },
+    closedWithoutSignature: {
+      code: "CONTRACT_CLOSED_WITHOUT_SIGNATURE",
+      message: "Contrato encerrado sem assinatura com sucesso.",
+    },
   },
   signatures: {
     listed: {

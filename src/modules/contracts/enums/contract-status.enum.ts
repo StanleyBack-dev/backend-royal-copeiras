@@ -5,6 +5,7 @@ export enum ContractStatus {
   GENERATED = "generated",
   PENDING_SIGNATURE = "pending_signature",
   SIGNED = "signed",
+  CLOSED_WITHOUT_SIGNATURE = "closed_without_signature",
   REJECTED = "rejected",
   EXPIRED = "expired",
   CANCELED = "canceled",

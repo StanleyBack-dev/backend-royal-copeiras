@@ -16,6 +16,7 @@ const CONTRACT_ALLOWED_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
   [ContractStatus.GENERATED]: [
     ContractStatus.PENDING_SIGNATURE,
     ContractStatus.SIGNED,
+    ContractStatus.CLOSED_WITHOUT_SIGNATURE,
     ContractStatus.REJECTED,
     ContractStatus.CANCELED,
     ContractStatus.EXPIRED,
@@ -23,12 +24,14 @@ const CONTRACT_ALLOWED_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
   ],
   [ContractStatus.PENDING_SIGNATURE]: [
     ContractStatus.SIGNED,
+    ContractStatus.CLOSED_WITHOUT_SIGNATURE,
     ContractStatus.REJECTED,
     ContractStatus.CANCELED,
     ContractStatus.EXPIRED,
     ContractStatus.GENERATED,
   ],
   [ContractStatus.SIGNED]: [ContractStatus.CANCELED],
+  [ContractStatus.CLOSED_WITHOUT_SIGNATURE]: [ContractStatus.CANCELED],
   [ContractStatus.REJECTED]: [
     ContractStatus.GENERATED,
     ContractStatus.CANCELED,
@@ -86,7 +89,11 @@ export class UpdateContractsValidator {
 
     if (
       hasNonStatusUpdates &&
-      [ContractStatus.SIGNED, ContractStatus.CANCELED].includes(record.status)
+      [
+        ContractStatus.SIGNED,
+        ContractStatus.CLOSED_WITHOUT_SIGNATURE,
+        ContractStatus.CANCELED,
+      ].includes(record.status)
     ) {
       throw AppException.from(APP_ERRORS.contracts.editForbidden, undefined);
     }
