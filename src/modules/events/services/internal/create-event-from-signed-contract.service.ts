@@ -56,7 +56,13 @@ export class CreateEventFromSignedContractService {
       where: { idContracts: contractId },
     });
 
-    if (!contract || contract.status !== ContractStatus.SIGNED) {
+    if (
+      !contract ||
+      ![
+        ContractStatus.SIGNED,
+        ContractStatus.CLOSED_WITHOUT_SIGNATURE,
+      ].includes(contract.status)
+    ) {
       return null;
     }
 

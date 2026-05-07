@@ -54,6 +54,7 @@ import { ActivateSignedContractService } from "./services/activate-signed-contra
     GetSignatureStatusService,
     CancelSignatureRequestService,
     GetSignaturesService,
+    ActivateSignedContractService,
   ],
 })
 export class SignatureModule {}
