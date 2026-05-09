@@ -1,12 +1,14 @@
 import { EmployeesEntity } from "../entities/employees.entity";
 import { UserEntity } from "../../users/entities/user.entity";
 import { PositionsEntity } from "../../positions/entities/positions.entity";
+import { EmployeeGender } from "../enums/employee-gender.enum";
 
 export const employeeMock: EmployeesEntity = {
   idEmployees: "mock-employee-id",
   idUsers: "mock-user-id",
   user: { idUsers: "mock-user-id" } as UserEntity,
   name: "Funcionario Exemplo",
+  gender: EmployeeGender.FEMALE,
   document: "12345678901",
   email: "funcionario@exemplo.com",
   phone: "11999999999",

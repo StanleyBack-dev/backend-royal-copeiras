@@ -1,6 +1,7 @@
 import { ObjectType, Field } from "@nestjs/graphql";
 import { IEmployee } from "../../interface/employee.interface";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
+import { EmployeeGender } from "../../enums/employee-gender.enum";
 
 @ObjectType()
 export class CreateEmployeesResponseDto implements IEmployee {
@@ -10,6 +11,7 @@ export class CreateEmployeesResponseDto implements IEmployee {
     const dto = new CreateEmployeesResponseDto();
     dto.idEmployees = entity.idEmployees;
     dto.name = entity.name;
+    dto.gender = entity.gender;
     dto.document = entity.document;
     dto.email = entity.email;
     dto.phone = entity.phone;
@@ -32,6 +34,9 @@ export class CreateEmployeesResponseDto implements IEmployee {
 
   @Field()
   name!: string;
+
+  @Field(() => EmployeeGender, { nullable: true })
+  gender?: EmployeeGender | null;
 
   @Field(() => String, { nullable: true })
   document?: string | null;

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateEmployeesService } from "../../services/create/create-employees.service";
 import { employeeMock } from "../../__mocks__/employee.mock";
+import { EmployeeGender } from "../../enums/employee-gender.enum";
 
 describe("CreateEmployeesService", () => {
   let service: CreateEmployeesService;
@@ -24,6 +25,7 @@ describe("CreateEmployeesService", () => {
   it("should create an employee with all fields", async () => {
     const input = {
       name: "Funcionario Exemplo",
+      gender: EmployeeGender.FEMALE,
       document: "12345678901",
       email: "funcionario@exemplo.com",
       phone: "11999999999",
@@ -43,6 +45,7 @@ describe("CreateEmployeesService", () => {
     await expect(
       service.execute("user-id-test", {
         name: "Funcionario Exemplo",
+        gender: EmployeeGender.FEMALE,
         document: "12345678901",
         idPositions: "mock-position-id",
         isActive: true,

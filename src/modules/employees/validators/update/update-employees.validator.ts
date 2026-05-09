@@ -13,6 +13,8 @@ export class UpdateEmployeesValidator extends EmployeesBaseValidator {
     employeesRepo: Repository<EmployeesEntity>,
     positionsRepo: Repository<PositionsEntity>,
   ): Promise<EmployeesEntity> {
+    void userId;
+
     if (!input.idEmployees) {
       throw AppException.from(APP_ERRORS.employees.idRequired, undefined);
     }
