@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { EventStatus } from "../../enums/event-status.enum";
 import { IEvent } from "../../interface/event.interface";
 import { EventEntity } from "../../entities/event.entity";
@@ -24,22 +24,40 @@ export class GetEventsResponseDto implements IEvent {
     dto.eventDates = entity.budget?.eventDates ?? [];
     dto.eventLocation = entity.budget?.eventLocation;
     dto.displacementFee = Number(entity.budget?.displacementFee ?? 0);
+    dto.discountTotal = Number(
+      Math.max(
+        0,
+        Number(entity.budget?.subtotal ?? 0) +
+          Number(entity.budget?.displacementFee ?? 0) -
+          Number(entity.budget?.totalAmount ?? 0),
+      ).toFixed(2),
+    );
+    dto.overtimeMinutes = Number(entity.overtimeMinutes ?? 0);
 
     dto.serviceBreakdown = [...(entity.budget?.items ?? [])]
       .sort((left, right) => left.sortOrder - right.sortOrder)
       .map(GetEventServiceLineResponseDto.fromEntity);
 
     const totalRevenue = Number(entity.budget?.totalAmount ?? 0);
-    const totalCost = Number(
+    const assignmentCost = Number(
       (entity.assignments ?? []).reduce(
         (sum, assignment) => sum + Number(assignment.employeePayment ?? 0),
         0,
       ),
     );
+    const allocatedEmployeesCount = (entity.assignments ?? []).reduce(
+      (count, assignment) => (assignment.isActive ? count + 1 : count),
+      0,
+    );
+    const overtimeAmount =
+      allocatedEmployeesCount * (dto.overtimeMinutes / 60) * 90;
+    const finalTotalRevenue = totalRevenue + overtimeAmount;
+    const totalCost = assignmentCost;
 
-    dto.totalRevenue = Number(totalRevenue.toFixed(2));
+    dto.totalRevenue = Number(finalTotalRevenue.toFixed(2));
     dto.totalCost = Number(totalCost.toFixed(2));
-    dto.companyReceivable = Number((totalRevenue - totalCost).toFixed(2));
+    dto.overtimeAmount = Number(overtimeAmount.toFixed(2));
+    dto.companyReceivable = Number((finalTotalRevenue - totalCost).toFixed(2));
 
     dto.assignments = (entity.assignments ?? []).map(
       GetEventAssignmentResponseDto.fromEntity,
@@ -93,6 +111,15 @@ export class GetEventsResponseDto implements IEvent {
 
   @Field(() => Float)
   displacementFee!: number;
+
+  @Field(() => Float)
+  discountTotal!: number;
+
+  @Field(() => Int)
+  overtimeMinutes!: number;
+
+  @Field(() => Float)
+  overtimeAmount!: number;
 
   @Field(() => [GetEventServiceLineResponseDto])
   serviceBreakdown!: GetEventServiceLineResponseDto[];

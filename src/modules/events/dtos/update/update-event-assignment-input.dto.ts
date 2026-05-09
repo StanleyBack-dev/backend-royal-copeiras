@@ -7,16 +7,14 @@ export class UpdateEventAssignmentInputDto {
   @IsUUID()
   idEventAssignments!: string;
 
-  @Field({ nullable: true })
-  @IsOptional()
+  @Field()
   @IsUUID()
-  idEmployees?: string;
+  idEmployees!: string;
 
-  @Field(() => Float, { nullable: true })
-  @IsOptional()
+  @Field(() => Float)
   @IsNumber()
   @Min(0)
-  employeePayment?: number;
+  employeePayment!: number;
 
   @Field({ nullable: true })
   @IsOptional()
