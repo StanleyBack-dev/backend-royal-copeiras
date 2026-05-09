@@ -28,6 +28,9 @@ export interface BudgetPdfSnapshot {
     durationHours?: number;
     paymentMethod?: string;
     advancePercentage?: number;
+    discountType?: "percentage" | "amount" | null;
+    discountPercentage?: number | null;
+    discountAmount?: number | null;
     notes?: string;
     displacementFee: number;
     subtotal: number;

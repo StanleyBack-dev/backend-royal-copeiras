@@ -19,6 +19,9 @@ interface BudgetProposalTemplateInput {
   guestCount?: number;
   durationHours?: number;
   advancePercentage?: number;
+  discountType?: "percentage" | "amount" | null;
+  discountPercentage?: number | null;
+  discountAmount?: number | null;
   displacementFee?: number;
   subtotal: number;
   totalAmount: number;
@@ -70,6 +73,41 @@ function formatDate(iso: string): string {
   return `${day}/${month}/${year}`;
 }
 
+function resolveDiscount(input: BudgetProposalTemplateInput): {
+  label?: string;
+  amount: number;
+} {
+  if (input.discountType === "percentage") {
+    const percentage = Number(input.discountPercentage ?? 0);
+    if (!Number.isFinite(percentage) || percentage <= 0) {
+      return { amount: 0 };
+    }
+
+    const baseTotal =
+      Number(input.subtotal ?? 0) + Number(input.displacementFee ?? 0);
+    const amount = Number((baseTotal * (percentage / 100)).toFixed(2));
+
+    return {
+      label: `Desconto (${percentage}%)`,
+      amount,
+    };
+  }
+
+  if (input.discountType === "amount") {
+    const amount = Number(input.discountAmount ?? 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { amount: 0 };
+    }
+
+    return {
+      label: "Desconto (Valor Fixo)",
+      amount: Number(amount.toFixed(2)),
+    };
+  }
+
+  return { amount: 0 };
+}
+
 function buildItemsTable(items: BudgetProposalItem[]): string {
   const rows = items
     .map(
@@ -105,6 +143,7 @@ function buildDetailRow(label: string, value: string): string {
 }
 
 function buildPlainText(input: BudgetProposalTemplateInput): string {
+  const discount = resolveDiscount(input);
   const serviceTypes = extractServiceTypes(input.items);
   const serviceTypesText = serviceTypes.length
     ? `Tipos de serviço previstos: ${serviceTypes.join(", ")}.`
@@ -140,6 +179,9 @@ function buildPlainText(input: BudgetProposalTemplateInput): string {
   lines.push(
     `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
   );
+  if (discount.label && discount.amount > 0) {
+    lines.push(`${discount.label}: -${formatCurrency(discount.amount)}`);
+  }
 
   lines.push("", "Itens:");
   input.items.forEach((item) => {
@@ -155,6 +197,9 @@ function buildPlainText(input: BudgetProposalTemplateInput): string {
   lines.push(
     `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
   );
+  if (discount.label && discount.amount > 0) {
+    lines.push(`${discount.label}: -${formatCurrency(discount.amount)}`);
+  }
   lines.push(`Total: ${formatCurrency(input.totalAmount)}`);
 
   lines.push("", FIXED_BUDGET_NOTE);
@@ -175,6 +220,7 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
   text: string;
 } {
   const firstName = input.leadName.split(" ")[0] || input.leadName;
+  const discount = resolveDiscount(input);
 
   const detailsHtml = [
     buildDetailRow("Número do orçamento", input.budgetNumber),
@@ -199,6 +245,9 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
     input.advancePercentage !== undefined
       ? buildDetailRow("Entrada", `${input.advancePercentage}%`)
       : "",
+    discount.label && discount.amount > 0
+      ? buildDetailRow(discount.label, `- ${formatCurrency(discount.amount)}`)
+      : "",
     buildDetailRow(
       "Taxa de deslocamento",
       formatCurrency(input.displacementFee ?? 0),
@@ -217,6 +266,16 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
         <td style="font-size:14px;color:${EMAIL_BRAND.text};padding-top:6px;">Taxa de deslocamento</td>
         <td style="font-size:14px;color:${EMAIL_BRAND.text};text-align:right;padding-top:6px;">${formatCurrency(input.displacementFee ?? 0)}</td>
       </tr>
+      ${
+        discount.label && discount.amount > 0
+          ? `
+      <tr>
+        <td style="font-size:14px;color:${EMAIL_BRAND.text};padding-top:6px;">${discount.label}</td>
+        <td style="font-size:14px;color:#b91c1c;text-align:right;padding-top:6px;">-${formatCurrency(discount.amount)}</td>
+      </tr>
+      `
+          : ""
+      }
       <tr>
         <td style="font-size:16px;font-weight:700;color:${EMAIL_BRAND.text};padding-top:6px;">Total</td>
         <td style="font-size:16px;font-weight:700;color:${EMAIL_BRAND.text};text-align:right;padding-top:6px;">${formatCurrency(input.totalAmount)}</td>

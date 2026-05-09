@@ -94,6 +94,24 @@ export class CreateBudgetsInputDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(100)
+  discountPercentage?: number;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsIn(["percentage", "amount"])
+  discountType?: "percentage" | "amount" | null;
+
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discountAmount?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
   totalAmount?: number;
 
   @Field(() => Float, { defaultValue: 0 })

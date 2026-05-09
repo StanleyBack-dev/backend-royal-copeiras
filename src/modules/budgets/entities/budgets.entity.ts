@@ -106,6 +106,34 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
   })
   advancePercentage?: number;
 
+  @Column({
+    name: "discount_percentage",
+    type: "numeric",
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    transformer: numericTransformer,
+  })
+  discountPercentage?: number | null;
+
+  @Column({
+    name: "discount_type",
+    type: "enum",
+    enum: ["percentage", "amount"],
+    nullable: true,
+  })
+  discountType?: "percentage" | "amount" | null;
+
+  @Column({
+    name: "discount_amount",
+    type: "numeric",
+    precision: 12,
+    scale: 2,
+    nullable: true,
+    transformer: numericTransformer,
+  })
+  discountAmount?: number | null;
+
   @Column({ name: "notes", type: "text", nullable: true })
   notes?: string;
 

@@ -15,6 +15,7 @@ interface MockManager {
       delete: jest.Mock;
       create: jest.Mock;
       save: jest.Mock;
+      find: jest.Mock;
     }) => Promise<BudgetsEntity>,
   ) => Promise<BudgetsEntity>;
 }
@@ -30,17 +31,24 @@ describe("UpdateBudgetsValidator", () => {
   const userId = "user-1";
 
   function makeDeps(current: BudgetsEntity | null) {
+    let persistedItems = current?.items ?? [];
+
     const managerImpl = {
       delete: jest.fn<Promise<void>, [unknown, unknown]>().mockResolvedValue(),
       create: jest.fn((_: unknown, value: object) => value),
+      find: jest
+        .fn<Promise<BudgetItemsEntity[]>, [unknown, unknown]>()
+        .mockImplementation(async () => persistedItems),
       save: jest.fn(async (_: unknown, value: unknown) => {
         if (Array.isArray(value)) {
-          return value.map((item, index) => ({
+          persistedItems = value.map((item, index) => ({
             ...(item as object),
             idBudgetItems: `new-item-${index + 1}`,
             createdAt: new Date("2026-04-10"),
             updatedAt: new Date("2026-04-10"),
-          }));
+          })) as BudgetItemsEntity[];
+
+          return persistedItems;
         }
 
         return value;
@@ -246,5 +254,39 @@ describe("UpdateBudgetsValidator", () => {
     expect(result.totalAmount).toBe(1150);
     expect(result.items).toHaveLength(2);
     expect(deps.managerImpl.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it("should clear discount fields when discount type is removed", async () => {
+    const deps = makeDeps(
+      makeBudget({
+        status: BudgetStatus.DRAFT,
+        discountType: "percentage",
+        discountPercentage: 10,
+        discountAmount: null,
+        subtotal: 1000,
+        displacementFee: 0,
+        totalAmount: 900,
+      }),
+    );
+
+    const input = new UpdateBudgetsInputDto();
+    input.idBudgets = "budget-1";
+    input.discountType = null;
+
+    const result = await UpdateBudgetsValidator.validateAndUpdate(
+      userId,
+      input,
+      {
+        budgetsRepo: deps.budgetsRepo,
+        budgetItemsRepo: deps.budgetItemsRepo,
+        leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
+      },
+    );
+
+    expect(result.discountType).toBeNull();
+    expect(result.discountPercentage).toBeNull();
+    expect(result.discountAmount).toBeNull();
+    expect(result.totalAmount).toBe(1000);
   });
 });

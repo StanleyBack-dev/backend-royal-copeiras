@@ -33,6 +33,9 @@ export interface BudgetProposalPdfPayload {
   notes: string[];
   totals: {
     subtotal: string;
+    displacementFee: string;
+    discountLabel?: string;
+    discountAmount?: string;
     total: string;
   };
   footer: BudgetProposalPdfPayloadFooter;

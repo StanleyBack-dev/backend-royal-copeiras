@@ -57,12 +57,81 @@ interface BudgetRulesSnapshot {
   durationHours?: number | null;
   paymentMethod?: string | null;
   advancePercentage?: number | null;
+  discountType?: "percentage" | "amount" | null;
+  discountPercentage?: number | null;
+  discountAmount?: number | null;
   items?: Array<{ description?: string | null; idPositions?: string | null }>;
 }
 
 export class UpdateBudgetsValidator {
   private static readonly allowedPaymentMethods =
     BUDGET_ALLOWED_PAYMENT_METHODS as readonly string[];
+
+  private static resolveDiscountState(
+    current: BudgetsEntity,
+    input: UpdateBudgetsInputDto,
+  ) {
+    const hasDiscountTypeInput = Object.prototype.hasOwnProperty.call(
+      input,
+      "discountType",
+    );
+    const discountType = hasDiscountTypeInput
+      ? (input.discountType as "percentage" | "amount" | null | undefined)
+      : current.discountType;
+
+    if (!discountType) {
+      return {
+        discountType: null,
+        discountPercentage: null,
+        discountAmount: null,
+      };
+    }
+
+    if (discountType === "percentage") {
+      return {
+        discountType,
+        discountPercentage: Number(
+          (input.discountPercentage ?? current.discountPercentage ?? 0).toFixed(
+            2,
+          ),
+        ),
+        discountAmount: null,
+      };
+    }
+
+    return {
+      discountType,
+      discountPercentage: null,
+      discountAmount: Number(
+        (input.discountAmount ?? current.discountAmount ?? 0).toFixed(2),
+      ),
+    };
+  }
+
+  private static computeDiscountAmount(
+    subtotal: number,
+    displacementFee: number,
+    discount: {
+      discountType?: "percentage" | "amount" | null;
+      discountPercentage?: number | null;
+      discountAmount?: number | null;
+    },
+  ) {
+    const baseTotal = Number((subtotal + displacementFee).toFixed(2));
+
+    if (discount.discountType === "percentage") {
+      const percentage = Number(discount.discountPercentage ?? 0);
+      const calculated = baseTotal * (percentage / 100);
+      return Number(Math.min(Math.max(calculated, 0), baseTotal).toFixed(2));
+    }
+
+    if (discount.discountType === "amount") {
+      const amount = Number(discount.discountAmount ?? 0);
+      return Number(Math.min(Math.max(amount, 0), baseTotal).toFixed(2));
+    }
+
+    return 0;
+  }
 
   static async validateAndUpdate(
     userId: string,
@@ -113,6 +182,11 @@ export class UpdateBudgetsValidator {
           paymentMethod: input.paymentMethod ?? current.paymentMethod,
           advancePercentage:
             input.advancePercentage ?? current.advancePercentage,
+          discountType: this.resolveDiscountState(current, input).discountType,
+          discountPercentage: this.resolveDiscountState(current, input)
+            .discountPercentage,
+          discountAmount: this.resolveDiscountState(current, input)
+            .discountAmount,
           items:
             input.items?.map((item) => ({
               description: item.description,
@@ -179,6 +253,8 @@ export class UpdateBudgetsValidator {
     }
 
     return deps.budgetsRepo.manager.transaction(async (manager) => {
+      const resolvedDiscount = this.resolveDiscountState(current, input);
+
       current.idLeads = input.idLeads ?? current.idLeads;
       current.status = input.status ?? current.status;
       current.sentVia = input.sentVia ?? current.sentVia;
@@ -196,6 +272,9 @@ export class UpdateBudgetsValidator {
       current.paymentMethod = input.paymentMethod ?? current.paymentMethod;
       current.advancePercentage =
         input.advancePercentage ?? current.advancePercentage;
+      current.discountType = resolvedDiscount.discountType;
+      current.discountPercentage = resolvedDiscount.discountPercentage;
+      current.discountAmount = resolvedDiscount.discountAmount;
       if (input.displacementFee !== undefined) {
         current.displacementFee = Number(input.displacementFee.toFixed(2));
       }
@@ -253,8 +332,14 @@ export class UpdateBudgetsValidator {
           (current.displacementFee ?? 0).toFixed(2),
         );
         current.subtotal = subtotal;
+
+        const discountAmount = this.computeDiscountAmount(
+          subtotal,
+          displacementFee,
+          resolvedDiscount,
+        );
         current.totalAmount = Number(
-          (input.totalAmount ?? subtotal + displacementFee).toFixed(2),
+          (subtotal + displacementFee - discountAmount).toFixed(2),
         );
 
         await manager.delete(BudgetItemsEntity, {
@@ -280,8 +365,19 @@ export class UpdateBudgetsValidator {
           relations: { position: true },
           order: { sortOrder: "ASC" },
         });
-      } else if (!isStatusOnlyUpdate && input.totalAmount !== undefined) {
-        current.totalAmount = Number(input.totalAmount.toFixed(2));
+      } else if (!isStatusOnlyUpdate) {
+        const subtotal = Number((current.subtotal ?? 0).toFixed(2));
+        const displacementFee = Number(
+          (current.displacementFee ?? 0).toFixed(2),
+        );
+        const discountAmount = this.computeDiscountAmount(
+          subtotal,
+          displacementFee,
+          resolvedDiscount,
+        );
+        current.totalAmount = Number(
+          (subtotal + displacementFee - discountAmount).toFixed(2),
+        );
       }
 
       const saved = await manager.save(BudgetsEntity, current);
@@ -311,6 +407,9 @@ export class UpdateBudgetsValidator {
       input.durationHours,
       input.paymentMethod,
       input.advancePercentage,
+      input.discountType,
+      input.discountPercentage,
+      input.discountAmount,
       input.displacementFee,
       input.totalAmount,
       input.items,
@@ -411,6 +510,47 @@ export class UpdateBudgetsValidator {
         APP_ERRORS.budgets.advancePercentageRequired,
         undefined,
       );
+    }
+
+    if (
+      data.discountType !== undefined &&
+      data.discountType !== null &&
+      data.discountType !== "percentage" &&
+      data.discountType !== "amount"
+    ) {
+      throw AppException.from(
+        APP_ERRORS.budgets.discountTypeInvalid,
+        undefined,
+      );
+    }
+
+    if (data.discountType === "percentage") {
+      if (
+        data.discountPercentage === undefined ||
+        data.discountPercentage === null ||
+        Number.isNaN(Number(data.discountPercentage)) ||
+        data.discountPercentage <= 0 ||
+        data.discountPercentage > 100
+      ) {
+        throw AppException.from(
+          APP_ERRORS.budgets.discountPercentageRequired,
+          undefined,
+        );
+      }
+    }
+
+    if (data.discountType === "amount") {
+      if (
+        data.discountAmount === undefined ||
+        data.discountAmount === null ||
+        Number.isNaN(Number(data.discountAmount)) ||
+        data.discountAmount <= 0
+      ) {
+        throw AppException.from(
+          APP_ERRORS.budgets.discountAmountRequired,
+          undefined,
+        );
+      }
     }
 
     const hasInvalidItemDescription = data.items.some(
