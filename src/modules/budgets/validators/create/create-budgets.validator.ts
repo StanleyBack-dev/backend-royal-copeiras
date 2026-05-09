@@ -4,18 +4,15 @@ import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { CreateBudgetsInputDto } from "../../dtos/create/create-budgets-input.dto";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
-import { EntityManager, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import {
   BUDGET_ALLOWED_PAYMENT_METHODS,
   BUDGET_DURATION_HOURS_MAX,
   BUDGET_DURATION_HOURS_MIN,
 } from "../../constants/budget-form-rules.constant";
-import {
-  inferServiceTypeFromDescription,
-  inferServiceComboFromDescription,
-} from "../../constants/budget-service-types.constant";
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
+import { PositionsEntity } from "../../../positions/entities/positions.entity";
 
 interface CreateBudgetResult {
   budget: BudgetsEntity;
@@ -31,6 +28,7 @@ export class CreateBudgetsValidator {
     input: CreateBudgetsInputDto,
     budgetsRepo: Repository<BudgetsEntity>,
     leadsRepo: Repository<LeadsEntity>,
+    positionsRepo: Repository<PositionsEntity>,
   ): Promise<CreateBudgetResult> {
     this.validateBusinessRules(input);
 
@@ -56,9 +54,37 @@ export class CreateBudgetsValidator {
       throw AppException.from(APP_ERRORS.budgets.leadInactive, undefined);
     }
 
+    const positionIds = Array.from(
+      new Set(input.items.map((item) => item.idPositions)),
+    );
+    const positions = await positionsRepo.find({
+      where: { idPositions: In(positionIds) },
+    });
+    const positionsById = new Map(
+      positions.map((position) => [position.idPositions, position]),
+    );
+
+    const hasMissingPosition = positionIds.some(
+      (idPositions) => !positionsById.has(idPositions),
+    );
+
+    if (hasMissingPosition) {
+      throw AppException.from(APP_ERRORS.positions.notFound, undefined);
+    }
+
+    const hasInactivePosition = positionIds.some((idPositions) => {
+      const position = positionsById.get(idPositions);
+      return !position?.isActive;
+    });
+
+    if (hasInactivePosition) {
+      throw AppException.from(APP_ERRORS.positions.inactive, undefined);
+    }
+
     const normalizedItems = input.items.map((item) => {
       const totalPrice = Number((item.quantity * item.unitPrice).toFixed(2));
       return {
+        idPositions: item.idPositions,
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
@@ -107,6 +133,7 @@ export class CreateBudgetsValidator {
       const budgetItems = normalizedItems.map((item) =>
         manager.create(BudgetItemsEntity, {
           idBudgets: savedBudget.idBudgets,
+          idPositions: item.idPositions,
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
@@ -116,10 +143,16 @@ export class CreateBudgetsValidator {
         }),
       );
 
-      const savedItems = await manager.save(BudgetItemsEntity, budgetItems);
+      await manager.save(BudgetItemsEntity, budgetItems);
 
-      savedBudget.items = savedItems;
-      return { budget: savedBudget, items: savedItems };
+      const itemsWithPositions = await manager.find(BudgetItemsEntity, {
+        where: { idBudgets: savedBudget.idBudgets },
+        relations: { position: true },
+        order: { sortOrder: "ASC" },
+      });
+
+      savedBudget.items = itemsWithPositions;
+      return { budget: savedBudget, items: itemsWithPositions };
     });
   }
 
@@ -224,22 +257,20 @@ export class CreateBudgetsValidator {
       );
     }
 
-    const serviceTypes = input.items.map((item) =>
-      inferServiceTypeFromDescription(item.description),
+    const hasInvalidItemPosition = input.items.some(
+      (item) => !item.idPositions,
     );
 
-    if (serviceTypes.some((type) => type === null)) {
+    if (hasInvalidItemPosition) {
       throw AppException.from(
         APP_ERRORS.budgets.itemServiceTypeInvalid,
         undefined,
       );
     }
 
-    const serviceCombos = input.items.map((item) =>
-      inferServiceComboFromDescription(item.description),
-    );
-    const uniqueCombos = new Set(serviceCombos);
-    if (uniqueCombos.size !== serviceCombos.length) {
+    const selectedPositions = input.items.map((item) => item.idPositions);
+    const uniquePositions = new Set(selectedPositions);
+    if (uniquePositions.size !== selectedPositions.length) {
       throw AppException.from(
         APP_ERRORS.budgets.itemServiceTypeDuplicated,
         undefined,

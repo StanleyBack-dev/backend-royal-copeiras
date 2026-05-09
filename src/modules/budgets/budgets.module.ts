@@ -19,13 +19,19 @@ import { GenerateBudgetPreviewPdfService } from "./services/pdf/generate-budget-
 import { MailModule } from "../mails/mail.module";
 import { SendBudgetEmailService } from "./services/pdf/send-budget-email.service";
 import { SendBudgetEmailResolver } from "./resolvers/pdf/send-budget-email.resolver";
+import { PositionsEntity } from "../positions/entities/positions.entity";
 
 @Module({
   imports: [
     AuthModule,
     PdfGeneratorModule,
     MailModule,
-    TypeOrmModule.forFeature([BudgetsEntity, BudgetItemsEntity, LeadsEntity]),
+    TypeOrmModule.forFeature([
+      BudgetsEntity,
+      BudgetItemsEntity,
+      LeadsEntity,
+      PositionsEntity,
+    ]),
   ],
   providers: [
     BuildBudgetPdfSnapshotService,

@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { BudgetsEntity } from "./budgets.entity";
-import { IBudgetItem } from "../interface/budget-item.interface";
+import { PositionsEntity } from "../../positions/entities/positions.entity";
 
 const numericTransformer = {
   to: (value: number | null | undefined) => value,
@@ -16,7 +16,7 @@ const numericTransformer = {
 };
 
 @Entity("tb_budget_items")
-export class BudgetItemsEntity implements IBudgetItem {
+export class BudgetItemsEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_budget_items" })
   idBudgetItems!: string;
 
@@ -28,6 +28,13 @@ export class BudgetItemsEntity implements IBudgetItem {
 
   @Column({ name: "idtb_budgets", type: "uuid" })
   idBudgets!: string;
+
+  @ManyToOne(() => PositionsEntity, { onDelete: "RESTRICT", nullable: true })
+  @JoinColumn({ name: "idtb_positions" })
+  position?: PositionsEntity;
+
+  @Column({ name: "idtb_positions", type: "uuid", nullable: true })
+  idPositions?: string | null;
 
   @Column({ name: "description", type: "varchar", length: 255 })
   description!: string;

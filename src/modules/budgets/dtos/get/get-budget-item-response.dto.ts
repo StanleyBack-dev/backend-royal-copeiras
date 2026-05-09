@@ -9,6 +9,8 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
   ): GetBudgetItemResponseDto {
     const dto = new GetBudgetItemResponseDto();
     dto.idBudgetItems = entity.idBudgetItems;
+    dto.idPositions = entity.idPositions;
+    dto.position = entity.position?.name || null;
     dto.description = entity.description;
     dto.quantity = entity.quantity;
     dto.unitPrice = entity.unitPrice;
@@ -28,6 +30,12 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
 
   @Field()
   idBudgetItems!: string;
+
+  @Field(() => String, { nullable: true })
+  idPositions?: string | null;
+
+  @Field(() => String, { nullable: true })
+  position?: string | null;
 
   @Field()
   description!: string;

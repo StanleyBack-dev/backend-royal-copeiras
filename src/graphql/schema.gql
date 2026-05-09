@@ -684,6 +684,8 @@ type GenerateContractPreviewMutationResponseDto {
 
 type CreateBudgetItemResponseDto {
   idBudgetItems: String!
+  idPositions: String
+  position: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -731,6 +733,8 @@ enum BudgetStatus {
 
 type GetBudgetItemResponseDto {
   idBudgetItems: String!
+  idPositions: String
+  position: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -768,6 +772,8 @@ type GetBudgetsResponseDto {
 
 type UpdateBudgetItemResponseDto {
   idBudgetItems: String!
+  idPositions: String
+  position: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -898,9 +904,7 @@ type Query {
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
   getUser(input: GetUserInputDto!): GetUserResponseDto!
   me: GetUserResponseDto!
-  getUserPagePermissions(
-    input: GetUserPagePermissionsInputDto!
-  ): UserPagePermissionsResponseDto!
+  getUserPagePermissions(input: GetUserPagePermissionsInputDto!): UserPagePermissionsResponseDto!
   getMyPagePermissions: UserPagePermissionsResponseDto!
   getCustomers(input: GetCustomersInputDto): GetCustomersListResponseDto!
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
@@ -1001,84 +1005,36 @@ type Mutation {
   refreshAuthSession: AuthSessionResponseDto!
   logout: LogoutResponseDto!
   changeMyPassword(input: ChangePasswordInputDto!): LogoutResponseDto!
-  requestPasswordRecovery(
-    input: RequestPasswordRecoveryInputDto!
-  ): LogoutResponseDto!
-  verifyPasswordRecoveryCode(
-    input: VerifyPasswordRecoveryCodeInputDto!
-  ): VerifyPasswordRecoveryCodeMutationResponseDto!
-  resetPasswordWithRecovery(
-    input: ResetPasswordWithRecoveryInputDto!
-  ): LogoutResponseDto!
+  requestPasswordRecovery(input: RequestPasswordRecoveryInputDto!): LogoutResponseDto!
+  verifyPasswordRecoveryCode(input: VerifyPasswordRecoveryCodeInputDto!): VerifyPasswordRecoveryCodeMutationResponseDto!
+  resetPasswordWithRecovery(input: ResetPasswordWithRecoveryInputDto!): LogoutResponseDto!
   createUser(input: CreateUserInputDto!): CreateUserMutationResponseDto!
   updateUser(input: UpdateUserInputDto!): UpdateUserMutationResponseDto!
-  adminUpdateUserAccess(
-    input: AdminUpdateUserAccessInputDto!
-  ): AdminUpdateUserAccessMutationResponseDto!
-  setUserPagePermissions(
-    input: SetUserPagePermissionsInputDto!
-  ): SetUserPagePermissionsMutationResponseDto!
-  unlockUserCredential(
-    input: UnlockUserCredentialInputDto!
-  ): UnlockUserCredentialMutationResponseDto!
-  createCustomers(
-    input: CreateCustomersInputDto!
-  ): CreateCustomersMutationResponseDto!
-  updateCustomers(
-    input: UpdateCustomersInputDto!
-  ): UpdateCustomersMutationResponseDto!
-  createEmployees(
-    input: CreateEmployeesInputDto!
-  ): CreateEmployeesMutationResponseDto!
-  updateEmployees(
-    input: UpdateEmployeesInputDto!
-  ): UpdateEmployeesMutationResponseDto!
+  adminUpdateUserAccess(input: AdminUpdateUserAccessInputDto!): AdminUpdateUserAccessMutationResponseDto!
+  setUserPagePermissions(input: SetUserPagePermissionsInputDto!): SetUserPagePermissionsMutationResponseDto!
+  unlockUserCredential(input: UnlockUserCredentialInputDto!): UnlockUserCredentialMutationResponseDto!
+  createCustomers(input: CreateCustomersInputDto!): CreateCustomersMutationResponseDto!
+  updateCustomers(input: UpdateCustomersInputDto!): UpdateCustomersMutationResponseDto!
+  createEmployees(input: CreateEmployeesInputDto!): CreateEmployeesMutationResponseDto!
+  updateEmployees(input: UpdateEmployeesInputDto!): UpdateEmployeesMutationResponseDto!
   createLeads(input: CreateLeadsInputDto!): CreateLeadsMutationResponseDto!
   updateLeads(input: UpdateLeadsInputDto!): UpdateLeadsMutationResponseDto!
-  createContracts(
-    input: CreateContractsInputDto!
-  ): CreateContractsMutationResponseDto!
-  updateContracts(
-    input: UpdateContractsInputDto!
-  ): UpdateContractsMutationResponseDto!
-  generateContractPreviewPdf(
-    input: GenerateContractPreviewInputDto!
-  ): GenerateContractPreviewMutationResponseDto!
+  createContracts(input: CreateContractsInputDto!): CreateContractsMutationResponseDto!
+  updateContracts(input: UpdateContractsInputDto!): UpdateContractsMutationResponseDto!
+  generateContractPreviewPdf(input: GenerateContractPreviewInputDto!): GenerateContractPreviewMutationResponseDto!
   sendContractEmail(input: SendContractEmailInputDto!): SuccessResponseDto!
-  sendContractSignatureRequest(
-    input: SendContractSignatureRequestInputDto!
-  ): SuccessResponseDto!
-  closeContractWithoutSignature(
-    input: CloseContractWithoutSignatureInputDto!
-  ): SuccessResponseDto!
-  createSignatureRequest(
-    input: CreateSignatureRequestInputDto!
-  ): CreateSignatureRequestMutationResponseDto!
-  getSignatureStatus(
-    input: GetSignatureStatusInputDto!
-  ): GetSignatureStatusMutationResponseDto!
-  cancelSignatureRequest(
-    input: CancelSignatureRequestInputDto!
-  ): SuccessResponseDto!
-  updateEventAssignment(
-    input: UpdateEventAssignmentInputDto!
-  ): UpdateEventAssignmentMutationResponseDto!
-  createBudgets(
-    input: CreateBudgetsInputDto!
-  ): CreateBudgetsMutationResponseDto!
-  updateBudgets(
-    input: UpdateBudgetsInputDto!
-  ): UpdateBudgetsMutationResponseDto!
-  generateBudgetPreviewPdf(
-    input: GenerateBudgetPreviewInputDto!
-  ): GenerateBudgetPreviewMutationResponseDto!
+  sendContractSignatureRequest(input: SendContractSignatureRequestInputDto!): SuccessResponseDto!
+  closeContractWithoutSignature(input: CloseContractWithoutSignatureInputDto!): SuccessResponseDto!
+  createSignatureRequest(input: CreateSignatureRequestInputDto!): CreateSignatureRequestMutationResponseDto!
+  getSignatureStatus(input: GetSignatureStatusInputDto!): GetSignatureStatusMutationResponseDto!
+  cancelSignatureRequest(input: CancelSignatureRequestInputDto!): SuccessResponseDto!
+  updateEventAssignment(input: UpdateEventAssignmentInputDto!): UpdateEventAssignmentMutationResponseDto!
+  createBudgets(input: CreateBudgetsInputDto!): CreateBudgetsMutationResponseDto!
+  updateBudgets(input: UpdateBudgetsInputDto!): UpdateBudgetsMutationResponseDto!
+  generateBudgetPreviewPdf(input: GenerateBudgetPreviewInputDto!): GenerateBudgetPreviewMutationResponseDto!
   sendBudgetEmail(input: SendBudgetEmailInputDto!): SuccessResponseDto!
-  createPositions(
-    input: CreatePositionsInputDto!
-  ): CreatePositionsMutationResponseDto!
-  updatePositions(
-    input: UpdatePositionsInputDto!
-  ): UpdatePositionsMutationResponseDto!
+  createPositions(input: CreatePositionsInputDto!): CreatePositionsMutationResponseDto!
+  updatePositions(input: UpdatePositionsInputDto!): UpdatePositionsMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -1289,6 +1245,7 @@ input CreateBudgetsInputDto {
 }
 
 input CreateBudgetItemInputDto {
+  idPositions: String!
   description: String!
   quantity: Int!
   unitPrice: Float!
@@ -1318,6 +1275,7 @@ input UpdateBudgetsInputDto {
 }
 
 input UpdateBudgetItemInputDto {
+  idPositions: String!
   description: String!
   quantity: Int!
   unitPrice: Float!

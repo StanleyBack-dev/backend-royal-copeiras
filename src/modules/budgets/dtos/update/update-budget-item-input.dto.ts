@@ -5,11 +5,16 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from "class-validator";
 
 @InputType()
 export class UpdateBudgetItemInputDto {
+  @Field()
+  @IsUUID()
+  idPositions!: string;
+
   @Field()
   @IsString()
   @IsNotEmpty()

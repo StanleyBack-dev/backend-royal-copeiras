@@ -1,5 +1,7 @@
 export interface IBudgetItem {
   idBudgetItems: string;
+  idPositions?: string | null;
+  position?: string | null;
   description: string;
   quantity: number;
   unitPrice: number;
