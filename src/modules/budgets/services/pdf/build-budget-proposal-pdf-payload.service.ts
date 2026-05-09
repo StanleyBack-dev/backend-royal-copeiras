@@ -112,6 +112,7 @@ export class BuildBudgetProposalPdfPayloadService {
   ): BudgetProposalPdfPayload {
     const today = new Date();
     const displacementFee = snapshot.budget.displacementFee ?? 0;
+    const hasDisplacementFee = displacementFee > 0;
     const discount = resolveDiscountSummary(snapshot.budget);
     const eventDates = snapshot.budget.eventDates.length
       ? snapshot.budget.eventDates
@@ -179,10 +180,14 @@ export class BuildBudgetProposalPdfPayloadService {
               ? `${snapshot.budget.advancePercentage}%`
               : "Não informada",
         },
-        {
-          label: "Taxa de deslocamento",
-          value: formatCurrencyBRL(displacementFee),
-        },
+        ...(hasDisplacementFee
+          ? [
+              {
+                label: "Taxa de deslocamento",
+                value: formatCurrencyBRL(displacementFee),
+              },
+            ]
+          : []),
         ...(discount.label
           ? [
               {
@@ -202,12 +207,16 @@ export class BuildBudgetProposalPdfPayloadService {
             totalPrice: formatCurrencyBRL(item.totalPrice),
             notes: item.notes,
           })),
-        {
-          description: DISPLACEMENT_FEE_DESCRIPTION,
-          quantity: "1",
-          unitPrice: formatCurrencyBRL(displacementFee),
-          totalPrice: formatCurrencyBRL(displacementFee),
-        },
+        ...(hasDisplacementFee
+          ? [
+              {
+                description: DISPLACEMENT_FEE_DESCRIPTION,
+                quantity: "1",
+                unitPrice: formatCurrencyBRL(displacementFee),
+                totalPrice: formatCurrencyBRL(displacementFee),
+              },
+            ]
+          : []),
         ...(discount.amount > 0
           ? [
               {
