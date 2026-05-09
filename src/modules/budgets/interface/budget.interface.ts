@@ -16,6 +16,9 @@ export interface IBudget {
   durationHours?: number;
   paymentMethod?: string;
   advancePercentage?: number;
+  discountPercentage?: number | null;
+  discountType?: "percentage" | "amount" | null;
+  discountAmount?: number | null;
   displacementFee: number;
   subtotal: number;
   totalAmount: number;

@@ -16,6 +16,39 @@ const PROPOSAL_VALIDITY_DAYS = 15;
 const ITEMS_SECTION_TITLE = "Serviços e Taxas Propostos";
 const DISPLACEMENT_FEE_DESCRIPTION =
   "Taxa de deslocamento da equipe para atendimento no local do evento.";
+const DISCOUNT_DESCRIPTION =
+  "Desconto aplicado sobre o valor total da proposta.";
+
+function resolveDiscountSummary(budget: BudgetPdfSnapshot["budget"]) {
+  if (budget.discountType === "percentage") {
+    const percentage = Number(budget.discountPercentage ?? 0);
+    if (!Number.isFinite(percentage) || percentage <= 0) {
+      return { label: undefined, amount: 0 };
+    }
+
+    const baseTotal =
+      Number(budget.subtotal ?? 0) + Number(budget.displacementFee ?? 0);
+    const amount = Number((baseTotal * (percentage / 100)).toFixed(2));
+    return {
+      label: `Desconto (${percentage}%)`,
+      amount,
+    };
+  }
+
+  if (budget.discountType === "amount") {
+    const amount = Number(budget.discountAmount ?? 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { label: undefined, amount: 0 };
+    }
+
+    return {
+      label: "Desconto (Valor Fixo)",
+      amount: Number(amount.toFixed(2)),
+    };
+  }
+
+  return { label: undefined, amount: 0 };
+}
 
 function parseTimeToMinutes(time?: string): number | undefined {
   if (!time || !/^\d{2}:\d{2}$/.test(time)) {
@@ -79,6 +112,7 @@ export class BuildBudgetProposalPdfPayloadService {
   ): BudgetProposalPdfPayload {
     const today = new Date();
     const displacementFee = snapshot.budget.displacementFee ?? 0;
+    const discount = resolveDiscountSummary(snapshot.budget);
     const eventDates = snapshot.budget.eventDates.length
       ? snapshot.budget.eventDates
           .map((value) => formatDateBR(value))
@@ -149,6 +183,14 @@ export class BuildBudgetProposalPdfPayloadService {
           label: "Taxa de deslocamento",
           value: formatCurrencyBRL(displacementFee),
         },
+        ...(discount.label
+          ? [
+              {
+                label: discount.label,
+                value: `- ${formatCurrencyBRL(discount.amount)}`,
+              },
+            ]
+          : []),
       ],
       items: [
         ...[...snapshot.items]
@@ -166,10 +208,24 @@ export class BuildBudgetProposalPdfPayloadService {
           unitPrice: formatCurrencyBRL(displacementFee),
           totalPrice: formatCurrencyBRL(displacementFee),
         },
+        ...(discount.amount > 0
+          ? [
+              {
+                description: DISCOUNT_DESCRIPTION,
+                quantity: "1",
+                unitPrice: formatCurrencyBRL(-discount.amount),
+                totalPrice: formatCurrencyBRL(-discount.amount),
+              },
+            ]
+          : []),
       ],
       notes,
       totals: {
         subtotal: formatCurrencyBRL(snapshot.budget.subtotal),
+        displacementFee: formatCurrencyBRL(displacementFee),
+        discountLabel: discount.label,
+        discountAmount:
+          discount.amount > 0 ? formatCurrencyBRL(discount.amount) : undefined,
         total: formatCurrencyBRL(snapshot.budget.totalAmount),
       },
       footer: {

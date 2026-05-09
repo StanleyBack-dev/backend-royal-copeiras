@@ -60,6 +60,9 @@ export class UpdateBudgetsResponseDto implements IBudget {
     dto.durationHours = entity.durationHours;
     dto.paymentMethod = entity.paymentMethod;
     dto.advancePercentage = entity.advancePercentage;
+    dto.discountPercentage = entity.discountPercentage;
+    dto.discountType = entity.discountType;
+    dto.discountAmount = entity.discountAmount;
     dto.displacementFee = entity.displacementFee ?? 0;
     dto.subtotal = entity.subtotal;
     dto.totalAmount = entity.totalAmount;
@@ -142,6 +145,15 @@ export class UpdateBudgetsResponseDto implements IBudget {
 
   @Field(() => Float, { nullable: true })
   advancePercentage?: number;
+
+  @Field(() => Float, { nullable: true })
+  discountPercentage?: number | null;
+
+  @Field(() => String, { nullable: true })
+  discountType?: "percentage" | "amount" | null;
+
+  @Field(() => Float, { nullable: true })
+  discountAmount?: number | null;
 
   @Field(() => Float)
   displacementFee!: number;

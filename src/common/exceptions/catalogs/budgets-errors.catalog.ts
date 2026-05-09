@@ -85,6 +85,23 @@ export const budgetsErrors = {
     message:
       "A porcentagem de entrada é obrigatória e deve estar entre 0 e 100.",
   },
+  discountTypeInvalid: {
+    code: "BUDGETS_DISCOUNT_TYPE_INVALID",
+    status: HttpStatus.BAD_REQUEST,
+    message: "O tipo de desconto informado não é válido.",
+  },
+  discountPercentageRequired: {
+    code: "BUDGETS_DISCOUNT_PERCENTAGE_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "A porcentagem de desconto é obrigatória e deve estar entre 0 e 100 quando o tipo de desconto for percentual.",
+  },
+  discountAmountRequired: {
+    code: "BUDGETS_DISCOUNT_AMOUNT_REQUIRED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "O valor do desconto é obrigatório e deve ser maior que zero quando o tipo de desconto for monetário.",
+  },
   itemDescriptionRequired: {
     code: "BUDGETS_ITEM_DESCRIPTION_REQUIRED",
     status: HttpStatus.BAD_REQUEST,

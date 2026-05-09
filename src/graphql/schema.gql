@@ -711,6 +711,9 @@ type CreateBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
+  discountPercentage: Float
+  discountType: String
+  discountAmount: Float
   displacementFee: Float!
   subtotal: Float!
   totalAmount: Float!
@@ -760,6 +763,9 @@ type GetBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
+  discountPercentage: Float
+  discountType: String
+  discountAmount: Float
   displacementFee: Float!
   subtotal: Float!
   totalAmount: Float!
@@ -799,6 +805,9 @@ type UpdateBudgetsResponseDto {
   durationHours: Float
   paymentMethod: String
   advancePercentage: Float
+  discountPercentage: Float
+  discountType: String
+  discountAmount: Float
   displacementFee: Float!
   subtotal: Float!
   totalAmount: Float!
@@ -1289,6 +1298,9 @@ input CreateBudgetsInputDto {
   durationHours: Int!
   paymentMethod: String!
   advancePercentage: Float!
+  discountPercentage: Float
+  discountType: String
+  discountAmount: Float
   totalAmount: Float
   displacementFee: Float! = 0
   items: [CreateBudgetItemInputDto!]!
@@ -1317,6 +1329,9 @@ input UpdateBudgetsInputDto {
   durationHours: Int
   paymentMethod: String
   advancePercentage: Float
+  discountPercentage: Float
+  discountType: String
+  discountAmount: Float
   totalAmount: Float
   displacementFee: Float
   items: [UpdateBudgetItemInputDto!]

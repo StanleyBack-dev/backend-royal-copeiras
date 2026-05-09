@@ -23,6 +23,55 @@ export class CreateBudgetsValidator {
   private static readonly allowedPaymentMethods =
     BUDGET_ALLOWED_PAYMENT_METHODS as readonly string[];
 
+  private static resolveDiscountValues(input: CreateBudgetsInputDto) {
+    if (!input.discountType) {
+      return {
+        discountType: undefined,
+        discountPercentage: undefined,
+        discountAmount: undefined,
+      };
+    }
+
+    if (input.discountType === "percentage") {
+      return {
+        discountType: input.discountType,
+        discountPercentage: Number((input.discountPercentage ?? 0).toFixed(2)),
+        discountAmount: undefined,
+      };
+    }
+
+    return {
+      discountType: input.discountType,
+      discountPercentage: undefined,
+      discountAmount: Number((input.discountAmount ?? 0).toFixed(2)),
+    };
+  }
+
+  private static computeDiscountAmount(
+    subtotal: number,
+    displacementFee: number,
+    discount: {
+      discountType?: "percentage" | "amount";
+      discountPercentage?: number;
+      discountAmount?: number;
+    },
+  ) {
+    const baseTotal = Number((subtotal + displacementFee).toFixed(2));
+
+    if (discount.discountType === "percentage") {
+      const percentage = Number(discount.discountPercentage ?? 0);
+      const calculated = baseTotal * (percentage / 100);
+      return Number(Math.min(Math.max(calculated, 0), baseTotal).toFixed(2));
+    }
+
+    if (discount.discountType === "amount") {
+      const amount = Number(discount.discountAmount ?? 0);
+      return Number(Math.min(Math.max(amount, 0), baseTotal).toFixed(2));
+    }
+
+    return 0;
+  }
+
   static async validateAndCreate(
     userId: string,
     input: CreateBudgetsInputDto,
@@ -101,8 +150,14 @@ export class CreateBudgetsValidator {
     );
 
     const displacementFee = Number((input.displacementFee ?? 0).toFixed(2));
+    const resolvedDiscount = this.resolveDiscountValues(input);
+    const discountAmount = this.computeDiscountAmount(
+      subtotal,
+      displacementFee,
+      resolvedDiscount,
+    );
     const totalAmount = Number(
-      (input.totalAmount ?? subtotal + displacementFee).toFixed(2),
+      (subtotal + displacementFee - discountAmount).toFixed(2),
     );
 
     return budgetsRepo.manager.transaction(async (manager) => {
@@ -123,6 +178,9 @@ export class CreateBudgetsValidator {
         durationHours: input.durationHours,
         paymentMethod: input.paymentMethod,
         advancePercentage: input.advancePercentage,
+        discountType: resolvedDiscount.discountType,
+        discountPercentage: resolvedDiscount.discountPercentage,
+        discountAmount: resolvedDiscount.discountAmount,
         displacementFee,
         subtotal,
         totalAmount,
@@ -244,6 +302,45 @@ export class CreateBudgetsValidator {
         APP_ERRORS.budgets.advancePercentageRequired,
         undefined,
       );
+    }
+
+    if (
+      input.discountType !== undefined &&
+      input.discountType !== null &&
+      input.discountType !== "percentage" &&
+      input.discountType !== "amount"
+    ) {
+      throw AppException.from(
+        APP_ERRORS.budgets.discountTypeInvalid,
+        undefined,
+      );
+    }
+
+    if (input.discountType === "percentage") {
+      if (
+        input.discountPercentage === undefined ||
+        Number.isNaN(Number(input.discountPercentage)) ||
+        input.discountPercentage <= 0 ||
+        input.discountPercentage > 100
+      ) {
+        throw AppException.from(
+          APP_ERRORS.budgets.discountPercentageRequired,
+          undefined,
+        );
+      }
+    }
+
+    if (input.discountType === "amount") {
+      if (
+        input.discountAmount === undefined ||
+        Number.isNaN(Number(input.discountAmount)) ||
+        input.discountAmount <= 0
+      ) {
+        throw AppException.from(
+          APP_ERRORS.budgets.discountAmountRequired,
+          undefined,
+        );
+      }
     }
 
     const hasInvalidItemDescription = input.items.some(
