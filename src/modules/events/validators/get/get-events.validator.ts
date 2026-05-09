@@ -79,7 +79,10 @@ export class GetEventsValidator {
         customer: true,
         assignments: { budgetItem: true, employee: true },
       },
-      order: { createdAt: "DESC" },
+      order: {
+        budget: { eventDates: "DESC" },
+        createdAt: "DESC",
+      },
       skip,
       take: limit,
     });

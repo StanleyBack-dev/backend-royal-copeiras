@@ -53,6 +53,10 @@ export class UpdateEventsService {
       event.overtimeMinutes = input.overtimeMinutes;
     }
 
+    if (input.status !== undefined) {
+      event.status = input.status;
+    }
+
     const saved = await this.eventsRepository.save(event);
     return UpdateEventsResponseDto.fromEntity(saved);
   }

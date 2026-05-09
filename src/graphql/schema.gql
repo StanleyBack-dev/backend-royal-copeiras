@@ -541,6 +541,7 @@ type UpdateEventAssignmentResponseDto {
 
 type UpdateEventsResponseDto {
   idEvents: String!
+  status: EventStatus!
   overtimeMinutes: Int!
   updatedAt: String!
 }
@@ -1297,6 +1298,7 @@ input CancelSignatureRequestInputDto {
 
 input UpdateEventsInputDto {
   idEvents: String!
+  status: EventStatus
   overtimeMinutes: Int
 }
 
