@@ -4,6 +4,7 @@ export interface IEmployee {
   document?: string | null;
   email?: string;
   phone?: string;
+  idPositions: string;
   position: string;
   isActive: boolean;
   createdAt: Date | string;

@@ -7,6 +7,7 @@ import {
   IsBoolean,
   Length,
   Matches,
+  IsUUID,
 } from "class-validator";
 
 @InputType()
@@ -38,9 +39,8 @@ export class CreateEmployeesInputDto {
   phone?: string;
 
   @Field()
-  @IsString()
-  @Length(2, 100)
-  position!: string;
+  @IsUUID()
+  idPositions!: string;
 
   @Field({ defaultValue: true })
   @IsBoolean()

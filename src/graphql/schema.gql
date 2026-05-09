@@ -59,6 +59,7 @@ enum PageAccessKey {
   CONTRACTS
   CLIENTS
   EMPLOYEES
+  POSITIONS
   USERS
   EVENTS
   FINANCES
@@ -249,6 +250,7 @@ type CreateEmployeesResponseDto {
   document: String
   email: String
   phone: String
+  idPositions: String!
   position: String!
   isActive: Boolean!
   createdAt: String!
@@ -261,6 +263,7 @@ type GetEmployeesResponseDto {
   document: String
   email: String
   phone: String
+  idPositions: String!
   position: String!
   isActive: Boolean!
   createdAt: String!
@@ -273,6 +276,7 @@ type UpdateEmployeesResponseDto {
   document: String
   email: String
   phone: String
+  idPositions: String!
   position: String!
   isActive: Boolean!
   createdAt: String!
@@ -831,6 +835,56 @@ type GenerateBudgetPreviewMutationResponseDto {
   data: GenerateBudgetPreviewResponseDto!
 }
 
+type CreatePositionsResponseDto {
+  idPositions: String!
+  name: String!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetPositionsResponseDto {
+  idPositions: String!
+  name: String!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UpdatePositionsResponseDto {
+  idPositions: String!
+  name: String!
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreatePositionsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreatePositionsResponseDto!
+}
+
+type GetPositionsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetPositionsResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdatePositionsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdatePositionsResponseDto!
+}
+
 type Query {
   getPageAccessMetadata: PageAccessMetadataResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
@@ -847,6 +901,7 @@ type Query {
   getSignatures(input: GetSignaturesInputDto): GetSignaturesListResponseDto!
   getEvents(input: GetEventsInputDto): GetEventsListResponseDto!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
+  getPositions(input: GetPositionsInputDto): GetPositionsListResponseDto!
 }
 
 input GetUsersInputDto {
@@ -923,6 +978,14 @@ input GetBudgetsInputDto {
   status: BudgetStatus
   startDate: String
   endDate: String
+}
+
+input GetPositionsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idPositions: String
+  search: String
+  isActive: Boolean
 }
 
 type Mutation {
@@ -1002,6 +1065,12 @@ type Mutation {
     input: GenerateBudgetPreviewInputDto!
   ): GenerateBudgetPreviewMutationResponseDto!
   sendBudgetEmail(input: SendBudgetEmailInputDto!): SuccessResponseDto!
+  createPositions(
+    input: CreatePositionsInputDto!
+  ): CreatePositionsMutationResponseDto!
+  updatePositions(
+    input: UpdatePositionsInputDto!
+  ): UpdatePositionsMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -1088,7 +1157,7 @@ input CreateEmployeesInputDto {
   document: String
   email: String
   phone: String
-  position: String!
+  idPositions: String!
   isActive: Boolean! = true
 }
 
@@ -1098,7 +1167,7 @@ input UpdateEmployeesInputDto {
   document: String
   email: String
   phone: String
-  position: String
+  idPositions: String
   isActive: Boolean
 }
 
@@ -1254,4 +1323,15 @@ input GenerateBudgetPreviewInputDto {
 
 input SendBudgetEmailInputDto {
   idBudgets: String!
+}
+
+input CreatePositionsInputDto {
+  name: String!
+  isActive: Boolean! = true
+}
+
+input UpdatePositionsInputDto {
+  idPositions: String!
+  name: String
+  isActive: Boolean
 }

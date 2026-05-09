@@ -8,12 +8,15 @@ import { IEmployee } from "../../interface/employee.interface";
 import { UpdateEmployeesValidator } from "../../validators/update/update-employees.validator";
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
+import { PositionsEntity } from "../../../positions/entities/positions.entity";
 
 @Injectable()
 export class UpdateEmployeesService {
   constructor(
     @InjectRepository(EmployeesEntity)
     private readonly employeesRepository: Repository<EmployeesEntity>,
+    @InjectRepository(PositionsEntity)
+    private readonly positionsRepository: Repository<PositionsEntity>,
     private readonly authorizationService: AuthorizationService,
   ) {}
 
@@ -30,6 +33,7 @@ export class UpdateEmployeesService {
       userId,
       input,
       this.employeesRepository,
+      this.positionsRepository,
     );
 
     return UpdateEmployeesResponseDto.fromEntity(updated);

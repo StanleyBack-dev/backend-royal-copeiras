@@ -160,6 +160,20 @@ export const RESPONSE_MESSAGES = {
       message: "Funcionários carregados com sucesso.",
     },
   },
+  positions: {
+    created: {
+      code: "POSITION_CREATED",
+      message: "Cargo criado com sucesso.",
+    },
+    updated: {
+      code: "POSITION_UPDATED",
+      message: "Cargo atualizado com sucesso.",
+    },
+    listed: {
+      code: "POSITIONS_LISTED",
+      message: "Cargos carregados com sucesso.",
+    },
+  },
   events: {
     listed: {
       code: "EVENTS_LISTED",
