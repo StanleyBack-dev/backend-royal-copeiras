@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class EnsureBudgetItemsPositionReference20260509104500
-  implements MigrationInterface
-{
+export class EnsureBudgetItemsPositionReference20260509104500 implements MigrationInterface {
   name = "EnsureBudgetItemsPositionReference20260509104500";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
