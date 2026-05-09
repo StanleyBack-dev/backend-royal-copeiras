@@ -684,6 +684,8 @@ type GenerateContractPreviewMutationResponseDto {
 
 type CreateBudgetItemResponseDto {
   idBudgetItems: String!
+  idPositions: String
+  position: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -731,6 +733,8 @@ enum BudgetStatus {
 
 type GetBudgetItemResponseDto {
   idBudgetItems: String!
+  idPositions: String
+  position: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -768,6 +772,8 @@ type GetBudgetsResponseDto {
 
 type UpdateBudgetItemResponseDto {
   idBudgetItems: String!
+  idPositions: String
+  position: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -1289,6 +1295,7 @@ input CreateBudgetsInputDto {
 }
 
 input CreateBudgetItemInputDto {
+  idPositions: String!
   description: String!
   quantity: Int!
   unitPrice: Float!
@@ -1318,6 +1325,7 @@ input UpdateBudgetsInputDto {
 }
 
 input UpdateBudgetItemInputDto {
+  idPositions: String!
   description: String!
   quantity: Int!
   unitPrice: Float!

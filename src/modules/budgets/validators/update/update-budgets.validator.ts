@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { AppException } from "../../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
@@ -11,11 +11,8 @@ import {
   BUDGET_DURATION_HOURS_MAX,
   BUDGET_DURATION_HOURS_MIN,
 } from "../../constants/budget-form-rules.constant";
-import {
-  inferServiceTypeFromDescription,
-  inferServiceComboFromDescription,
-} from "../../constants/budget-service-types.constant";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
+import { PositionsEntity } from "../../../positions/entities/positions.entity";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   [BudgetStatus.DRAFT]: [
@@ -47,6 +44,7 @@ interface UpdateBudgetDeps {
   budgetsRepo: Repository<BudgetsEntity>;
   budgetItemsRepo: Repository<BudgetItemsEntity>;
   leadsRepo: Repository<LeadsEntity>;
+  positionsRepo: Repository<PositionsEntity>;
 }
 
 interface BudgetRulesSnapshot {
@@ -59,7 +57,7 @@ interface BudgetRulesSnapshot {
   durationHours?: number | null;
   paymentMethod?: string | null;
   advancePercentage?: number | null;
-  items?: Array<{ description?: string | null }>;
+  items?: Array<{ description?: string | null; idPositions?: string | null }>;
 }
 
 export class UpdateBudgetsValidator {
@@ -77,7 +75,7 @@ export class UpdateBudgetsValidator {
 
     const current = await deps.budgetsRepo.findOne({
       where: { idBudgets: input.idBudgets },
-      relations: { items: true },
+      relations: { items: { position: true } },
     });
 
     if (!current) {
@@ -101,21 +99,28 @@ export class UpdateBudgetsValidator {
     }
 
     if (hasNonStatusUpdates) {
-      this.validateBusinessRules({
-        idLeads: input.idLeads ?? current.idLeads,
-        eventDates: input.eventDates ?? current.eventDates,
-        eventArrivalTimes: input.eventArrivalTimes ?? current.eventArrivalTimes,
-        eventDepartureTimes:
-          input.eventDepartureTimes ?? current.eventDepartureTimes,
-        eventLocation: input.eventLocation ?? current.eventLocation,
-        guestCount: input.guestCount ?? current.guestCount,
-        durationHours: input.durationHours ?? current.durationHours,
-        paymentMethod: input.paymentMethod ?? current.paymentMethod,
-        advancePercentage: input.advancePercentage ?? current.advancePercentage,
-        items:
-          input.items?.map((item) => ({ description: item.description })) ??
-          current.items,
-      });
+      this.validateBusinessRules(
+        {
+          idLeads: input.idLeads ?? current.idLeads,
+          eventDates: input.eventDates ?? current.eventDates,
+          eventArrivalTimes:
+            input.eventArrivalTimes ?? current.eventArrivalTimes,
+          eventDepartureTimes:
+            input.eventDepartureTimes ?? current.eventDepartureTimes,
+          eventLocation: input.eventLocation ?? current.eventLocation,
+          guestCount: input.guestCount ?? current.guestCount,
+          durationHours: input.durationHours ?? current.durationHours,
+          paymentMethod: input.paymentMethod ?? current.paymentMethod,
+          advancePercentage:
+            input.advancePercentage ?? current.advancePercentage,
+          items:
+            input.items?.map((item) => ({
+              description: item.description,
+              idPositions: item.idPositions,
+            })) ?? current.items,
+        },
+        Boolean(input.items?.length),
+      );
     }
 
     if (input.status && input.status !== current.status) {
@@ -196,11 +201,39 @@ export class UpdateBudgetsValidator {
       }
 
       if (input.items?.length) {
+        const positionIds = Array.from(
+          new Set(input.items.map((item) => item.idPositions)),
+        );
+        const positions = await deps.positionsRepo.find({
+          where: { idPositions: In(positionIds) },
+        });
+        const positionsById = new Map(
+          positions.map((position) => [position.idPositions, position]),
+        );
+
+        const hasMissingPosition = positionIds.some(
+          (idPositions) => !positionsById.has(idPositions),
+        );
+
+        if (hasMissingPosition) {
+          throw AppException.from(APP_ERRORS.positions.notFound, undefined);
+        }
+
+        const hasInactivePosition = positionIds.some((idPositions) => {
+          const position = positionsById.get(idPositions);
+          return !position?.isActive;
+        });
+
+        if (hasInactivePosition) {
+          throw AppException.from(APP_ERRORS.positions.inactive, undefined);
+        }
+
         const normalizedItems = input.items.map((item) => {
           const totalPrice = Number(
             (item.quantity * item.unitPrice).toFixed(2),
           );
           return {
+            idPositions: item.idPositions,
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
@@ -231,6 +264,7 @@ export class UpdateBudgetsValidator {
         const newItems = normalizedItems.map((item) =>
           manager.create(BudgetItemsEntity, {
             idBudgets: current.idBudgets,
+            idPositions: item.idPositions,
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
@@ -240,8 +274,12 @@ export class UpdateBudgetsValidator {
           }),
         );
 
-        const savedItems = await manager.save(BudgetItemsEntity, newItems);
-        current.items = savedItems;
+        await manager.save(BudgetItemsEntity, newItems);
+        current.items = await manager.find(BudgetItemsEntity, {
+          where: { idBudgets: current.idBudgets },
+          relations: { position: true },
+          order: { sortOrder: "ASC" },
+        });
       } else if (!isStatusOnlyUpdate && input.totalAmount !== undefined) {
         current.totalAmount = Number(input.totalAmount.toFixed(2));
       }
@@ -251,6 +289,7 @@ export class UpdateBudgetsValidator {
       if (!saved.items) {
         saved.items = await deps.budgetItemsRepo.find({
           where: { idBudgets: saved.idBudgets },
+          relations: { position: true },
           order: { sortOrder: "ASC" },
         });
       }
@@ -278,7 +317,10 @@ export class UpdateBudgetsValidator {
     ].some((value) => value !== undefined);
   }
 
-  private static validateBusinessRules(data: BudgetRulesSnapshot): void {
+  private static validateBusinessRules(
+    data: BudgetRulesSnapshot,
+    enforceItemPositions = false,
+  ): void {
     if (!data.idLeads) {
       throw AppException.from(APP_ERRORS.budgets.leadRequired, undefined);
     }
@@ -382,26 +424,32 @@ export class UpdateBudgetsValidator {
       );
     }
 
-    const serviceTypes = data.items.map((item) =>
-      inferServiceTypeFromDescription(item.description),
-    );
-
-    if (serviceTypes.some((type) => type === null)) {
+    if (
+      enforceItemPositions &&
+      data.items.some((item) => !item.idPositions?.trim())
+    ) {
       throw AppException.from(
         APP_ERRORS.budgets.itemServiceTypeInvalid,
         undefined,
       );
     }
 
-    const serviceCombos = data.items.map((item) =>
-      inferServiceComboFromDescription(item.description),
-    );
-    const uniqueCombos = new Set(serviceCombos);
-    if (uniqueCombos.size !== serviceCombos.length) {
-      throw AppException.from(
-        APP_ERRORS.budgets.itemServiceTypeDuplicated,
-        undefined,
+    if (enforceItemPositions) {
+      const selectedPositions = data.items.map(
+        (item) => item.idPositions || "",
       );
+      const uniquePositions = new Set(selectedPositions);
+
+      if (selectedPositions.length !== uniquePositions.size) {
+        throw AppException.from(
+          APP_ERRORS.budgets.itemServiceTypeDuplicated,
+          undefined,
+        );
+      }
+    }
+
+    if (!enforceItemPositions) {
+      return;
     }
   }
 }

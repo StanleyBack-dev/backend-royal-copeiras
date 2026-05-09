@@ -9,6 +9,7 @@ import { CreateBudgetsValidator } from "../../validators/create/create-budgets.v
 import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
+import { PositionsEntity } from "../../../positions/entities/positions.entity";
 
 @Injectable()
 export class CreateBudgetsService {
@@ -17,6 +18,8 @@ export class CreateBudgetsService {
     private readonly budgetsRepository: Repository<BudgetsEntity>,
     @InjectRepository(LeadsEntity)
     private readonly leadsRepository: Repository<LeadsEntity>,
+    @InjectRepository(PositionsEntity)
+    private readonly positionsRepository: Repository<PositionsEntity>,
     private readonly authorizationService: AuthorizationService,
   ) {}
 
@@ -34,6 +37,7 @@ export class CreateBudgetsService {
       input,
       this.budgetsRepository,
       this.leadsRepository,
+      this.positionsRepository,
     );
 
     return CreateBudgetsResponseDto.fromEntity(saved.budget);

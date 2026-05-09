@@ -9,6 +9,12 @@ class CreateBudgetItemResponseDto {
   @Field()
   idBudgetItems!: string;
 
+  @Field(() => String, { nullable: true })
+  idPositions?: string | null;
+
+  @Field(() => String, { nullable: true })
+  position?: string | null;
+
   @Field()
   description!: string;
 
@@ -66,6 +72,8 @@ export class CreateBudgetsResponseDto implements IBudget {
           : undefined;
     dto.items = (entity.items ?? []).map((item) => ({
       idBudgetItems: item.idBudgetItems,
+      idPositions: item.idPositions,
+      position: item.position?.name || null,
       description: item.description,
       quantity: item.quantity,
       unitPrice: item.unitPrice,

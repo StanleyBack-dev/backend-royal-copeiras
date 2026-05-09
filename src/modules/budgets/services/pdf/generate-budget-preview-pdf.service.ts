@@ -125,6 +125,8 @@ export class GenerateBudgetPreviewPdfService {
         idBudgetItems: `preview-item-${index + 1}`,
         idBudgets: "preview-budget",
         budget: undefined as never,
+        idPositions: item.idPositions,
+        position: undefined,
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
