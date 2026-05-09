@@ -8,7 +8,9 @@ import {
   IsBoolean,
   Length,
   Matches,
+  IsEnum,
 } from "class-validator";
+import { EmployeeGender } from "../../enums/employee-gender.enum";
 
 @InputType()
 export class UpdateEmployeesInputDto {
@@ -42,6 +44,11 @@ export class UpdateEmployeesInputDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @Field(() => EmployeeGender, { nullable: true })
+  @IsOptional()
+  @IsEnum(EmployeeGender)
+  gender?: EmployeeGender;
 
   @Field({ nullable: true })
   @IsOptional()

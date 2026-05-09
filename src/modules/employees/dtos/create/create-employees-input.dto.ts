@@ -8,7 +8,9 @@ import {
   Length,
   Matches,
   IsUUID,
+  IsEnum,
 } from "class-validator";
+import { EmployeeGender } from "../../enums/employee-gender.enum";
 
 @InputType()
 export class CreateEmployeesInputDto {
@@ -37,6 +39,10 @@ export class CreateEmployeesInputDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @Field(() => EmployeeGender)
+  @IsEnum(EmployeeGender)
+  gender!: EmployeeGender;
 
   @Field()
   @IsUUID()

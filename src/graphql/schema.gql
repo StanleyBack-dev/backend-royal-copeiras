@@ -247,6 +247,7 @@ type UpdateCustomersMutationResponseDto {
 type CreateEmployeesResponseDto {
   idEmployees: String!
   name: String!
+  gender: EmployeeGender
   document: String
   email: String
   phone: String
@@ -257,9 +258,15 @@ type CreateEmployeesResponseDto {
   updatedAt: String!
 }
 
+enum EmployeeGender {
+  MALE
+  FEMALE
+}
+
 type GetEmployeesResponseDto {
   idEmployees: String!
   name: String!
+  gender: EmployeeGender
   document: String
   email: String
   phone: String
@@ -273,6 +280,7 @@ type GetEmployeesResponseDto {
 type UpdateEmployeesResponseDto {
   idEmployees: String!
   name: String!
+  gender: EmployeeGender
   document: String
   email: String
   phone: String
@@ -1157,6 +1165,7 @@ input CreateEmployeesInputDto {
   document: String
   email: String
   phone: String
+  gender: EmployeeGender!
   idPositions: String!
   isActive: Boolean! = true
 }
@@ -1167,6 +1176,7 @@ input UpdateEmployeesInputDto {
   document: String
   email: String
   phone: String
+  gender: EmployeeGender
   idPositions: String
   isActive: Boolean
 }

@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { UserEntity } from "../../users/entities/user.entity";
 import { PositionsEntity } from "../../positions/entities/positions.entity";
+import { EmployeeGender } from "../enums/employee-gender.enum";
 
 @Entity("tb_employees")
 export class EmployeesEntity {
@@ -39,6 +40,15 @@ export class EmployeesEntity {
 
   @Column({ name: "phone", type: "varchar", length: 20, nullable: true })
   phone?: string;
+
+  @Column({
+    name: "gender",
+    type: "enum",
+    enum: EmployeeGender,
+    enumName: "tb_employees_gender_enum",
+    nullable: true,
+  })
+  gender?: EmployeeGender | null;
 
   @ManyToOne(() => PositionsEntity, (position) => position.employees, {
     onDelete: "RESTRICT",

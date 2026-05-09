@@ -45,6 +45,7 @@ export class CreateEmployeesValidator extends EmployeesBaseValidator {
     const newRecord = employeesRepo.create({
       idUsers: userId,
       name: input.name,
+      gender: input.gender,
       document: normalizedDocument || null,
       email: input.email,
       phone: input.phone,
