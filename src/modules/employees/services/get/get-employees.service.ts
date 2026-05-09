@@ -27,7 +27,6 @@ export class GetEmployeesService {
     );
 
     const records = await GetEmployeesValidator.validateAndFetchRecords(
-      userId,
       input ?? {},
       this.employeesRepository,
     );

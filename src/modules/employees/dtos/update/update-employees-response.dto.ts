@@ -13,7 +13,8 @@ export class UpdateEmployeesResponseDto implements IEmployee {
     dto.document = entity.document;
     dto.email = entity.email;
     dto.phone = entity.phone;
-    dto.position = entity.position;
+    dto.idPositions = entity.idPositions;
+    dto.position = entity.position?.name || "";
     dto.isActive = entity.isActive;
     dto.createdAt =
       entity.createdAt instanceof Date
@@ -40,6 +41,9 @@ export class UpdateEmployeesResponseDto implements IEmployee {
 
   @Field({ nullable: true })
   phone?: string;
+
+  @Field()
+  idPositions!: string;
 
   @Field()
   position!: string;

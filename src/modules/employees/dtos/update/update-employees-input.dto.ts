@@ -45,9 +45,8 @@ export class UpdateEmployeesInputDto {
 
   @Field({ nullable: true })
   @IsOptional()
-  @IsString()
-  @Length(2, 100)
-  position?: string;
+  @IsUUID()
+  idPositions?: string;
 
   @Field({ nullable: true })
   @IsOptional()

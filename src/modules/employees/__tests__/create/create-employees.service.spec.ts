@@ -27,7 +27,7 @@ describe("CreateEmployeesService", () => {
       document: "12345678901",
       email: "funcionario@exemplo.com",
       phone: "11999999999",
-      position: "Copeira",
+      idPositions: "mock-position-id",
       isActive: true,
     };
 
@@ -44,7 +44,7 @@ describe("CreateEmployeesService", () => {
       service.execute("user-id-test", {
         name: "Funcionario Exemplo",
         document: "12345678901",
-        position: "Copeira",
+        idPositions: "mock-position-id",
         isActive: true,
       }),
     ).rejects.toThrow("Ja existe um funcionario com este documento.");

@@ -20,6 +20,7 @@ import { BudgetsModule } from "./modules/budgets/budgets.module";
 import { PdfGeneratorModule } from "./modules/pdf-generator/pdf-generator.module";
 import { SignatureModule } from "./modules/signature/signature.module";
 import { EventsModule } from "./modules/events/events.module";
+import { PositionsModule } from "./modules/positions/positions.module";
 import { AppController } from "./app.controller";
 
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
@@ -50,6 +51,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     PdfGeneratorModule,
     SignatureModule,
     EventsModule,
+    PositionsModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })

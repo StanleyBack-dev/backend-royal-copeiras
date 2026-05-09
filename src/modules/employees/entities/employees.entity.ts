@@ -8,10 +8,10 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { UserEntity } from "../../users/entities/user.entity";
-import { IEmployee } from "../interface/employee.interface";
+import { PositionsEntity } from "../../positions/entities/positions.entity";
 
 @Entity("tb_employees")
-export class EmployeesEntity implements IEmployee {
+export class EmployeesEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_employees" })
   idEmployees!: string;
 
@@ -40,8 +40,14 @@ export class EmployeesEntity implements IEmployee {
   @Column({ name: "phone", type: "varchar", length: 20, nullable: true })
   phone?: string;
 
-  @Column({ name: "position", type: "varchar", length: 100 })
-  position!: string;
+  @ManyToOne(() => PositionsEntity, (position) => position.employees, {
+    onDelete: "RESTRICT",
+  })
+  @JoinColumn({ name: "idtb_positions" })
+  position!: PositionsEntity;
+
+  @Column({ name: "idtb_positions", type: "uuid" })
+  idPositions!: string;
 
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive!: boolean;

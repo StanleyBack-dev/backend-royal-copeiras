@@ -18,13 +18,13 @@ import { GetEmployeesInputDto } from "../../dtos/get/get-employees-input.dto";
 
 export class GetEmployeesValidator {
   static async validateAndFetchRecords(
-    userId: string,
     input: GetEmployeesInputDto,
     repo: Repository<EmployeesEntity>,
   ): Promise<PaginatedResult<EmployeesEntity>> {
     if (input.idEmployees) {
       const record = await repo.findOne({
         where: { idEmployees: input.idEmployees },
+        relations: { position: true },
       });
 
       if (!record) {
@@ -58,6 +58,7 @@ export class GetEmployeesValidator {
 
     const [records, total] = await repo.findAndCount({
       where,
+      relations: { position: true },
       order: { createdAt: "DESC" },
       skip,
       take: limit,

@@ -6,6 +6,7 @@ import { AuthModule } from "../auth/auth.module";
 // ENTITIES
 import { EmployeesEntity } from "./entities/employees.entity";
 import { UserEntity } from "../users/entities/user.entity";
+import { PositionsEntity } from "../positions/entities/positions.entity";
 
 // SERVICES
 import { CreateEmployeesService } from "./services/create/create-employees.service";
@@ -20,7 +21,7 @@ import { UpdateEmployeesResolver } from "./resolvers/update/update-employees.res
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([EmployeesEntity, UserEntity]),
+    TypeOrmModule.forFeature([EmployeesEntity, UserEntity, PositionsEntity]),
   ],
   providers: [
     CreateEmployeesService,
