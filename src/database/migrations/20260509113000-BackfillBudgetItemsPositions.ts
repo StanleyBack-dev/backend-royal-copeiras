@@ -131,7 +131,7 @@ export class BackfillBudgetItemsPositions20260509113000 implements MigrationInte
     await queryRunner.query(`
       WITH inferred_budget_items AS (
         SELECT
-          item.idtb_budget_items,
+          budget.idtb_budget_items,
           budget.idtb_users,
           CASE
             WHEN normalized_description LIKE '%garcom%'
