@@ -18,13 +18,13 @@ export class MakeEmployeeGenderNullable20260508234500 implements MigrationInterf
     }
 
     await queryRunner.query(`
-      UPDATE "tb_employees"
-      SET "gender" = NULL
+      ALTER TABLE "tb_employees"
+      ALTER COLUMN "gender" DROP NOT NULL
     `);
 
     await queryRunner.query(`
-      ALTER TABLE "tb_employees"
-      ALTER COLUMN "gender" DROP NOT NULL
+      UPDATE "tb_employees"
+      SET "gender" = NULL
     `);
   }
 
