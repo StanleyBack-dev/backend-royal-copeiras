@@ -6,6 +6,7 @@ import { BudgetStatus } from "../../enums/budget-status.enum";
 import { UpdateBudgetsValidator } from "../../validators/update/update-budgets.validator";
 import { UpdateBudgetsInputDto } from "../../dtos/update/update-budgets-input.dto";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
+import { PositionsEntity } from "../../../positions/entities/positions.entity";
 import { budgetMock } from "../../__mocks__/budget.mock";
 
 interface MockManager {
@@ -72,11 +73,27 @@ describe("UpdateBudgetsValidator", () => {
         } as LeadsEntity),
     };
 
+    const positionsRepo = {
+      find: jest.fn<Promise<PositionsEntity[]>, [unknown]>().mockResolvedValue([
+        {
+          idPositions: "95d227b4-f731-4a80-8902-2e92a056bf44",
+          name: "Copeira",
+          isActive: true,
+        } as PositionsEntity,
+        {
+          idPositions: "11f8f463-dbf4-c9f0-5f1e-42b7699e1f50",
+          name: "Porteiro",
+          isActive: true,
+        } as PositionsEntity,
+      ]),
+    };
+
     return {
       budgetsRepo: budgetsRepo as unknown as Repository<BudgetsEntity>,
       budgetItemsRepo:
         budgetItemsRepo as unknown as Repository<BudgetItemsEntity>,
       leadsRepo: leadsRepo as unknown as Repository<LeadsEntity>,
+      positionsRepo: positionsRepo as unknown as Repository<PositionsEntity>,
       managerImpl,
     };
   }
@@ -90,6 +107,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       }),
     ).rejects.toThrow(APP_ERRORS.budgets.idRequired.message as string);
   });
@@ -106,6 +124,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       }),
     ).rejects.toThrow(APP_ERRORS.budgets.notFound.message as string);
   });
@@ -122,6 +141,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       }),
     ).rejects.toThrow(APP_ERRORS.budgets.editForbidden.message as string);
   });
@@ -138,6 +158,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       }),
     ).rejects.toThrow(
       APP_ERRORS.budgets.invalidStatusTransition.message as string,
@@ -158,6 +179,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       },
     );
 
@@ -179,6 +201,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       },
     );
 
@@ -193,12 +216,14 @@ describe("UpdateBudgetsValidator", () => {
     input.idBudgets = "budget-1";
     input.items = [
       {
+        idPositions: "95d227b4-f731-4a80-8902-2e92a056bf44",
         description: "2 copeiras",
         quantity: 2,
         unitPrice: 500,
         sortOrder: 0,
       },
       {
+        idPositions: "11f8f463-dbf4-c9f0-5f1e-42b7699e1f50",
         description: "1 porteiro",
         quantity: 1,
         unitPrice: 150,
@@ -213,6 +238,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetsRepo: deps.budgetsRepo,
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
+        positionsRepo: deps.positionsRepo,
       },
     );
 
