@@ -8,6 +8,7 @@ export interface IEvent {
   idCustomers?: string;
   status: EventStatus;
   notes?: string;
+  overtimeMinutes?: number;
   createdAt: Date | string;
   updatedAt: Date | string;
 }

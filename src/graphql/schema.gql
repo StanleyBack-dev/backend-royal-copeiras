@@ -507,6 +507,9 @@ type GetEventsResponseDto {
   eventDates: [String!]!
   eventLocation: String
   displacementFee: Float!
+  discountTotal: Float!
+  overtimeMinutes: Int!
+  overtimeAmount: Float!
   serviceBreakdown: [GetEventServiceLineResponseDto!]!
   totalRevenue: Float!
   totalCost: Float!
@@ -536,6 +539,12 @@ type UpdateEventAssignmentResponseDto {
   updatedAt: String!
 }
 
+type UpdateEventsResponseDto {
+  idEvents: String!
+  overtimeMinutes: Int!
+  updatedAt: String!
+}
+
 type GetEventsListResponseDto {
   success: Boolean!
   message: String
@@ -553,6 +562,13 @@ type UpdateEventAssignmentMutationResponseDto {
   message: String
   code: String
   data: UpdateEventAssignmentResponseDto!
+}
+
+type UpdateEventsMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateEventsResponseDto!
 }
 
 type CreateContractsResponseDto {
@@ -1075,6 +1091,7 @@ type Mutation {
   cancelSignatureRequest(
     input: CancelSignatureRequestInputDto!
   ): SuccessResponseDto!
+  updateEvents(input: UpdateEventsInputDto!): UpdateEventsMutationResponseDto!
   updateEventAssignment(
     input: UpdateEventAssignmentInputDto!
   ): UpdateEventAssignmentMutationResponseDto!
@@ -1278,10 +1295,15 @@ input CancelSignatureRequestInputDto {
   requestId: String!
 }
 
+input UpdateEventsInputDto {
+  idEvents: String!
+  overtimeMinutes: Int
+}
+
 input UpdateEventAssignmentInputDto {
   idEventAssignments: String!
-  idEmployees: String
-  employeePayment: Float
+  idEmployees: String!
+  employeePayment: Float!
   isActive: Boolean
 }
 

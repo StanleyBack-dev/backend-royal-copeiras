@@ -83,6 +83,7 @@ export class CreateEventFromSignedContractService {
         idLeads: contract.idLeads,
         idCustomers: contract.idCustomers,
         status: EventStatus.SCHEDULED,
+        overtimeMinutes: 0,
       }),
     );
 

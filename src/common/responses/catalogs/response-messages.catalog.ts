@@ -179,6 +179,10 @@ export const RESPONSE_MESSAGES = {
       code: "EVENTS_LISTED",
       message: "Eventos carregados com sucesso.",
     },
+    updated: {
+      code: "EVENT_UPDATED",
+      message: "Evento atualizado com sucesso.",
+    },
     assignmentUpdated: {
       code: "EVENT_ASSIGNMENT_UPDATED",
       message: "Alocação do evento atualizada com sucesso.",

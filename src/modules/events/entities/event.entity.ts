@@ -67,6 +67,9 @@ export class EventEntity {
   @Column({ name: "notes", type: "text", nullable: true })
   notes?: string;
 
+  @Column({ name: "overtime_minutes", type: "int", default: 0 })
+  overtimeMinutes!: number;
+
   @OneToMany(() => EventAssignmentEntity, (assignment) => assignment.event)
   assignments?: EventAssignmentEntity[];
 
