@@ -198,7 +198,8 @@ export class BackfillBudgetItemsPositions20260509113000 implements MigrationInte
     `);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    void queryRunner;
     return;
   }
 }
