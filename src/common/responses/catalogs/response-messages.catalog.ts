@@ -194,4 +194,18 @@ export const RESPONSE_MESSAGES = {
       message: "Perfil atualizado com sucesso.",
     },
   },
+  payments: {
+    created: {
+      code: "PAYMENT_CREATED",
+      message: "Pagamento criado com sucesso.",
+    },
+    updated: {
+      code: "PAYMENT_UPDATED",
+      message: "Pagamento atualizado com sucesso.",
+    },
+    listed: {
+      code: "PAYMENTS_LISTED",
+      message: "Pagamentos carregados com sucesso.",
+    },
+  },
 } as const;

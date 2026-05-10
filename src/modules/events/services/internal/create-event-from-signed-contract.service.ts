@@ -45,10 +45,22 @@ export class CreateEventFromSignedContractService {
       const contract = await contractsRepo.findOne({
         where: { idContracts: contractId },
       });
+      let shouldPersist = false;
+
+      if (!existing.eventNumber) {
+        existing.eventNumber = await this.generateEventNumber(eventsRepo);
+        shouldPersist = true;
+      }
+
       if (contract && existing.idCustomers !== contract.idCustomers) {
         existing.idCustomers = contract.idCustomers;
+        shouldPersist = true;
+      }
+
+      if (shouldPersist) {
         await eventsRepo.save(existing);
       }
+
       return existing;
     }
 
@@ -75,8 +87,11 @@ export class CreateEventFromSignedContractService {
       return null;
     }
 
+    const eventNumber = await this.generateEventNumber(eventsRepo);
+
     const createdEvent = await eventsRepo.save(
       eventsRepo.create({
+        eventNumber,
         idUsers: contract.idUsers,
         idContracts: contract.idContracts,
         idBudgets: contract.idBudgets,
@@ -113,5 +128,22 @@ export class CreateEventFromSignedContractService {
     }
 
     return createdEvent;
+  }
+
+  private async generateEventNumber(
+    eventsRepo: Repository<EventEntity>,
+  ): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `EVT-${year}`;
+
+    const totalForYear = await eventsRepo
+      .createQueryBuilder("event")
+      .where("event.eventNumber LIKE :prefix", {
+        prefix: `${prefix}-%`,
+      })
+      .getCount();
+
+    const sequence = String(totalForYear + 1).padStart(5, "0");
+    return `${prefix}-${sequence}`;
   }
 }

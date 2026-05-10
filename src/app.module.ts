@@ -23,6 +23,7 @@ import { EventsModule } from "./modules/events/events.module";
 import { PositionsModule } from "./modules/positions/positions.module";
 import { AppController } from "./app.controller";
 
+import { PaymentsModule } from "./modules/payments/payments.module";
 import { RateLimitGuard } from "./common/guards/rate-limit.guard";
 
 @Module({
@@ -52,6 +53,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     SignatureModule,
     EventsModule,
     PositionsModule,
+    PaymentsModule,
   ],
   providers: [RateLimitGuard, RequestInfoInterceptor],
 })

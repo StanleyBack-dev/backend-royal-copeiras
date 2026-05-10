@@ -21,6 +21,15 @@ export class EventEntity {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_events" })
   idEvents!: string;
 
+  @Column({
+    name: "event_number",
+    type: "varchar",
+    length: 20,
+    unique: true,
+    nullable: true,
+  })
+  eventNumber?: string;
+
   @ManyToOne(() => UserEntity, { onDelete: "CASCADE" })
   @JoinColumn({ name: "idtb_users" })
   user!: UserEntity;
