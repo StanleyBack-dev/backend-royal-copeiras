@@ -24,6 +24,7 @@ import { SendContractSignatureRequestService } from "./services/pdf/send-contrac
 import { SendContractSignatureRequestResolver } from "./resolvers/pdf/send-contract-signature-request.resolver";
 import { CloseContractWithoutSignatureService } from "./services/pdf/close-contract-without-signature.service";
 import { CloseContractWithoutSignatureResolver } from "./resolvers/pdf/close-contract-without-signature.resolver";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CloseContractWithoutSignatureResolver } from "./resolvers/pdf/close-con
     MailModule,
     PdfGeneratorModule,
     SignatureModule,
+    PaymentsModule,
     TypeOrmModule.forFeature([ContractsEntity, BudgetsEntity, LeadsEntity]),
   ],
   providers: [

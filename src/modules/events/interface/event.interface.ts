@@ -2,6 +2,7 @@ import { EventStatus } from "../enums/event-status.enum";
 
 export interface IEvent {
   idEvents: string;
+  eventNumber?: string;
   idContracts: string;
   idBudgets: string;
   idLeads?: string;

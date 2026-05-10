@@ -14,6 +14,7 @@ import { profilesErrors } from "./catalogs/profiles-errors.catalog";
 import { signaturesErrors } from "./catalogs/signatures-errors.catalog";
 import { usersErrors } from "./catalogs/users-errors.catalog";
 import { validationErrors } from "./catalogs/validation-errors.catalog";
+import { paymentsErrors } from "./catalogs/payments-errors.catalog";
 
 export const APP_ERRORS = {
   auth: authErrors,
@@ -31,4 +32,5 @@ export const APP_ERRORS = {
   signatures: signaturesErrors,
   pdf: pdfErrors,
   validation: validationErrors,
+  payments: paymentsErrors,
 } as const satisfies Record<string, Record<string, AppErrorDefinition<never>>>;

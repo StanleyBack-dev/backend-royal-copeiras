@@ -20,6 +20,7 @@ import { SignatureWebhookController } from "./controllers/signature-webhook.cont
 import { CustomersModule } from "../customers/customers.module";
 import { EventsModule } from "../events/events.module";
 import { ActivateSignedContractService } from "./services/activate-signed-contract.service";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ActivateSignedContractService } from "./services/activate-signed-contra
     LeadsModule,
     CustomersModule,
     EventsModule,
+    PaymentsModule,
     TypeOrmModule.forFeature([
       SignatureEntity,
       ContractsEntity,

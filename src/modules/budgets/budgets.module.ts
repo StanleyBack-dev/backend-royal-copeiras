@@ -20,12 +20,14 @@ import { MailModule } from "../mails/mail.module";
 import { SendBudgetEmailService } from "./services/pdf/send-budget-email.service";
 import { SendBudgetEmailResolver } from "./resolvers/pdf/send-budget-email.resolver";
 import { PositionsEntity } from "../positions/entities/positions.entity";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
   imports: [
     AuthModule,
     PdfGeneratorModule,
     MailModule,
+    PaymentsModule,
     TypeOrmModule.forFeature([
       BudgetsEntity,
       BudgetItemsEntity,

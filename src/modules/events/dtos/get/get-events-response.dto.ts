@@ -11,6 +11,7 @@ export class GetEventsResponseDto implements IEvent {
   static fromEntity(entity: EventEntity): GetEventsResponseDto {
     const dto = new GetEventsResponseDto();
     dto.idEvents = entity.idEvents;
+    dto.eventNumber = entity.eventNumber ?? undefined;
     dto.idContracts = entity.idContracts;
     dto.idBudgets = entity.idBudgets;
     dto.idLeads = entity.idLeads;
@@ -72,6 +73,9 @@ export class GetEventsResponseDto implements IEvent {
 
   @Field()
   idEvents!: string;
+
+  @Field({ nullable: true })
+  eventNumber?: string;
 
   @Field()
   idContracts!: string;

@@ -469,6 +469,43 @@ type GetSignaturesListResponseDto {
   hasNextPage: Boolean!
 }
 
+type PaymentItemResponseDto {
+  idPaymentItems: String!
+  idPayments: String!
+  origin: String!
+  status: String!
+  plannedAmount: Float!
+  paidAmount: Float
+  paymentDate: String
+  dueDate: String
+  proofUrl: String
+  notes: String
+  sortOrder: Int!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreatePaymentResponseDto {
+  idPayments: String!
+  idUsers: String!
+  idLeads: String
+  idBudgets: String
+  idContracts: String
+  idEvents: String
+  idEmployees: String
+  origin: String!
+  status: String!
+  plannedAmount: Float!
+  paidAmount: Float
+  paymentDate: String
+  dueDate: String
+  proofUrl: String
+  notes: String
+  paymentItems: [PaymentItemResponseDto!]
+  createdAt: String!
+  updatedAt: String!
+}
+
 type GetEventAssignmentResponseDto {
   idEventAssignments: String!
   idBudgetItems: String!
@@ -494,6 +531,7 @@ type GetEventServiceLineResponseDto {
 
 type GetEventsResponseDto {
   idEvents: String!
+  eventNumber: String
   idContracts: String!
   idBudgets: String!
   idLeads: String
@@ -570,6 +608,60 @@ type UpdateEventsMutationResponseDto {
   message: String
   code: String
   data: UpdateEventsResponseDto!
+}
+
+type UpdatePaymentResponseDto {
+  idPayments: String!
+  idUsers: String!
+  idLeads: String
+  idBudgets: String
+  idContracts: String
+  idEvents: String
+  idEmployees: String
+  origin: String!
+  status: String!
+  plannedAmount: Float!
+  paidAmount: Float
+  paymentDate: String
+  dueDate: String
+  proofUrl: String
+  notes: String
+  paymentItems: [PaymentItemResponseDto!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetPaymentResponseDto {
+  idPayments: String!
+  idUsers: String!
+  idLeads: String
+  idBudgets: String
+  idContracts: String
+  idEvents: String
+  idEmployees: String
+  origin: String!
+  status: String!
+  plannedAmount: Float!
+  paidAmount: Float
+  paymentDate: String
+  dueDate: String
+  proofUrl: String
+  notes: String
+  paymentItems: [PaymentItemResponseDto!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetPaymentsListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetPaymentResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
 }
 
 type CreateContractsResponseDto {
@@ -940,6 +1032,12 @@ type Query {
   getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
   getSignatures(input: GetSignaturesInputDto): GetSignaturesListResponseDto!
   getEvents(input: GetEventsInputDto): GetEventsListResponseDto!
+  getPayments(input: GetPaymentsInputDto): GetPaymentsListResponseDto!
+  getPayment(idPayments: String!): GetPaymentResponseDto!
+  getPaymentsByBudget(idBudgets: String!): [GetPaymentResponseDto!]!
+  getPaymentsByContract(idContracts: String!): [GetPaymentResponseDto!]!
+  getPaymentsByLead(idLeads: String!): [GetPaymentResponseDto!]!
+  getPaymentsByEvent(idEvents: String!): [GetPaymentResponseDto!]!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
   getPositions(input: GetPositionsInputDto): GetPositionsListResponseDto!
 }
@@ -1006,6 +1104,19 @@ input GetEventsInputDto {
   idEvents: String
   idContracts: String
   status: EventStatus
+  startDate: String
+  endDate: String
+}
+
+input GetPaymentsInputDto {
+  page: Int = 1
+  limit: Int = 10
+  status: String
+  idPayments: String
+  idBudgets: String
+  idContracts: String
+  idEvents: String
+  idLeads: String
   startDate: String
   endDate: String
 }
@@ -1096,6 +1207,8 @@ type Mutation {
   updateEventAssignment(
     input: UpdateEventAssignmentInputDto!
   ): UpdateEventAssignmentMutationResponseDto!
+  createPayment(input: CreatePaymentInputDto!): CreatePaymentResponseDto!
+  updatePayment(input: UpdatePaymentInputDto!): UpdatePaymentResponseDto!
   createBudgets(
     input: CreateBudgetsInputDto!
   ): CreateBudgetsMutationResponseDto!
@@ -1307,6 +1420,42 @@ input UpdateEventAssignmentInputDto {
   idEmployees: String!
   employeePayment: Float!
   isActive: Boolean
+}
+
+input CreatePaymentInputDto {
+  idLeads: String!
+  idBudgets: String
+  idContracts: String
+  idEvents: String
+  idEmployees: String
+  origin: String
+  plannedAmount: Float
+  dueDate: String
+  notes: String
+  paymentItems: [CreatePaymentItemInputDto!]
+}
+
+input CreatePaymentItemInputDto {
+  origin: String!
+  plannedAmount: Float!
+  status: String!
+  paidAmount: Float!
+  paymentDate: String
+  dueDate: String
+  proofUrl: String
+  notes: String
+  sortOrder: Int
+}
+
+input UpdatePaymentInputDto {
+  idPayments: String!
+  status: String
+  paidAmount: Float
+  paymentDate: String
+  dueDate: String
+  proofUrl: String
+  notes: String
+  paymentItems: [CreatePaymentItemInputDto!]
 }
 
 input CreateBudgetsInputDto {
