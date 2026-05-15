@@ -25,6 +25,7 @@ export interface ContractPdfSnapshot {
     eventArrivalTimes: string[];
     eventDepartureTimes: string[];
     eventLocation?: string;
+    guestCount?: number;
     durationHours?: number;
     paymentMethod?: string;
     advancePercentage?: number;
