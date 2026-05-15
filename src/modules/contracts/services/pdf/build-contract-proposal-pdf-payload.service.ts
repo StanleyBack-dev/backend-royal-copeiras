@@ -176,7 +176,10 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     n: number,
     gender: "masculine" | "feminine" = "masculine",
   ): string {
-    const base: Record<number, string> = {
+    if (!Number.isFinite(n)) return String(n);
+    const num = Math.abs(Math.trunc(n));
+
+    const unitsMasculine: Record<number, string> = {
       0: "zero",
       1: "um",
       2: "dois",
@@ -188,12 +191,80 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
       8: "oito",
       9: "nove",
       10: "dez",
+      11: "onze",
+      12: "doze",
+      13: "treze",
+      14: "quatorze",
+      15: "quinze",
+      16: "dezesseis",
+      17: "dezessete",
+      18: "dezoito",
+      19: "dezenove",
     };
-    if (gender === "feminine") {
-      if (n === 1) return "uma";
-      if (n === 2) return "duas";
+
+    const unitsFeminine: Record<number, string> = {
+      ...unitsMasculine,
+      1: "uma",
+      2: "duas",
+    };
+
+    const tens: Record<number, string> = {
+      20: "vinte",
+      30: "trinta",
+      40: "quarenta",
+      50: "cinquenta",
+      60: "sessenta",
+      70: "setenta",
+      80: "oitenta",
+      90: "noventa",
+    };
+
+    const hundreds: Record<number, string> = {
+      100: "cem",
+      200: "duzentos",
+      300: "trezentos",
+      400: "quatrocentos",
+      500: "quinhentos",
+      600: "seiscentos",
+      700: "setecentos",
+      800: "oitocentos",
+      900: "novecentos",
+    };
+
+    const units = gender === "feminine" ? unitsFeminine : unitsMasculine;
+
+    function belowThousand(value: number): string {
+      if (value === 0) return "";
+      if (value < 20) return units[value];
+      if (value < 100) {
+        const t = Math.floor(value / 10) * 10;
+        const r = value % 10;
+        return r === 0 ? tens[t] : `${tens[t]} e ${units[r]}`;
+      }
+      if (value < 1000) {
+        const h = Math.floor(value / 100) * 100;
+        const r = value % 100;
+        if (value === 100) return "cem";
+        const hText = hundreds[h] || "";
+        if (r === 0) return hText;
+        return `${hText} e ${belowThousand(r)}`;
+      }
+      return "";
     }
-    return base[n] ?? String(n);
+
+    if (num < 1000) return belowThousand(num);
+
+    if (num < 1000000) {
+      const thousands = Math.floor(num / 1000);
+      const rest = num % 1000;
+      const thousandsText =
+        thousands === 1 ? "mil" : `${belowThousand(thousands)} mil`;
+      if (rest === 0) return thousandsText;
+      const sep = rest < 100 ? " e " : " ";
+      return `${thousandsText}${sep}${belowThousand(rest)}`;
+    }
+
+    return String(n);
   }
 
   const buildItemLine = (it: {
@@ -240,12 +311,37 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
       ? `\n1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.`
       : "";
 
+  const guestCount =
+    typeof snapshot.budget?.guestCount === "number" &&
+    Number.isFinite(snapshot.budget.guestCount) &&
+    snapshot.budget.guestCount > 0
+      ? snapshot.budget.guestCount
+      : undefined;
+
+  const guestCountLabel = guestCount
+    ? `${guestCount} (${numberToPtWords(guestCount)}) convidados`
+    : null;
+
+  // build replacement clause listing actual professionals and quantities when available
+  const replacementList = items.length
+    ? items
+        .map((it) =>
+          buildItemLine(it)
+            .replace(/\r?\n+/g, " ")
+            .trim(),
+        )
+        .join(", ")
+    : "copeira, garçom, recepcionista, segurança ou similares";
+
+  const replacementClause = `\n5.4. a contratada responsabiliza-se pela substituição de qualquer profissional contratado ${replacementList} em caso de ausência, atraso ou impossibilidade de comparecimento, sem custos adicionais à contratante.`;
+
   return `CLAUSULA 1a - SERVIÇOS CONTRATADOS:
 
 1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada, consistentes na disponibilização de:
 ${servicesBlock}
 1.2. Pelo período de ${eventHours} horas consecutivas.
-1.3. O evento está previsto para ocorrer ${eventDatesText}, ${eventScheduleText}, no local ${eventLocationText}.${displacementClause}
+1.3. O evento está previsto para ocorrer ${eventDatesText}, ${eventScheduleText}, ${guestCountLabel ? `com previsão de ${guestCountLabel},` : ""} no local ${eventLocationText}.${displacementClause}
+1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.
 
 CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 
@@ -253,34 +349,39 @@ CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 2.2. O pagamento deverá ser realizado à vista, via pix (CNPJ 64.062.038/0001-71) ou dinheiro. Sendo ${advancePercentage}% do valor antes do evento para confirmação do mesmo e ${100 - advancePercentage}% após o evento.
 2.3. Caso a prestação dos serviços ultrapasse o horário previamente acordado, será necessário contratar horas adicionais, no valor de R$ 90,00 (noventa reais) por hora extra, por profissional.
 
-CLAUSULA 3a - RESPONSABILIDADES DO CONTRATANTE:
+CLAUSULA 3a - DOS MATERIAIS DE LIMPEZA:
 
-3.1. O contratante deve informar, com antecedência mínima de 5 dias, quaisquer particularidades do evento que possam impactar a prestação dos serviços.
+3.1. A contratada se responsabiliza por disponibilizar, para a adequada execução dos serviços durante o evento, os seguintes materiais de limpeza: desinfetante, aromatizante de ambiente (cheirinho de banheiro), pano de chão, rodo, vassoura, pá de lixo, sacos de lixo, luvas e álcool.
+3.2. Caso o contratante deseje a inclusão de papel toalha e papel higiênico, este valor será cobrado à parte e adicionado ao valor total do serviço. Ressalta-se que os materiais mencionados acima serão utilizados exclusivamente para a manutenção da organização, higiene e limpeza dos ambientes relacionados ao serviço contratado.
 
-CLAUSULA 4a - RESPONSABILIDADES DA CONTRATADA:
+CLAUSULA 4a - RESPONSABILIDADES DO CONTRATANTE:
 
-4.1. A Royal Copeiras compromete-se a prestar os serviços contratados com equipe qualificada.
+4.1. O contratante deve informar, com antecedência mínima de 5 dias, quaisquer particularidades do evento que possam impactar a prestação dos serviços.
+4.2. Caso haja necessidade de serviços adicionais não previstos no contrato, o contratante deverá comunicar a empresa com antecedência e arcar com os custos extras.
 
-CLAUSULA 5a - CANCELAMENTO E REEMBOLSO:
+CLAUSULA 5a - RESPONSABILIDADES DA CONTRATADA:
 
-5.1. O contratante poderá cancelar o serviço a qualquer momento, desde que o faça com pelo menos 5 dias de antecedência.
+5.1. A Royal Copeiras compromete-se a prestar os serviços contratados com equipe qualificada.${replacementClause}
 
-CLAUSULA 6a - ALTERAÇÕES CONTRATUAIS (ADENDOS E ADITIVOS):
+CLAUSULA 6a - CANCELAMENTO E REEMBOLSO:
 
-6.1. Este contrato poderá sofrer alterações mediante comum acordo entre as partes.
+6.1. O contratante poderá cancelar o serviço a qualquer momento, desde que o faça com pelo menos 5 dias de antecedência.
+6.2. Caso o cancelamento ocorra antes do prazo de 5 dias, o valor pago a título de sinal será devolvido ao contratante de forma integral pela contratada.
+6.3. Se o cancelamento for realizado após o prazo de 5 dias, o contratante não terá direito ao reembolso do sinal já pago.
 
-CLAUSULA 7a - VIGÊNCIA:
+CLAUSULA 7a - ALTERAÇÕES CONTRATUAIS (ADENDOS E ADITIVOS):
 
-7.1. O presente contrato tem início na data de sua assinatura e terá vigência até a conclusão das obrigações previstas neste instrumento.
+7.1. Este contrato poderá sofrer alterações mediante comum acordo entre as partes.
+7.2. As alterações devem ser solicitadas com antecedência mínima de 5 dias antes da data do evento e estarão sujeitas à aprovação da Royal Copeiras.
+7.3. Qualquer alteração de valores, condições ou quantidade de profissionais será formalizada e anexada ao presente contrato como adendo ou aditivo, conforme necessário.
 
-CLAUSULA 8a - CONDIÇÕES GERAIS:
+CLAUSULA 8a - VIGÊNCIA:
 
-8.1. O contratante declara que todas as suas dúvidas foram devidamente esclarecidas.
+8.1. O presente contrato tem início na data de sua assinatura e terá vigência até a conclusão das obrigações previstas neste instrumento.
 
-CLAUSULA 9a - DOS MATERIAIS DE LIMPEZA:
+CLAUSULA 9a - CONDIÇÕES GERAIS:
 
-9.1. A CONTRATADA se responsabiliza por disponibilizar, para a adequada execução dos serviços durante o evento, os seguintes materiais de limpeza: desinfetante, aromatizante de ambiente (cheirinho de banheiro), pano de chão, rodo, vassoura, pá de lixo, sacos de lixo, luvas e álcool.
-9.2. Caso o CONTRATANTE deseje a inclusão de papel toalha e papel higiênico, este valor será cobrado à parte e adicionado ao valor total do serviço. Ressalta-se que os materiais mencionados acima serão utilizados exclusivamente para a manutenção da organização, higiene e limpeza dos ambientes relacionados ao serviço contratado.
+9.1. O contratante declara que todas as suas dúvidas foram devidamente esclarecidas.
 
 
 DISPOSIÇÕES FINAIS:

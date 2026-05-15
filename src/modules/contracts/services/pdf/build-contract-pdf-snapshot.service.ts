@@ -67,6 +67,12 @@ export class BuildContractPdfSnapshotService {
           budgetRelation?.eventLocation,
           budgetSnapshot.eventLocation,
         ),
+        guestCount: this.getNumberValue(
+          budgetRelation?.guestCount,
+          (budgetSnapshot as Record<string, unknown>).guestCount as
+            | number
+            | undefined,
+        ),
         durationHours: this.getNumberValue(
           budgetRelation?.durationHours,
           budgetSnapshot.durationHours,
@@ -89,6 +95,21 @@ export class BuildContractPdfSnapshotService {
           budgetRelation?.totalAmount,
           budgetSnapshot.totalAmount,
         ),
+        items: Array.isArray(budgetRelation?.items)
+          ? budgetRelation.items.map((it: any) => ({
+              serviceType: it.serviceType,
+              quantity: it.quantity,
+              description: it.description,
+            }))
+          : Array.isArray((budgetSnapshot as Record<string, unknown>).items)
+            ? ((budgetSnapshot as Record<string, unknown>).items as any[]).map(
+                (it) => ({
+                  serviceType: (it as any).serviceType,
+                  quantity: (it as any).quantity,
+                  description: (it as any).description,
+                }),
+              )
+            : [],
       },
       lead: {
         name: this.getStringValue(leadRelation?.name, leadSnapshot.name),
