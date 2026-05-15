@@ -854,6 +854,7 @@ type GetBudgetItemResponseDto {
   totalPrice: Float!
   notes: String
   sortOrder: Float!
+  serviceGender: String
   createdAt: String!
   updatedAt: String!
 }
@@ -1483,6 +1484,7 @@ input CreateBudgetsInputDto {
 input CreateBudgetItemInputDto {
   idPositions: String!
   description: String!
+  gender: String
   quantity: Int!
   unitPrice: Float!
   notes: String
@@ -1516,6 +1518,7 @@ input UpdateBudgetsInputDto {
 input UpdateBudgetItemInputDto {
   idPositions: String!
   description: String!
+  gender: String
   quantity: Int!
   unitPrice: Float!
   notes: String

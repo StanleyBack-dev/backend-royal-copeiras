@@ -20,6 +20,11 @@ export class CreateBudgetItemInputDto {
   @IsNotEmpty()
   description!: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
   @Field(() => Int)
   @IsInt()
   @Min(1)

@@ -13,6 +13,10 @@ import {
 } from "../../constants/budget-form-rules.constant";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 import { PositionsEntity } from "../../../positions/entities/positions.entity";
+import {
+  inferServiceComboFromDescription,
+  normalizeGenderToEnglish,
+} from "../../constants/budget-service-types.constant";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   [BudgetStatus.DRAFT]: [
@@ -60,7 +64,11 @@ interface BudgetRulesSnapshot {
   discountType?: "percentage" | "amount" | null;
   discountPercentage?: number | null;
   discountAmount?: number | null;
-  items?: Array<{ description?: string | null; idPositions?: string | null }>;
+  items?: Array<{
+    description?: string | null;
+    idPositions?: string | null;
+    gender?: string | null;
+  }>;
 }
 
 export class UpdateBudgetsValidator {
@@ -311,9 +319,26 @@ export class UpdateBudgetsValidator {
           const totalPrice = Number(
             (item.quantity * item.unitPrice).toFixed(2),
           );
+
+          const explicitGenderRaw = item.gender?.toString().trim();
+          let serviceGender = normalizeGenderToEnglish(explicitGenderRaw);
+
+          if (!serviceGender) {
+            const inferred = inferServiceComboFromDescription(
+              item.description ?? undefined,
+            );
+            if (inferred) {
+              const parts = inferred.split(":");
+              serviceGender = normalizeGenderToEnglish(
+                parts.length > 1 ? parts[1] : undefined,
+              );
+            }
+          }
+
           return {
             idPositions: item.idPositions,
             description: item.description,
+            serviceGender: serviceGender ?? null,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             totalPrice,
@@ -351,6 +376,7 @@ export class UpdateBudgetsValidator {
             idBudgets: current.idBudgets,
             idPositions: item.idPositions,
             description: item.description,
+            serviceGender: item.serviceGender ?? null,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             totalPrice: item.totalPrice,
@@ -575,10 +601,28 @@ export class UpdateBudgetsValidator {
     }
 
     if (enforceItemPositions) {
-      const selectedPositionKeys = data.items.map(
-        (item) =>
-          `${item.idPositions || ""}::${(item.description ?? "").trim().toLowerCase()}`,
-      );
+      const selectedPositionKeys = data.items.map((item) => {
+        const explicitGenderRaw = item.gender?.toString().trim();
+        let genderKey = normalizeGenderToEnglish(explicitGenderRaw) ?? "";
+        if (!genderKey) {
+          const inferred = inferServiceComboFromDescription(
+            item.description ?? undefined,
+          );
+          if (inferred) {
+            const parts = inferred.split(":");
+            genderKey =
+              normalizeGenderToEnglish(
+                parts.length > 1 ? parts[1] : undefined,
+              ) ?? "";
+          }
+        }
+
+        if (genderKey) {
+          return `${item.idPositions || ""}::${genderKey}`;
+        }
+
+        return `${item.idPositions || ""}::${(item.description ?? "").trim().toLowerCase()}`;
+      });
       const uniquePositionKeys = new Set(selectedPositionKeys);
 
       if (selectedPositionKeys.length !== uniquePositionKeys.size) {
