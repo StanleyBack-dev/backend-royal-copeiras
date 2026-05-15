@@ -365,9 +365,12 @@ export class CreateBudgetsValidator {
       );
     }
 
-    const selectedPositions = input.items.map((item) => item.idPositions);
-    const uniquePositions = new Set(selectedPositions);
-    if (uniquePositions.size !== selectedPositions.length) {
+    const selectedPositionKeys = input.items.map(
+      (item) =>
+        `${item.idPositions}::${(item.description ?? "").trim().toLowerCase()}`,
+    );
+    const uniquePositionKeys = new Set(selectedPositionKeys);
+    if (uniquePositionKeys.size !== selectedPositionKeys.length) {
       throw AppException.from(
         APP_ERRORS.budgets.itemServiceTypeDuplicated,
         undefined,

@@ -575,12 +575,13 @@ export class UpdateBudgetsValidator {
     }
 
     if (enforceItemPositions) {
-      const selectedPositions = data.items.map(
-        (item) => item.idPositions || "",
+      const selectedPositionKeys = data.items.map(
+        (item) =>
+          `${item.idPositions || ""}::${(item.description ?? "").trim().toLowerCase()}`,
       );
-      const uniquePositions = new Set(selectedPositions);
+      const uniquePositionKeys = new Set(selectedPositionKeys);
 
-      if (selectedPositions.length !== uniquePositions.size) {
+      if (selectedPositionKeys.length !== uniquePositionKeys.size) {
         throw AppException.from(
           APP_ERRORS.budgets.itemServiceTypeDuplicated,
           undefined,
