@@ -39,6 +39,14 @@ export class BudgetItemsEntity {
   @Column({ name: "description", type: "varchar", length: 255 })
   description!: string;
 
+  @Column({
+    name: "service_gender",
+    type: "varchar",
+    length: 32,
+    nullable: true,
+  })
+  serviceGender?: string | null;
+
   @Column({ name: "quantity", type: "int" })
   quantity!: number;
 

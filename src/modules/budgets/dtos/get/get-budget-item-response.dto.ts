@@ -17,6 +17,7 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
     dto.totalPrice = entity.totalPrice;
     dto.notes = entity.notes;
     dto.sortOrder = entity.sortOrder;
+    dto.serviceGender = entity.serviceGender || null;
     dto.createdAt =
       entity.createdAt instanceof Date
         ? formatLocalDateTime(entity.createdAt) || String(entity.createdAt)
@@ -54,6 +55,9 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
 
   @Field()
   sortOrder!: number;
+
+  @Field(() => String, { nullable: true })
+  serviceGender?: string | null;
 
   @Field()
   createdAt!: string;

@@ -94,3 +94,19 @@ export function inferServiceComboFromDescription(
 
   return null;
 }
+
+/**
+ * Normalize a gender value (Portuguese or English variants) into the
+ * canonical English storage values used by the project: 'masculine' | 'feminine' | null
+ */
+export function normalizeGenderToEnglish(value?: string | null): string | null {
+  if (!value) return null;
+  const v = value
+    .toString()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+  if (v.includes("mascul")) return "masculine";
+  if (v.includes("femin")) return "feminine";
+  return null;
+}
