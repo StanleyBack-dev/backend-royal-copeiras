@@ -5,6 +5,14 @@ import { ContractsEntity } from "../../entities/contracts.entity";
 import { ContractPdfSnapshot } from "../../interfaces/contract-pdf-snapshot.interface";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
+type BudgetItemLike = {
+  serviceType?: string;
+  quantity?: number | string;
+  description?: string;
+  position?: { idPositions?: string } | null;
+  serviceGender?: string | null;
+};
+
 @Injectable()
 export class BuildContractPdfSnapshotService {
   buildFromEntity(entity: ContractsEntity): ContractPdfSnapshot {
@@ -96,19 +104,30 @@ export class BuildContractPdfSnapshotService {
           budgetSnapshot.totalAmount,
         ),
         items: Array.isArray(budgetRelation?.items)
-          ? budgetRelation.items.map((it: any) => ({
-              serviceType: it.serviceType,
-              quantity: it.quantity,
-              description: it.description,
+          ? (budgetRelation.items as unknown as BudgetItemLike[]).map((it) => ({
+              serviceType:
+                it.serviceType ??
+                (it.position ? it.position.idPositions : undefined),
+              quantity:
+                typeof it.quantity === "number"
+                  ? it.quantity
+                  : Number(it.quantity) || 0,
+              description: it.description ?? "",
             }))
           : Array.isArray((budgetSnapshot as Record<string, unknown>).items)
-            ? ((budgetSnapshot as Record<string, unknown>).items as any[]).map(
-                (it) => ({
-                  serviceType: (it as any).serviceType,
-                  quantity: (it as any).quantity,
-                  description: (it as any).description,
-                }),
-              )
+            ? (
+                (budgetSnapshot as Record<string, unknown>)
+                  .items as BudgetItemLike[]
+              ).map((it) => ({
+                serviceType:
+                  it.serviceType ??
+                  (it.position ? it.position.idPositions : undefined),
+                quantity:
+                  typeof it.quantity === "number"
+                    ? it.quantity
+                    : Number(it.quantity) || 0,
+                description: it.description ?? "",
+              }))
             : [],
       },
       lead: {
