@@ -5,6 +5,8 @@ import { ContractsEntity } from "../../entities/contracts.entity";
 import { ContractStatus } from "../../enums/contract-status.enum";
 import { UpdateContractsInputDto } from "../../dtos/update/update-contracts-input.dto";
 import { parseContractDateOnly } from "../../utils/contract-date.util";
+import { BudgetsEntity } from "../../../budgets/entities/budgets.entity";
+import { BudgetStatus } from "../../../budgets/enums/budget-status.enum";
 
 const CONTRACT_ALLOWED_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
   [ContractStatus.DRAFT]: [
@@ -96,6 +98,51 @@ export class UpdateContractsValidator {
       ].includes(record.status)
     ) {
       throw AppException.from(APP_ERRORS.contracts.editForbidden, undefined);
+    }
+
+    if (
+      input.status === ContractStatus.CANCELED &&
+      input.status !== record.status
+    ) {
+      return contractsRepo.manager.transaction(async (manager) => {
+        const contractsRepoTx = manager.getRepository(ContractsEntity);
+        const budgetsRepoTx = manager.getRepository(BudgetsEntity);
+
+        const rec = await contractsRepoTx.findOne({
+          where: { idContracts: input.idContracts },
+        });
+
+        if (!rec) {
+          throw AppException.from(APP_ERRORS.contracts.notFound, undefined);
+        }
+
+        rec.status = input.status ?? rec.status;
+        rec.effectiveDate = input.effectiveDate
+          ? parseContractDateOnly(input.effectiveDate)
+          : rec.effectiveDate;
+        rec.expiresAt = input.expiresAt
+          ? parseContractDateOnly(input.expiresAt)
+          : rec.expiresAt;
+        rec.body = input.body ?? rec.body;
+        rec.templateVersion = input.templateVersion ?? rec.templateVersion;
+        rec.sentVia = input.sentVia ?? rec.sentVia;
+        rec.sentAt = input.sentAt ? new Date(input.sentAt) : rec.sentAt;
+        rec.notes = input.notes ?? rec.notes;
+
+        const saved = await contractsRepoTx.save(rec);
+
+        if (rec.idBudgets) {
+          const budget = await budgetsRepoTx.findOne({
+            where: { idBudgets: rec.idBudgets },
+          });
+          if (budget) {
+            budget.status = BudgetStatus.CANCELED;
+            await budgetsRepoTx.save(budget);
+          }
+        }
+
+        return saved;
+      });
     }
 
     record.status = input.status ?? record.status;
