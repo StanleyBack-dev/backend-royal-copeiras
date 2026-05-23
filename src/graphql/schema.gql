@@ -1451,13 +1451,23 @@ input CreatePaymentItemInputDto {
 
 input UpdatePaymentInputDto {
   idPayments: String!
-  status: String
+  status: PaymentStatus
   paidAmount: Float
   paymentDate: String
   dueDate: String
   proofUrl: String
   notes: String
   paymentItems: [CreatePaymentItemInputDto!]
+}
+
+"""
+Status de pagamento
+"""
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  CANCELED
 }
 
 input CreateBudgetsInputDto {

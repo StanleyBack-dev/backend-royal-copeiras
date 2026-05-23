@@ -20,7 +20,7 @@ export class UpdatePaymentInputDto {
   @IsUUID()
   idPayments!: string;
 
-  @Field({ nullable: true })
+  @Field(() => PaymentStatus, { nullable: true })
   @IsOptional()
   @IsEnum(PaymentStatus)
   status?: PaymentStatus;
