@@ -8,6 +8,9 @@ import { UpdateContractsInputDto } from "../../dtos/update/update-contracts-inpu
 import { UpdateContractsResponseDto } from "../../dtos/update/update-contracts-response.dto";
 import { IContract } from "../../interface/contract.interface";
 import { UpdateContractsValidator } from "../../validators/update/update-contracts.validator";
+import { GetSignaturesService } from "../../../signature/services/get-signatures.service";
+import { CancelSignatureRequestService } from "../../../signature/services/cancel-signature-request.service";
+import { ContractStatus } from "../../enums/contract-status.enum";
 
 @Injectable()
 export class UpdateContractsService {
@@ -15,6 +18,8 @@ export class UpdateContractsService {
     @InjectRepository(ContractsEntity)
     private readonly contractsRepository: Repository<ContractsEntity>,
     private readonly authorizationService: AuthorizationService,
+    private readonly getSignaturesService: GetSignaturesService,
+    private readonly cancelSignatureRequestService: CancelSignatureRequestService,
   ) {}
 
   async execute(
@@ -31,6 +36,37 @@ export class UpdateContractsService {
       input,
       this.contractsRepository,
     );
+
+    // If contract was canceled, try to cancel any pending signature envelopes
+    try {
+      const willBeCanceled =
+        input.status === ContractStatus.CANCELED ||
+        updated.status === ContractStatus.CANCELED;
+      if (willBeCanceled && input.idContracts) {
+        try {
+          const sigs = await this.getSignaturesService.findAll(userId, {
+            idContracts: input.idContracts,
+            limit: 100,
+          });
+          const items = sigs.items || [];
+          for (const item of items) {
+            if (item.envelopeId) {
+              try {
+                await this.cancelSignatureRequestService.execute(
+                  item.envelopeId,
+                );
+              } catch {
+                // ignore per-envelope errors and continue
+              }
+            }
+          }
+        } catch {
+          // ignore errors listing signatures
+        }
+      }
+    } catch {
+      // swallow to avoid breaking update flow
+    }
 
     return UpdateContractsResponseDto.fromEntity(updated);
   }
