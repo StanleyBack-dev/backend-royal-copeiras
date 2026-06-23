@@ -6,6 +6,7 @@ import { ContractsEntity } from "../../contracts/entities/contracts.entity";
 import { SignatureStatus } from "../enums/signature-status.enum";
 import { ContractStatus } from "../../contracts/enums/contract-status.enum";
 import { ActivateSignedContractService } from "./activate-signed-contract.service";
+import { SignerType } from "../enums/signer-type.enum";
 
 @Injectable()
 export class ProcessSignatureWebhookService {
@@ -228,11 +229,45 @@ export class ProcessSignatureWebhookService {
         eventName.includes("sign") || eventName.includes("assinad");
 
       const targetSignerId = subjectSignerId ?? payloadSignerId;
-      const target = targetSignerId
+      let target = targetSignerId
         ? allEnvelopeSignatures.find(
             (s) => s.providerSignerId === targetSignerId,
           )
         : undefined;
+
+      // If target not found by provider signer ID and we only have 2 signatures
+      // (typical case: client + company), try to identify by signer order
+      if (!target && allEnvelopeSignatures.length === 2) {
+        const eventNameLower = eventName.toLowerCase();
+        
+        // Try to identify if this is a company signer event
+        if (
+          eventNameLower.includes("company") ||
+          eventNameLower.includes("empresa")
+        ) {
+          target = allEnvelopeSignatures.find(
+            (s) => s.signerType === SignerType.COMPANY,
+          );
+        }
+        // Try to identify if this is a client signer event
+        else if (
+          eventNameLower.includes("client") ||
+          eventNameLower.includes("cliente") ||
+          eventNameLower.includes("lead")
+        ) {
+          target = allEnvelopeSignatures.find(
+            (s) => s.signerType === SignerType.CLIENT,
+          );
+        }
+        
+        // Last resort: use the order of signatures (should match signer_index)
+        if (!target && allEnvelopeSignatures.length > 0) {
+          target = allEnvelopeSignatures[0];
+          this.logger.warn(
+            `Could not identify target signer for envelopeId=${envelopeId}, using first signature (index 0)`,
+          );
+        }
+      }
 
       if (!target) {
         this.logger.warn(

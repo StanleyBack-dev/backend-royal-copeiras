@@ -112,6 +112,14 @@ export class SignatureEntity {
   @Column({ name: "signer_index", type: "int", nullable: true })
   signerIndex?: number;
 
+  @Column({
+    name: "signer_type",
+    type: "enum",
+    enum: ["CLIENT", "COMPANY", "OTHER"],
+    nullable: true,
+  })
+  signerType?: "CLIENT" | "COMPANY" | "OTHER";
+
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
 
