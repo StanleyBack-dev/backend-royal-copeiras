@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddSignerTypeAndFixSignatureDates1719169200000
-  implements MigrationInterface
-{
+export class AddSignerTypeAndFixSignatureDates1719169200000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Step 1: Add signer_type enum and column to tb_signatures
     await queryRunner.query(`
@@ -26,7 +24,7 @@ export class AddSignerTypeAndFixSignatureDates1719169200000
       WHERE "signer_type" IS NULL
     `);
 
-    // Step 3: Fix inverted dates - swap signed_at between CLIENT and COMPANY 
+    // Step 3: Fix inverted dates - swap signed_at between CLIENT and COMPANY
     // for contracts where they appear to be inverted
     // A signature pair is considered "inverted" if:
     // - Both signatures exist for same contract

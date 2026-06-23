@@ -239,7 +239,7 @@ export class ProcessSignatureWebhookService {
       // (typical case: client + company), try to identify by signer order
       if (!target && allEnvelopeSignatures.length === 2) {
         const eventNameLower = eventName.toLowerCase();
-        
+
         // Try to identify if this is a company signer event
         if (
           eventNameLower.includes("company") ||
@@ -259,7 +259,7 @@ export class ProcessSignatureWebhookService {
             (s) => s.signerType === SignerType.CLIENT,
           );
         }
-        
+
         // Last resort: use the order of signatures (should match signer_index)
         if (!target && allEnvelopeSignatures.length > 0) {
           target = allEnvelopeSignatures[0];
