@@ -6,6 +6,7 @@ import { SIGNATURE_PROVIDER_TOKEN } from "../contracts/signature.tokens";
 import { CreateSignatureRequestInputDto } from "../dtos/create-signature-request-input.dto";
 import { SignatureRequestResponseDto } from "../dtos/signature-request-response.dto";
 import { SignatureEntity } from "../entities/signature.entity";
+import { SignerType } from "../enums/signer-type.enum";
 
 @Injectable()
 export class CreateSignatureRequestService {
@@ -53,6 +54,14 @@ export class CreateSignatureRequestService {
 
         if (alreadyExists) continue;
 
+        // Determine signer type: index 0 = CLIENT, index 1 = COMPANY
+        let signerType = SignerType.OTHER;
+        if (i === 0) {
+          signerType = SignerType.CLIENT;
+        } else if (i === 1) {
+          signerType = SignerType.COMPANY;
+        }
+
         entitiesToCreate.push(
           this.signaturesRepository.create({
             idContracts,
@@ -66,6 +75,7 @@ export class CreateSignatureRequestService {
             signedByDocument: s?.identifier,
             providerSignerId: assign?.signerId,
             signerIndex: i,
+            signerType,
           }),
         );
       }

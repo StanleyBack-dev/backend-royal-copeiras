@@ -18,6 +18,7 @@ export class GetSignaturesResponseDto {
     dto.signedByEmail = entity.signedByEmail;
     dto.signedByDocument = entity.signedByDocument;
     dto.signerIp = entity.signerIp;
+    dto.signerType = entity.signerType;
     dto.signedAt = entity.signedAt
       ? formatLocalDateTime(entity.signedAt)
       : undefined;
@@ -61,6 +62,9 @@ export class GetSignaturesResponseDto {
 
   @Field({ nullable: true })
   signerIp?: string;
+
+  @Field({ nullable: true })
+  signerType?: string;
 
   @Field({ nullable: true })
   signedAt?: string;
