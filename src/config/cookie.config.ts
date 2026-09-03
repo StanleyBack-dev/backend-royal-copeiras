@@ -1,6 +1,7 @@
 import { CookieOptions } from "express";
+import { isDeployedEnv } from "./environment.util";
 
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const IS_DEPLOYED = isDeployedEnv();
 const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || undefined;
 
 export const ACCESS_TOKEN_COOKIE_NAME = "accessToken";
@@ -9,8 +10,8 @@ export const REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
 function buildBaseCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
-    secure: IS_PRODUCTION,
-    sameSite: IS_PRODUCTION ? "none" : "lax",
+    secure: IS_DEPLOYED,
+    sameSite: IS_DEPLOYED ? "none" : "lax",
     path: "/",
     domain: COOKIE_DOMAIN,
   };

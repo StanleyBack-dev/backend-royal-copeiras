@@ -6,6 +6,7 @@ import { BudgetStatus } from "../../../budgets/enums/budget-status.enum";
 import { ContractsEntity } from "../../entities/contracts.entity";
 import { ContractStatus } from "../../enums/contract-status.enum";
 import { CreateContractsInputDto } from "../../dtos/create/create-contracts-input.dto";
+import { ContractPartySnapshot } from "../../interfaces/contract-party.interface";
 import {
   formatContractDateOnly,
   parseContractDateOnly,
@@ -41,6 +42,7 @@ export class CreateContractsValidator {
     input: CreateContractsInputDto,
     contractsRepo: Repository<ContractsEntity>,
     budgetsRepo: Repository<BudgetsEntity>,
+    contractorSnapshot: ContractPartySnapshot,
   ): Promise<ContractsEntity> {
     if (!input.idBudgets) {
       throw AppException.from(APP_ERRORS.contracts.budgetRequired, undefined);
@@ -107,6 +109,7 @@ export class CreateContractsValidator {
         retentionUntil,
         notes: input.notes,
         contractSnapshot: {
+          contractor: contractorSnapshot,
           budget: {
             idBudgets: budget.idBudgets,
             budgetNumber: budget.budgetNumber,

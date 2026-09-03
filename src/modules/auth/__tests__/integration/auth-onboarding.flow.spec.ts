@@ -12,6 +12,7 @@ import { AuthCredentialEntity } from "../../entities/auth-credential.entity";
 import { AuthCredentialsService } from "../../services/auth-credentials.service";
 import { AuthTokensService } from "../../services/auth-tokens.service";
 import { AuthorizationService } from "../../services/authorization.service";
+import { UserPageAccessEntity } from "../../entities/user-page-access.entity";
 import { ChangePasswordService } from "../../services/change-password.service";
 import { LoginService } from "../../services/login.service";
 import { PasswordHasherService } from "../../services/password-hasher.service";
@@ -259,6 +260,13 @@ describe("Auth onboarding flow", () => {
           provide: UserPageAccessService,
           useValue: {
             setDuringUserCreation: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: getRepositoryToken(UserPageAccessEntity),
+          useValue: {
+            find: jest.fn().mockResolvedValue([]),
+            findOne: jest.fn().mockResolvedValue(null),
           },
         },
       ],

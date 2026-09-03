@@ -71,10 +71,14 @@ export class PaymentsEntity implements IPayment {
   @Column({ name: "idtb_employees", type: "uuid", nullable: true })
   idEmployees?: string;
 
+  // `tb_payments` and `tb_payment_items` deliberately share these enum types
+  // (see the payments migrations). `enumName` pins them so TypeORM does not try
+  // to split them into per-table types on schema sync / migration:generate.
   @Column({
     name: "origin",
     type: "enum",
     enum: PaymentOrigin,
+    enumName: "tb_payments_origin_enum",
   })
   origin!: PaymentOrigin;
 
@@ -82,6 +86,7 @@ export class PaymentsEntity implements IPayment {
     name: "status",
     type: "enum",
     enum: PaymentStatus,
+    enumName: "tb_payments_status_enum",
     default: PaymentStatus.PENDING,
   })
   status!: PaymentStatus;

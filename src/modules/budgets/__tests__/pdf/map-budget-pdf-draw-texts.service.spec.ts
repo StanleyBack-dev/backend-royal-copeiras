@@ -10,7 +10,10 @@ describe("RenderBudgetProposalTemplateService", () => {
     const payloadBuilder = new BuildBudgetProposalPdfPayloadService();
     const renderer = new RenderBudgetProposalTemplateService();
 
-    const snapshot = snapshotBuilder.buildFromEntity(budgetMock);
+    const snapshot = snapshotBuilder.buildFromEntity({
+      ...budgetMock,
+      displacementFee: 250,
+    });
     const payload = payloadBuilder.build(
       snapshot,
       "abc1234567890defabc1234567890def",
@@ -21,8 +24,8 @@ describe("RenderBudgetProposalTemplateService", () => {
       description:
         "Taxa de deslocamento da equipe para atendimento no local do evento.",
       quantity: "1",
-      unitPrice: formatCurrencyBRL(0),
-      totalPrice: formatCurrencyBRL(0),
+      unitPrice: formatCurrencyBRL(250),
+      totalPrice: formatCurrencyBRL(250),
     });
 
     const buffer = await renderer.render(payload);

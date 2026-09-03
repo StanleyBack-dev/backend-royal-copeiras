@@ -63,9 +63,6 @@ enum PageAccessKey {
   USERS
   EVENTS
   PAYMENTS
-  FINANCES
-  DEBTS
-  INVESTMENTS
 }
 
 type PageAccessMetadataResponseDto {
@@ -402,6 +399,68 @@ type UpdateLeadsMutationResponseDto {
   data: UpdateLeadsResponseDto!
 }
 
+type GetCompanyProfileResponseDto {
+  idCompanyProfile: String!
+  legalName: String!
+  tradeName: String!
+  document: String!
+  stateRegistration: String
+  municipalRegistration: String
+  email: String
+  phone: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
+  representativeName: String
+  representativeRole: String
+  representativeDocument: String
+  pixKey: String
+  pixKeyType: String
+  issueCity: String
+  website: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UpdateCompanyProfileResponseDto {
+  idCompanyProfile: String!
+  legalName: String!
+  tradeName: String!
+  document: String!
+  stateRegistration: String
+  municipalRegistration: String
+  email: String
+  phone: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
+  representativeName: String
+  representativeRole: String
+  representativeDocument: String
+  pixKey: String
+  pixKeyType: String
+  issueCity: String
+  website: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetCompanyProfileQueryResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: GetCompanyProfileResponseDto!
+}
+
+type UpdateCompanyProfileMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateCompanyProfileResponseDto!
+}
+
 type SuccessResponseDto {
   success: Boolean!
   message: String
@@ -452,6 +511,7 @@ type GetSignaturesResponseDto {
   signedByEmail: String
   signedByDocument: String
   signerIp: String
+  signerType: String
   signedAt: String
   signatureUrl: String
   createdAt: String!
@@ -665,6 +725,26 @@ type GetPaymentsListResponseDto {
   hasNextPage: Boolean!
 }
 
+type ContractPartyObjectType {
+  legalName: String
+  tradeName: String
+  document: String
+  stateRegistration: String
+  municipalRegistration: String
+  email: String
+  phone: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
+  representativeName: String
+  representativeRole: String
+  representativeDocument: String
+  pixKey: String
+  pixKeyType: String
+  issueCity: String
+}
+
 type CreateContractsResponseDto {
   idContracts: String!
   idBudgets: String!
@@ -683,6 +763,7 @@ type CreateContractsResponseDto {
   sentVia: String
   sentAt: String
   notes: String
+  contractor: ContractPartyObjectType
   createdAt: String!
   updatedAt: String!
 }
@@ -716,6 +797,7 @@ type GetContractsResponseDto {
   sentVia: String
   sentAt: String
   notes: String
+  contractor: ContractPartyObjectType
   createdAt: String!
   updatedAt: String!
 }
@@ -748,6 +830,7 @@ type UpdateContractsResponseDto {
   sentVia: String
   sentAt: String
   notes: String
+  contractor: ContractPartyObjectType
   createdAt: String!
   updatedAt: String!
 }
@@ -1032,6 +1115,7 @@ type Query {
   getEmployees(input: GetEmployeesInputDto): GetEmployeesListResponseDto!
   getLeads(input: GetLeadsInputDto): GetLeadsListResponseDto!
   getContracts(input: GetContractsInputDto): GetContractsListResponseDto!
+  getCompanyProfile: GetCompanyProfileQueryResponseDto!
   getSignatures(input: GetSignaturesInputDto): GetSignaturesListResponseDto!
   getEvents(input: GetEventsInputDto): GetEventsListResponseDto!
   getPayments(input: GetPaymentsInputDto): GetPaymentsListResponseDto!
@@ -1196,6 +1280,9 @@ type Mutation {
   closeContractWithoutSignature(
     input: CloseContractWithoutSignatureInputDto!
   ): SuccessResponseDto!
+  updateCompanyProfile(
+    input: UpdateCompanyProfileInputDto!
+  ): UpdateCompanyProfileMutationResponseDto!
   createSignatureRequest(
     input: CreateSignatureRequestInputDto!
   ): CreateSignatureRequestMutationResponseDto!
@@ -1359,6 +1446,27 @@ input CreateContractsInputDto {
   body: String
   templateVersion: Int
   notes: String
+  contractor: ContractPartyInputDto
+}
+
+input ContractPartyInputDto {
+  legalName: String
+  tradeName: String
+  document: String
+  stateRegistration: String
+  municipalRegistration: String
+  email: String
+  phone: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
+  representativeName: String
+  representativeRole: String
+  representativeDocument: String
+  pixKey: String
+  pixKeyType: String
+  issueCity: String
 }
 
 input UpdateContractsInputDto {
@@ -1371,6 +1479,7 @@ input UpdateContractsInputDto {
   sentVia: String
   sentAt: String
   notes: String
+  contractor: ContractPartyInputDto
 }
 
 input GenerateContractPreviewInputDto {
@@ -1387,6 +1496,27 @@ input SendContractSignatureRequestInputDto {
 
 input CloseContractWithoutSignatureInputDto {
   idContracts: String!
+}
+
+input UpdateCompanyProfileInputDto {
+  legalName: String
+  tradeName: String
+  document: String
+  stateRegistration: String
+  municipalRegistration: String
+  email: String
+  phone: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
+  representativeName: String
+  representativeRole: String
+  representativeDocument: String
+  pixKey: String
+  pixKeyType: String
+  issueCity: String
+  website: String
 }
 
 input CreateSignatureRequestInputDto {

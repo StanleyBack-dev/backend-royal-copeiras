@@ -24,7 +24,14 @@ export const contractsErrors = {
   editForbidden: {
     code: "CONTRACTS_EDIT_FORBIDDEN",
     status: HttpStatus.FORBIDDEN,
-    message: "Nao e permitido editar contratos assinados ou cancelados.",
+    message:
+      "Este contrato nao pode ser editado pois ja foi processado. Apenas contratos em rascunho podem ser alterados.",
+  },
+  sendTrackingForbidden: {
+    code: "CONTRACTS_SEND_TRACKING_FORBIDDEN",
+    status: HttpStatus.FORBIDDEN,
+    message:
+      "So e possivel registrar envio de contratos em rascunho, gerados ou aguardando assinatura.",
   },
   invalidStatusTransition: {
     code: "CONTRACTS_INVALID_STATUS_TRANSITION",

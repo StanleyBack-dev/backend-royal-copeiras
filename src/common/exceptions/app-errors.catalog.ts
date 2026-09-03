@@ -3,6 +3,7 @@ import { authErrors } from "./catalogs/auth-errors.catalog";
 import { authorizationErrors } from "./catalogs/authorization-errors.catalog";
 import { customersErrors } from "./catalogs/customers-errors.catalog";
 import { budgetsErrors } from "./catalogs/budgetsErrors.catalog";
+import { companyProfileErrors } from "./catalogs/company-profile-errors.catalog";
 import { contractsErrors } from "./catalogs/contracts-errors.catalog";
 import { employeesErrors } from "./catalogs/employees-errors.catalog";
 import { eventsErrors } from "./catalogs/events-errors.catalog";
@@ -24,6 +25,7 @@ export const APP_ERRORS = {
   leads: leadsErrors,
   budgets: budgetsErrors,
   contracts: contractsErrors,
+  companyProfile: companyProfileErrors,
   customers: customersErrors,
   employees: employeesErrors,
   events: eventsErrors,

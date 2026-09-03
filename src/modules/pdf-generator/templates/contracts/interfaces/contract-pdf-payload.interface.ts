@@ -9,6 +9,9 @@ export interface ContractPdfPayloadParty {
   document?: string;
   email?: string;
   phone?: string;
+  // When provided, these lines replace the default "name + document" rendering
+  // inside the party card (used for the fully qualified CONTRATADA block).
+  lines?: string[];
 }
 
 export interface ContractPdfPayload {

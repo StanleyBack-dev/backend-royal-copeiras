@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "../auth/auth.module";
+import { CompanyProfileModule } from "../company-profile/company-profile.module";
 import { BudgetsEntity } from "../budgets/entities/budgets.entity";
 import { LeadsEntity } from "../leads/entities/leads.entity";
 import { MailModule } from "../mails/mail.module";
@@ -29,6 +30,7 @@ import { PaymentsModule } from "../payments/payments.module";
 @Module({
   imports: [
     AuthModule,
+    CompanyProfileModule,
     MailModule,
     PdfGeneratorModule,
     SignatureModule,

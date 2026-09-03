@@ -3,7 +3,7 @@ import * as Joi from "joi";
 export const envValidationSchema = Joi.object({
   // === APP CONFIGS GERAIS ===
   NODE_ENV: Joi.string()
-    .valid("development", "production", "test")
+    .valid("development", "beta", "production", "test")
     .default("development"),
   PORT: Joi.number().default(4000),
   FRONTEND_URL: Joi.string().uri().required(),
@@ -52,6 +52,7 @@ export const envValidationSchema = Joi.object({
   DB_PASS: Joi.string().allow(""),
   DB_NAME: Joi.string().required(),
   DB_SSL: Joi.boolean().truthy("true").falsy("false").default(false),
+  DB_SYNCHRONIZE: Joi.boolean().truthy("true").falsy("false").default(false),
   DB_TIMEZONE: Joi.string().default("America/Sao_Paulo"),
   TYPEORM_LOGGING: Joi.boolean().truthy("true").falsy("false").default(false),
 
@@ -88,7 +89,7 @@ export const envValidationSchema = Joi.object({
   JWT_ACCESS_SECRET: Joi.string()
     .min(32)
     .when("NODE_ENV", {
-      is: "production",
+      is: Joi.valid("production", "beta"),
       then: Joi.required(),
       otherwise: Joi.string()
         .min(32)
@@ -97,7 +98,7 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_SECRET: Joi.string()
     .min(32)
     .when("NODE_ENV", {
-      is: "production",
+      is: Joi.valid("production", "beta"),
       then: Joi.required(),
       otherwise: Joi.string()
         .min(32)
