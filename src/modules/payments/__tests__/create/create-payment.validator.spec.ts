@@ -14,6 +14,7 @@ describe("CreatePaymentValidator", () => {
     return {
       idLeads: "lead-1",
       idBudgets: "budget-1",
+      idContracts: "contract-1",
       origin: PaymentOrigin.BUDGET_ADVANCE,
       plannedAmount: 150,
       ...overrides,
@@ -21,6 +22,12 @@ describe("CreatePaymentValidator", () => {
   }
 
   function makeRepos() {
+    const itemsRepoImpl = {
+      create: jest.fn((value: object) => value),
+      save: jest.fn(async (value: object) => value),
+      findOne: jest.fn().mockResolvedValue(null),
+    };
+
     const managerImpl = {
       create: jest.fn((_: unknown, value: object) => value),
       save: jest.fn(async (_: unknown, value: object) => ({
@@ -28,10 +35,12 @@ describe("CreatePaymentValidator", () => {
         status: PaymentStatus.PENDING,
         ...value,
       })),
+      getRepository: jest.fn(() => itemsRepoImpl),
     };
 
     const paymentsRepo = {
       findOne: jest.fn().mockResolvedValue(null),
+      save: jest.fn(async (value: object) => value),
       manager: {
         transaction: jest.fn(async (run) => run(managerImpl)),
       },

@@ -155,24 +155,21 @@ describe("ProcessSignatureWebhookService", () => {
     expect(saveArg.signedAt).toBeInstanceOf(Date);
   });
 
-  it("does not update all signers when target signer is missing", async () => {
-    const sig1: Partial<SignatureEntity> = {
-      idSignatures: "s1",
+  it("does not broadly update signers when the target cannot be identified", async () => {
+    const makeSig = (suffix: string): Partial<SignatureEntity> => ({
+      idSignatures: `s${suffix}`,
       idContracts: "c1",
       envelopeId: "env-no-target",
-      providerSignerId: "signer-1",
+      providerSignerId: `signer-${suffix}`,
       status: SignatureStatus.PENDING,
-    };
-    const sig2: Partial<SignatureEntity> = {
-      idSignatures: "s2",
-      idContracts: "c1",
-      envelopeId: "env-no-target",
-      providerSignerId: "signer-2",
-      status: SignatureStatus.PENDING,
-    };
+    });
 
+    // Three signers: the signer-order fallback (which only applies to the
+    // typical two-signer envelope) does not kick in, so nothing is touched.
     const mockSignaturesRepo = {
-      find: jest.fn().mockResolvedValueOnce([sig1, sig2]),
+      find: jest
+        .fn()
+        .mockResolvedValueOnce([makeSig("1"), makeSig("2"), makeSig("3")]),
       save: jest.fn().mockResolvedValue(true),
     } as unknown as Repository<SignatureEntity>;
 
@@ -196,5 +193,70 @@ describe("ProcessSignatureWebhookService", () => {
     expect(
       (mockSignaturesRepo as unknown as { save: jest.Mock }).save,
     ).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the first signature for a two-signer envelope with no identifiable target", async () => {
+    const sig1: Partial<SignatureEntity> = {
+      idSignatures: "s1",
+      idContracts: "c1",
+      envelopeId: "env-two-signers",
+      providerSignerId: "signer-1",
+      status: SignatureStatus.PENDING,
+    };
+    const sig2: Partial<SignatureEntity> = {
+      idSignatures: "s2",
+      idContracts: "c1",
+      envelopeId: "env-two-signers",
+      providerSignerId: "signer-2",
+      status: SignatureStatus.PENDING,
+    };
+
+    const mockSignaturesRepo = {
+      find: jest
+        .fn()
+        .mockResolvedValueOnce([sig1, sig2])
+        .mockResolvedValueOnce([sig1, sig2]),
+      save: jest.fn().mockResolvedValue(true),
+    } as unknown as Repository<SignatureEntity>;
+
+    const mockManager = {
+      findOne: jest
+        .fn()
+        .mockResolvedValue({ idContracts: "c1", status: "generated" }),
+      save: jest.fn().mockResolvedValue(true),
+    };
+
+    const mockContractsRepo = {
+      manager: {
+        transaction: jest
+          .fn()
+          .mockImplementation(
+            async (cb: (m: typeof mockManager) => Promise<unknown>) =>
+              cb(mockManager),
+          ),
+      },
+    } as unknown as Repository<ContractsEntity>;
+
+    const svc = new ProcessSignatureWebhookService(
+      mockSignaturesRepo,
+      mockContractsRepo,
+      { execute: jest.fn() } as never,
+    );
+
+    await expect(
+      svc.execute({
+        requestId: "env-two-signers",
+        event: "signature.signed",
+      }),
+    ).resolves.toBeUndefined();
+
+    const saveMock = (mockSignaturesRepo as unknown as { save: jest.Mock })
+      .save;
+    expect(saveMock).toHaveBeenCalledTimes(1);
+
+    const savedRecords = saveMock.mock.calls[0][0] as SignatureEntity[];
+    expect(savedRecords).toHaveLength(1);
+    expect(savedRecords[0].idSignatures).toBe("s1");
+    expect(savedRecords[0].status).toBe(SignatureStatus.SIGNED);
   });
 });

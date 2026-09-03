@@ -42,12 +42,23 @@ describe("GetPaymentValidator", () => {
     expect(result.idPayments).toBe("payment-1");
   });
 
-  it("should throw when no payments found by budget", async () => {
+  it("should throw when idBudgets is empty", async () => {
     const repo = makeRepo(null, []);
 
     await expect(
-      GetPaymentValidator.validateAndGetByBudget(repo, "budget-1"),
-    ).rejects.toThrow(APP_ERRORS.payments.noneFound.message as string);
+      GetPaymentValidator.validateAndGetByBudget(repo, ""),
+    ).rejects.toThrow(APP_ERRORS.payments.idRequired.message as string);
+  });
+
+  it("should return an empty list when no payments exist for the budget", async () => {
+    const repo = makeRepo(null, []);
+
+    const result = await GetPaymentValidator.validateAndGetByBudget(
+      repo,
+      "budget-1",
+    );
+
+    expect(result).toEqual([]);
   });
 
   it("should return payments by lead", async () => {
