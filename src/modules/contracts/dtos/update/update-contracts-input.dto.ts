@@ -9,8 +9,11 @@ import {
   Length,
   Max,
   Min,
+  ValidateNested,
 } from "class-validator";
+import { Type } from "class-transformer";
 import { ContractStatus } from "../../enums/contract-status.enum";
+import { ContractPartyInputDto } from "../shared/contract-party-input.dto";
 
 @InputType()
 export class UpdateContractsInputDto {
@@ -60,4 +63,10 @@ export class UpdateContractsInputDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @Field(() => ContractPartyInputDto, { nullable: true })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ContractPartyInputDto)
+  contractor?: ContractPartyInputDto;
 }

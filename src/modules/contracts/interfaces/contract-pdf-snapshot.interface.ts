@@ -1,4 +1,5 @@
 import { ContractStatus } from "../enums/contract-status.enum";
+import { ContractPartySnapshot } from "./contract-party.interface";
 
 export interface ContractPdfSnapshot {
   schemaVersion: string;
@@ -43,4 +44,5 @@ export interface ContractPdfSnapshot {
     phone?: string;
     document?: string;
   };
+  contractor: ContractPartySnapshot;
 }

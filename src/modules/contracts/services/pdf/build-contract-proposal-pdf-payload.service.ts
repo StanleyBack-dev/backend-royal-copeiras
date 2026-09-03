@@ -2,6 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { ContractPdfPayload } from "../../../pdf-generator/templates/contracts/interfaces/contract-pdf-payload.interface";
 import { ContractPdfSnapshot } from "../../interfaces/contract-pdf-snapshot.interface";
 import {
+  buildContractPartyLines,
+  ContractPartySnapshot,
+} from "../../interfaces/contract-party.interface";
+import {
   formatCurrencyExtended,
   formatDateBR,
   formatLongDateBR,
@@ -141,7 +145,46 @@ function buildEventScheduleText(
   return `com a seguinte programação: ${lines.join("; ")}`;
 }
 
+const DEFAULT_CONTRACTOR_TRADE_NAME = "Royal Copeiras";
+const DEFAULT_CONTRACTOR_DOCUMENT = "64.062.038/0001-71";
+const DEFAULT_ISSUE_CITY = "Goiânia";
+
+// Human readable payment reference used in the payment clause of the contract
+// body (e.g. "CNPJ 64.062.038/0001-71" or "chave PIX contato@empresa.com").
+function buildContractorPaymentReference(
+  contractor: ContractPartySnapshot,
+): string {
+  const document = contractor.document?.trim();
+  const pixKey = contractor.pixKey?.trim();
+  const pixKeyType = contractor.pixKeyType?.trim().toLowerCase();
+
+  if (pixKey && pixKeyType === "cnpj") {
+    return `CNPJ ${pixKey}`;
+  }
+
+  if (pixKey && pixKeyType === "cpf") {
+    return `CPF ${pixKey}`;
+  }
+
+  if (pixKey) {
+    return `chave PIX ${pixKey}`;
+  }
+
+  if (document) {
+    return `CNPJ ${document}`;
+  }
+
+  return `CNPJ ${DEFAULT_CONTRACTOR_DOCUMENT}`;
+}
+
 function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
+  const contractor = snapshot.contractor ?? {};
+  const contractorTradeName =
+    contractor.tradeName?.trim() ||
+    contractor.legalName?.trim() ||
+    DEFAULT_CONTRACTOR_TRADE_NAME;
+  const contractorPaymentReference =
+    buildContractorPaymentReference(contractor);
   const eventDatesText = buildEventDatesText(snapshot.budget?.eventDates || []);
   const eventLocationText =
     snapshot.budget?.eventLocation?.trim() || "local a definir";
@@ -346,7 +389,7 @@ ${servicesBlock}
 CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 
 2.1. O valor dos serviços prestados é de ${totalAmountLabel}${displacementFee > 0 ? `, sendo ${displacementFeeLabel} referente à taxa de deslocamento` : ""}.
-2.2. O pagamento deverá ser realizado à vista, via pix (CNPJ 64.062.038/0001-71) ou dinheiro. Sendo ${advancePercentage}% do valor antes do evento para confirmação do mesmo e ${100 - advancePercentage}% após o evento.
+2.2. O pagamento deverá ser realizado à vista, via pix (${contractorPaymentReference}) ou dinheiro. Sendo ${advancePercentage}% do valor antes do evento para confirmação do mesmo e ${100 - advancePercentage}% após o evento.
 2.3. Caso a prestação dos serviços ultrapasse o horário previamente acordado, será necessário contratar horas adicionais, no valor de R$ 90,00 (noventa reais) por hora extra, por profissional.
 
 CLAUSULA 3a - DOS MATERIAIS DE LIMPEZA:
@@ -361,7 +404,7 @@ CLAUSULA 4a - RESPONSABILIDADES DO CONTRATANTE:
 
 CLAUSULA 5a - RESPONSABILIDADES DA CONTRATADA:
 
-5.1. A Royal Copeiras compromete-se a prestar os serviços contratados com equipe qualificada.${replacementClause}
+5.1. A ${contractorTradeName} compromete-se a prestar os serviços contratados com equipe qualificada.${replacementClause}
 
 CLAUSULA 6a - CANCELAMENTO E REEMBOLSO:
 
@@ -372,7 +415,7 @@ CLAUSULA 6a - CANCELAMENTO E REEMBOLSO:
 CLAUSULA 7a - ALTERAÇÕES CONTRATUAIS (ADENDOS E ADITIVOS):
 
 7.1. Este contrato poderá sofrer alterações mediante comum acordo entre as partes.
-7.2. As alterações devem ser solicitadas com antecedência mínima de 5 dias antes da data do evento e estarão sujeitas à aprovação da Royal Copeiras.
+7.2. As alterações devem ser solicitadas com antecedência mínima de 5 dias antes da data do evento e estarão sujeitas à aprovação da ${contractorTradeName}.
 7.3. Qualquer alteração de valores, condições ou quantidade de profissionais será formalizada e anexada ao presente contrato como adendo ou aditivo, conforme necessário.
 
 CLAUSULA 8a - VIGÊNCIA:
@@ -389,7 +432,7 @@ DISPOSIÇÕES FINAIS:
 Para quaisquer dúvidas ou maiores esclarecimentos, estamos à disposição.
 
 Atenciosamente,
-Equipe Royal Copeiras`;
+Equipe ${contractorTradeName}`;
 }
 
 @Injectable()
@@ -399,7 +442,18 @@ export class BuildContractProposalPdfPayloadService {
     snapshotHash: string,
   ): ContractPdfPayload {
     const now = new Date();
-    const contractorName = snapshot.lead?.name || "Contratante";
+    const contractantName = snapshot.lead?.name || "Contratante";
+    const contractor = snapshot.contractor ?? {};
+    const contractorTradeName =
+      contractor.tradeName?.trim() ||
+      contractor.legalName?.trim() ||
+      DEFAULT_CONTRACTOR_TRADE_NAME;
+    const contractorLegalName =
+      contractor.legalName?.trim() || contractorTradeName;
+    const issueCity =
+      contractor.issueCity?.trim() ||
+      contractor.addressCity?.trim() ||
+      DEFAULT_ISSUE_CITY;
     const issueDate =
       snapshot.contract.issueDate || formatContractDateOnly(now);
     const validUntil = snapshot.contract.validUntil
@@ -410,7 +464,7 @@ export class BuildContractProposalPdfPayloadService {
     const clauses: string[] = [];
 
     return {
-      companyName: "Royal Copeiras",
+      companyName: contractorTradeName,
       companySubtitle:
         "Serviços de copeiragem e apoio para eventos sofisticados",
       documentTitle: "Contrato de Prestação de Serviços",
@@ -425,22 +479,24 @@ export class BuildContractProposalPdfPayloadService {
       parties: [
         {
           role: "Contratante",
-          name: contractorName,
+          name: contractantName,
           document: snapshot.lead?.document,
           email: snapshot.lead?.email,
           phone: snapshot.lead?.phone,
         },
         {
           role: "Contratada",
-          name: "Royal Copeiras",
-          document: "64.062.038/0001-71",
-          email: "royalcopeiras@gmail.com",
+          name: contractorLegalName,
+          document: contractor.document,
+          email: contractor.email,
+          phone: contractor.phone,
+          lines: buildContractPartyLines(contractor),
         },
       ],
       objectParagraphs,
       clauses,
       footer: {
-        cityAndIssueDate: `Goiânia, ${formatLongDateBR(now)}`,
+        cityAndIssueDate: `${issueCity}, ${formatLongDateBR(now)}`,
         legalNotice:
           "Este contrato reflete o acordo entre as partes para a prestação dos serviços especificados, com validade jurídica após aceite e assinatura.",
       },

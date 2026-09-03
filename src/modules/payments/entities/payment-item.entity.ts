@@ -31,10 +31,13 @@ export class PaymentItemEntity implements IPaymentItem {
   @Column({ name: "idtb_payments", type: "uuid" })
   idPayments!: string;
 
+  // Shares the enum types declared for `tb_payments` (see the payments
+  // migrations). `enumName` keeps TypeORM from creating per-table enum types.
   @Column({
     name: "origin",
     type: "enum",
     enum: PaymentOrigin,
+    enumName: "tb_payments_origin_enum",
   })
   origin!: PaymentOrigin;
 
@@ -42,6 +45,7 @@ export class PaymentItemEntity implements IPaymentItem {
     name: "status",
     type: "enum",
     enum: PaymentStatus,
+    enumName: "tb_payments_status_enum",
     default: PaymentStatus.PENDING,
   })
   status!: PaymentStatus;

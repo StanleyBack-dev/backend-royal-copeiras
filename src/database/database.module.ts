@@ -16,7 +16,12 @@ import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConne
           username: configService.get("DB_USER"),
           password: configService.get("DB_PASS"),
           database: configService.get("DB_NAME"),
-          synchronize: configService.get("NODE_ENV") === "development",
+          // Schema is managed exclusively through migrations (see datasource.ts
+          // and `npm run migration:*`). `synchronize` stays off by default:
+          // it drops/recreates FKs, indexes and enum types on every boot and
+          // breaks against the shared payment enum types. Opt in locally with
+          // DB_SYNCHRONIZE=true only for throwaway databases.
+          synchronize: configService.get<boolean>("DB_SYNCHRONIZE") === true,
           logging: configService.get("TYPEORM_LOGGING") === true,
           ssl: configService.get("DB_SSL")
             ? { rejectUnauthorized: false }

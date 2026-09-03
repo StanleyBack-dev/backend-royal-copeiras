@@ -1,6 +1,8 @@
 import { Field, ObjectType, Int } from "@nestjs/graphql";
 import { ContractStatus } from "../../enums/contract-status.enum";
 import { IContract } from "../../interface/contract.interface";
+import { ContractPartySnapshot } from "../../interfaces/contract-party.interface";
+import { ContractPartyObjectType } from "../shared/contract-party-object.dto";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
@@ -35,6 +37,9 @@ export class UpdateContractsResponseDto implements IContract {
     dto.sentVia = entity.sentVia;
     dto.sentAt = entity.sentAt ? formatLocalDateTime(entity.sentAt) : undefined;
     dto.notes = entity.notes;
+    dto.contractor = ContractPartyObjectType.fromSnapshot(
+      entity.contractSnapshot?.contractor as ContractPartySnapshot | undefined,
+    );
     dto.createdAt =
       formatLocalDateTime(entity.createdAt) || String(entity.createdAt);
     dto.updatedAt =
@@ -122,6 +127,9 @@ export class UpdateContractsResponseDto implements IContract {
 
   @Field({ nullable: true })
   notes?: string;
+
+  @Field(() => ContractPartyObjectType, { nullable: true })
+  contractor?: ContractPartyObjectType;
 
   @Field()
   createdAt!: string;

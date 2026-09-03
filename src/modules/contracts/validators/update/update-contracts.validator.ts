@@ -4,9 +4,34 @@ import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { ContractsEntity } from "../../entities/contracts.entity";
 import { ContractStatus } from "../../enums/contract-status.enum";
 import { UpdateContractsInputDto } from "../../dtos/update/update-contracts-input.dto";
+import {
+  ContractPartySnapshot,
+  sanitizeContractParty,
+} from "../../interfaces/contract-party.interface";
 import { parseContractDateOnly } from "../../utils/contract-date.util";
 import { BudgetsEntity } from "../../../budgets/entities/budgets.entity";
 import { BudgetStatus } from "../../../budgets/enums/budget-status.enum";
+
+/**
+ * Statuses in which the contract content (dates, body, template, notes and the
+ * CONTRATADA snapshot) may still be edited. Mirrors the frontend rule
+ * (`isNonDraftLocked`): once the contract leaves the draft it is frozen and the
+ * only writes allowed are status transitions and send tracking.
+ */
+const CONTRACT_CONTENT_EDITABLE_STATUSES: ContractStatus[] = [
+  ContractStatus.DRAFT,
+];
+
+/**
+ * Statuses in which send tracking (`sentVia`/`sentAt`) may be recorded. Matches
+ * the frontend, which only exposes the "send" actions on draft, generated and
+ * pending-signature contracts.
+ */
+const CONTRACT_SEND_TRACKING_STATUSES: ContractStatus[] = [
+  ContractStatus.DRAFT,
+  ContractStatus.GENERATED,
+  ContractStatus.PENDING_SIGNATURE,
+];
 
 const CONTRACT_ALLOWED_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
   [ContractStatus.DRAFT]: [
@@ -79,25 +104,33 @@ export class UpdateContractsValidator {
       }
     }
 
-    const hasNonStatusUpdates = [
+    const hasContentUpdates = [
       input.effectiveDate,
       input.expiresAt,
       input.body,
       input.templateVersion,
       input.notes,
-      input.sentVia,
-      input.sentAt,
+      input.contractor,
     ].some((value) => value !== undefined);
 
     if (
-      hasNonStatusUpdates &&
-      [
-        ContractStatus.SIGNED,
-        ContractStatus.CLOSED_WITHOUT_SIGNATURE,
-        ContractStatus.CANCELED,
-      ].includes(record.status)
+      hasContentUpdates &&
+      !CONTRACT_CONTENT_EDITABLE_STATUSES.includes(record.status)
     ) {
       throw AppException.from(APP_ERRORS.contracts.editForbidden, undefined);
+    }
+
+    const hasSendTrackingUpdates =
+      input.sentVia !== undefined || input.sentAt !== undefined;
+
+    if (
+      hasSendTrackingUpdates &&
+      !CONTRACT_SEND_TRACKING_STATUSES.includes(record.status)
+    ) {
+      throw AppException.from(
+        APP_ERRORS.contracts.sendTrackingForbidden,
+        undefined,
+      );
     }
 
     if (
@@ -158,6 +191,31 @@ export class UpdateContractsValidator {
     record.sentAt = input.sentAt ? new Date(input.sentAt) : record.sentAt;
     record.notes = input.notes ?? record.notes;
 
+    if (input.contractor !== undefined) {
+      record.contractSnapshot = this.applyContractorOverride(
+        record.contractSnapshot,
+        input.contractor,
+      );
+    }
+
     return contractsRepo.save(record);
+  }
+
+  private static applyContractorOverride(
+    snapshot: Record<string, unknown> | null | undefined,
+    override: Partial<Record<keyof ContractPartySnapshot, unknown>>,
+  ): Record<string, unknown> {
+    const currentSnapshot = snapshot ?? {};
+    const currentContractor = sanitizeContractParty(
+      currentSnapshot.contractor as ContractPartySnapshot | undefined,
+    );
+
+    return {
+      ...currentSnapshot,
+      contractor: {
+        ...currentContractor,
+        ...sanitizeContractParty(override),
+      },
+    };
   }
 }

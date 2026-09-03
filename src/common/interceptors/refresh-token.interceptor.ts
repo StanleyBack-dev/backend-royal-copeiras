@@ -5,6 +5,7 @@ import {
   NestInterceptor,
 } from "@nestjs/common";
 import { Observable, tap } from "rxjs";
+import { isDeployedEnv } from "../../config/environment.util";
 
 @Injectable()
 export class RefreshTokenInterceptor implements NestInterceptor {
@@ -19,7 +20,7 @@ export class RefreshTokenInterceptor implements NestInterceptor {
         if (d?.refreshToken && res) {
           res.cookie("refreshToken", d.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: isDeployedEnv(),
             sameSite: "lax",
             maxAge: 30 * 24 * 60 * 60 * 1000,
           });

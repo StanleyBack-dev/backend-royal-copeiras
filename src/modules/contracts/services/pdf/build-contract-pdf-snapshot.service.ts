@@ -3,6 +3,11 @@ import { BudgetsEntity } from "../../../budgets/entities/budgets.entity";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
 import { ContractsEntity } from "../../entities/contracts.entity";
 import { ContractPdfSnapshot } from "../../interfaces/contract-pdf-snapshot.interface";
+import {
+  ContractPartySnapshot,
+  sanitizeContractParty,
+} from "../../interfaces/contract-party.interface";
+import { COMPANY_PROFILE_DEFAULTS } from "../../../company-profile/constants/company-profile-defaults.constant";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
 type BudgetItemLike = {
@@ -21,6 +26,7 @@ export class BuildContractPdfSnapshotService {
     const leadRelation = entity.lead;
     const budgetSnapshot = this.extractBudgetSnapshot(contractSnapshot);
     const leadSnapshot = this.extractLeadSnapshot(contractSnapshot);
+    const contractorSnapshot = this.extractContractorSnapshot(contractSnapshot);
 
     return {
       schemaVersion: "1.0.0",
@@ -139,6 +145,22 @@ export class BuildContractPdfSnapshotService {
           leadSnapshot.document,
         ),
       },
+      contractor: contractorSnapshot,
+    };
+  }
+
+  private extractContractorSnapshot(
+    source: Record<string, unknown>,
+  ): ContractPartySnapshot {
+    const stored = sanitizeContractParty(
+      source.contractor as ContractPartySnapshot | undefined,
+    );
+
+    // Legacy contracts (without a contractor in the snapshot) fall back to the
+    // company default values so the generated PDF stays consistent.
+    return {
+      ...COMPANY_PROFILE_DEFAULTS,
+      ...stored,
     };
   }
 

@@ -367,10 +367,14 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     for (let index = 0; index < parties.length; index += 2) {
       const rowParties = parties.slice(index, index + 2);
       const cardData = rowParties.map((party) => {
-        const details = [
-          party.name,
-          party.document ? `Documento: ${party.document}` : undefined,
-        ].filter((value): value is string => Boolean(value));
+        const details = (
+          party.lines && party.lines.length
+            ? party.lines
+            : [
+                party.name,
+                party.document ? `Documento: ${party.document}` : undefined,
+              ]
+        ).filter((value): value is string => Boolean(value));
 
         const lines = details.flatMap((detail) =>
           wrapText(detail, cardWidth - 16, fonts.regular, PARTY_TEXT_SIZE),

@@ -194,6 +194,16 @@ export const RESPONSE_MESSAGES = {
       message: "Perfil atualizado com sucesso.",
     },
   },
+  companyProfile: {
+    fetched: {
+      code: "COMPANY_PROFILE_FETCHED",
+      message: "Perfil da empresa carregado com sucesso.",
+    },
+    updated: {
+      code: "COMPANY_PROFILE_UPDATED",
+      message: "Perfil da empresa atualizado com sucesso.",
+    },
+  },
   payments: {
     created: {
       code: "PAYMENT_CREATED",
