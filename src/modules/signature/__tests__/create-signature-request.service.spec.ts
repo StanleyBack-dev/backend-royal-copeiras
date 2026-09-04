@@ -157,8 +157,6 @@ describe("CreateSignatureRequestService (idempotency)", () => {
     expect(signatureProvider.createRequest).not.toHaveBeenCalled();
     expect(repo.save).not.toHaveBeenCalled();
     expect(result.requestId).toBe("env-existing");
-    expect(result.signatureUrl).toBe(
-      "https://assinafy/sign/existing/client",
-    );
+    expect(result.signatureUrl).toBe("https://assinafy/sign/existing/client");
   });
 });
