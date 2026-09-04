@@ -173,6 +173,20 @@ describe("UpdateContractsValidator", () => {
     );
   });
 
+  it("allows reverting a pending-signature contract back to draft", async () => {
+    const { repo } = makeRepo(
+      makeContract({ status: ContractStatus.PENDING_SIGNATURE }),
+    );
+
+    const result = await UpdateContractsValidator.validateAndUpdate(
+      userId,
+      makeInput({ status: ContractStatus.DRAFT }),
+      repo,
+    );
+
+    expect(result.status).toBe(ContractStatus.DRAFT);
+  });
+
   it("cancels a pending-signature contract and cascades to the budget", async () => {
     const contract = makeContract({
       status: ContractStatus.PENDING_SIGNATURE,
