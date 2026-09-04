@@ -56,6 +56,7 @@ const CONTRACT_ALLOWED_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
     ContractStatus.CANCELED,
     ContractStatus.EXPIRED,
     ContractStatus.GENERATED,
+    ContractStatus.DRAFT,
   ],
   [ContractStatus.SIGNED]: [ContractStatus.CANCELED],
   [ContractStatus.CLOSED_WITHOUT_SIGNATURE]: [ContractStatus.CANCELED],
