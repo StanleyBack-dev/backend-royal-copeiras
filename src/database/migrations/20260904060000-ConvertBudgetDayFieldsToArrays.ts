@@ -7,9 +7,7 @@ import { MigrationInterface, QueryRunner } from "typeorm";
  * arrays, keeping the same column/field names. Existing scalar values are
  * replicated across every existing event day on upgrade.
  */
-export class ConvertBudgetDayFieldsToArrays20260904060000
-  implements MigrationInterface
-{
+export class ConvertBudgetDayFieldsToArrays20260904060000 implements MigrationInterface {
   name = "ConvertBudgetDayFieldsToArrays20260904060000";
 
   private static readonly fields: Array<{

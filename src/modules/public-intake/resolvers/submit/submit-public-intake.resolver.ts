@@ -16,11 +16,12 @@ export class SubmitPublicIntakeResolver {
   @Mutation(() => SubmitPublicIntakeMutationResponseDto, {
     name: "submitPublicIntake",
   })
-  async submitPublicIntake(
-    @Args("input") input: SubmitPublicIntakeInputDto,
-  ) {
+  async submitPublicIntake(@Args("input") input: SubmitPublicIntakeInputDto) {
     const submitted = await this.submitPublicIntakeService.execute(input);
 
-    return buildDataResponse(submitted, RESPONSE_MESSAGES.publicIntake.submitted);
+    return buildDataResponse(
+      submitted,
+      RESPONSE_MESSAGES.publicIntake.submitted,
+    );
   }
 }
