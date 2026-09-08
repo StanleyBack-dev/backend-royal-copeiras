@@ -7,6 +7,7 @@ export interface BudgetPdfSnapshotItem {
   totalPrice: number;
   notes?: string;
   sortOrder: number;
+  eventDateIndex: number;
 }
 
 export interface BudgetPdfSnapshot {
@@ -23,16 +24,16 @@ export interface BudgetPdfSnapshot {
     eventDates: string[];
     eventArrivalTimes: string[];
     eventDepartureTimes: string[];
-    eventLocation?: string;
-    guestCount?: number;
-    durationHours?: number;
+    eventLocation: string[];
+    guestCount: number[];
+    durationHours: number[];
     paymentMethod?: string;
     advancePercentage?: number;
-    discountType?: "percentage" | "amount" | null;
-    discountPercentage?: number | null;
-    discountAmount?: number | null;
+    discountType: string[];
+    discountPercentage: number[];
+    discountAmount: number[];
     notes?: string;
-    displacementFee: number;
+    displacementFee: number[];
     subtotal: number;
     totalAmount: number;
   };

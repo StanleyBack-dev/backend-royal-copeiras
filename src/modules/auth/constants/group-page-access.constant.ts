@@ -13,6 +13,7 @@ export const GROUP_DEFAULT_PAGE_ACCESS: Record<UserGroup, PageAccessKey[]> = {
     PageAccessKey.POSITIONS,
     PageAccessKey.EVENTS,
     PageAccessKey.PAYMENTS,
+    PageAccessKey.PUBLIC_INTAKE,
   ],
   [UserGroup.ADMIN_MASTER]: [
     PageAccessKey.DASHBOARD,
@@ -25,5 +26,6 @@ export const GROUP_DEFAULT_PAGE_ACCESS: Record<UserGroup, PageAccessKey[]> = {
     PageAccessKey.USERS,
     PageAccessKey.EVENTS,
     PageAccessKey.PAYMENTS,
+    PageAccessKey.PUBLIC_INTAKE,
   ],
 };

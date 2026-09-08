@@ -19,35 +19,82 @@ const DISPLACEMENT_FEE_DESCRIPTION =
 const DISCOUNT_DESCRIPTION =
   "Desconto aplicado sobre o valor total da proposta.";
 
-function resolveDiscountSummary(budget: BudgetPdfSnapshot["budget"]) {
-  if (budget.discountType === "percentage") {
-    const percentage = Number(budget.discountPercentage ?? 0);
-    if (!Number.isFinite(percentage) || percentage <= 0) {
-      return { label: undefined, amount: 0 };
-    }
+function sumArray(values: number[]): number {
+  return Number(values.reduce((sum, value) => sum + value, 0).toFixed(2));
+}
 
-    const baseTotal =
-      Number(budget.subtotal ?? 0) + Number(budget.displacementFee ?? 0);
-    const amount = Number((baseTotal * (percentage / 100)).toFixed(2));
-    return {
-      label: `Desconto (${percentage}%)`,
-      amount,
-    };
+function computeDayDiscountAmount(
+  daySubtotal: number,
+  dayFee: number,
+  type: string,
+  percentage: number,
+  amount: number,
+): number {
+  const baseTotal = Number((daySubtotal + dayFee).toFixed(2));
+
+  if (type === "percentage") {
+    const calculated = baseTotal * (percentage / 100);
+    return Number(Math.min(Math.max(calculated, 0), baseTotal).toFixed(2));
   }
 
-  if (budget.discountType === "amount") {
-    const amount = Number(budget.discountAmount ?? 0);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return { label: undefined, amount: 0 };
-    }
-
-    return {
-      label: "Desconto (Valor Fixo)",
-      amount: Number(amount.toFixed(2)),
-    };
+  if (type === "amount") {
+    return Number(Math.min(Math.max(amount, 0), baseTotal).toFixed(2));
   }
 
-  return { label: undefined, amount: 0 };
+  return 0;
+}
+
+function resolveDiscountSummary(snapshot: BudgetPdfSnapshot) {
+  const budget = snapshot.budget;
+  const eventDayCount = budget.eventDates.length || 1;
+  const displacementFeePerDay = budget.displacementFee ?? [];
+  const discountTypePerDay = budget.discountType ?? [];
+  const discountPercentagePerDay = budget.discountPercentage ?? [];
+  const discountAmountPerDay = budget.discountAmount ?? [];
+
+  const daySubtotals = Array.from({ length: eventDayCount }, (_, day) =>
+    Number(
+      snapshot.items
+        .filter((item) => (item.eventDateIndex ?? 0) === day)
+        .reduce((sum, item) => sum + item.totalPrice, 0)
+        .toFixed(2),
+    ),
+  );
+
+  let amount = 0;
+  for (let day = 0; day < eventDayCount; day += 1) {
+    amount += computeDayDiscountAmount(
+      daySubtotals[day] ?? 0,
+      displacementFeePerDay[day] ?? 0,
+      discountTypePerDay[day] ?? "",
+      discountPercentagePerDay[day] ?? 0,
+      discountAmountPerDay[day] ?? 0,
+    );
+  }
+  amount = Number(amount.toFixed(2));
+
+  if (amount <= 0) {
+    return { label: undefined, amount: 0 };
+  }
+
+  const types = new Set(discountTypePerDay.filter(Boolean));
+  const isUniformType = types.size === 1;
+  const uniformType = isUniformType ? [...types][0] : undefined;
+
+  if (uniformType === "percentage") {
+    const percentages = new Set(
+      discountPercentagePerDay.filter((value) => value > 0),
+    );
+    if (percentages.size === 1) {
+      return { label: `Desconto (${[...percentages][0]}%)`, amount };
+    }
+  }
+
+  if (uniformType === "amount") {
+    return { label: "Desconto (Valor Fixo)", amount };
+  }
+
+  return { label: "Desconto", amount };
 }
 
 function parseTimeToMinutes(time?: string): number | undefined {
@@ -111,9 +158,9 @@ export class BuildBudgetProposalPdfPayloadService {
     snapshotHash: string,
   ): BudgetProposalPdfPayload {
     const today = new Date();
-    const displacementFee = snapshot.budget.displacementFee ?? 0;
+    const displacementFee = sumArray(snapshot.budget.displacementFee ?? []);
     const hasDisplacementFee = displacementFee > 0;
-    const discount = resolveDiscountSummary(snapshot.budget);
+    const discount = resolveDiscountSummary(snapshot);
     const eventDates = snapshot.budget.eventDates.length
       ? snapshot.budget.eventDates
           .map((value) => formatDateBR(value))
@@ -157,21 +204,29 @@ export class BuildBudgetProposalPdfPayloadService {
         { label: "Datas do evento", value: eventDates },
         {
           label: "Local",
-          value: snapshot.budget.eventLocation || "A definir",
+          value: this.buildPerDayLabel(
+            snapshot.budget.eventDates,
+            snapshot.budget.eventLocation,
+            (value) => value || "A definir",
+          ),
         },
         { label: "Horário de chegada", value: eventArrivalTimes },
         { label: "Horário de partida", value: eventDepartureTimes },
         {
           label: "Convidados",
-          value: snapshot.budget.guestCount
-            ? String(snapshot.budget.guestCount)
-            : "Nao informado",
+          value: this.buildPerDayLabel(
+            snapshot.budget.eventDates,
+            snapshot.budget.guestCount,
+            (value) => (value ? String(value) : "Nao informado"),
+          ),
         },
         {
           label: "Duração",
-          value: snapshot.budget.durationHours
-            ? `${snapshot.budget.durationHours} horas`
-            : "Não informada",
+          value: this.buildPerDayLabel(
+            snapshot.budget.eventDates,
+            snapshot.budget.durationHours,
+            (value) => (value ? `${value} horas` : "Não informada"),
+          ),
         },
         {
           label: "Entrada",
@@ -184,7 +239,11 @@ export class BuildBudgetProposalPdfPayloadService {
           ? [
               {
                 label: "Taxa de deslocamento",
-                value: formatCurrencyBRL(displacementFee),
+                value: this.buildPerDayLabel(
+                  snapshot.budget.eventDates,
+                  snapshot.budget.displacementFee ?? [],
+                  (value) => formatCurrencyBRL(value),
+                ),
               },
             ]
           : []),
@@ -281,6 +340,24 @@ export class BuildBudgetProposalPdfPayloadService {
         }
 
         return `${formatDateBR(date)}: ${time}`;
+      })
+      .join(" | ");
+  }
+
+  private buildPerDayLabel<T>(
+    dates: string[],
+    values: T[],
+    format: (value: T) => string,
+  ): string {
+    if (!values.length) {
+      return "A definir";
+    }
+
+    return values
+      .map((value, index) => {
+        const date = dates[index];
+        const formatted = format(value);
+        return date ? `${formatDateBR(date)}: ${formatted}` : formatted;
       })
       .join(" | ");
   }

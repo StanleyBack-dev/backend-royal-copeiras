@@ -23,13 +23,27 @@ export class GetEventsResponseDto implements IEvent {
     dto.customerName = entity.customer?.name;
     dto.leadName = entity.lead?.name;
     dto.eventDates = entity.budget?.eventDates ?? [];
-    dto.eventLocation = entity.budget?.eventLocation;
-    dto.displacementFee = Number(entity.budget?.displacementFee ?? 0);
+    const eventLocations = Array.from(
+      new Set((entity.budget?.eventLocation ?? []).filter(Boolean)),
+    );
+    dto.eventLocation = eventLocations.length
+      ? eventLocations.join(" / ")
+      : undefined;
+    dto.eventArrivalTimes = entity.budget?.eventArrivalTimes ?? [];
+    dto.eventDepartureTimes = entity.budget?.eventDepartureTimes ?? [];
+    dto.eventLocationPerDay = entity.budget?.eventLocation ?? [];
+    dto.guestCountPerDay = entity.budget?.guestCount ?? [];
+    dto.durationHoursPerDay = entity.budget?.durationHours ?? [];
+    const displacementFeeTotal = (entity.budget?.displacementFee ?? []).reduce(
+      (sum, value) => sum + Number(value ?? 0),
+      0,
+    );
+    dto.displacementFee = Number(displacementFeeTotal.toFixed(2));
     dto.discountTotal = Number(
       Math.max(
         0,
         Number(entity.budget?.subtotal ?? 0) +
-          Number(entity.budget?.displacementFee ?? 0) -
+          displacementFeeTotal -
           Number(entity.budget?.totalAmount ?? 0),
       ).toFixed(2),
     );
@@ -112,6 +126,21 @@ export class GetEventsResponseDto implements IEvent {
 
   @Field({ nullable: true })
   eventLocation?: string;
+
+  @Field(() => [String])
+  eventArrivalTimes!: string[];
+
+  @Field(() => [String])
+  eventDepartureTimes!: string[];
+
+  @Field(() => [String])
+  eventLocationPerDay!: string[];
+
+  @Field(() => [Int])
+  guestCountPerDay!: number[];
+
+  @Field(() => [Int])
+  durationHoursPerDay!: number[];
 
   @Field(() => Float)
   displacementFee!: number;

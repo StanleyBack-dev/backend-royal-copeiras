@@ -12,6 +12,7 @@ import { mailsErrors } from "./catalogs/mails-errors.catalog";
 import { pdfErrors } from "./catalogs/pdf-errors.catalog";
 import { positionsErrors } from "./catalogs/positions-errors.catalog";
 import { profilesErrors } from "./catalogs/profiles-errors.catalog";
+import { publicIntakeErrors } from "./catalogs/public-intake-errors.catalog";
 import { signaturesErrors } from "./catalogs/signatures-errors.catalog";
 import { usersErrors } from "./catalogs/users-errors.catalog";
 import { validationErrors } from "./catalogs/validation-errors.catalog";
@@ -26,6 +27,7 @@ export const APP_ERRORS = {
   budgets: budgetsErrors,
   contracts: contractsErrors,
   companyProfile: companyProfileErrors,
+  publicIntake: publicIntakeErrors,
   customers: customersErrors,
   employees: employeesErrors,
   events: eventsErrors,

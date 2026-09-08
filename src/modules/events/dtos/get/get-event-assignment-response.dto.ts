@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { EventAssignmentEntity } from "../../entities/event-assignment.entity";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
@@ -16,6 +16,7 @@ export class GetEventAssignmentResponseDto {
     dto.isActive = entity.isActive;
     dto.budgetItemDescription = entity.budgetItem?.description;
     dto.budgetItemQuantity = entity.budgetItem?.quantity;
+    dto.eventDateIndex = entity.budgetItem?.eventDateIndex ?? 0;
     dto.employeeName = entity.employee?.name;
     dto.createdAt =
       formatLocalDateTime(entity.createdAt) || String(entity.createdAt);
@@ -47,6 +48,9 @@ export class GetEventAssignmentResponseDto {
 
   @Field({ nullable: true })
   budgetItemQuantity?: number;
+
+  @Field(() => Int)
+  eventDateIndex!: number;
 
   @Field({ nullable: true })
   employeeName?: string;

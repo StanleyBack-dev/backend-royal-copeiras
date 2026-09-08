@@ -16,6 +16,7 @@ type BudgetItemLike = {
   description?: string;
   position?: { idPositions?: string } | null;
   serviceGender?: string | null;
+  eventDateIndex?: number;
 };
 
 @Injectable()
@@ -77,17 +78,15 @@ export class BuildContractPdfSnapshotService {
             | string[]
             | undefined,
         ),
-        eventLocation: this.getStringValue(
+        eventLocation: this.getStringArrayValue(
           budgetRelation?.eventLocation,
           budgetSnapshot.eventLocation,
         ),
-        guestCount: this.getNumberValue(
+        guestCount: this.getNumberArrayValue(
           budgetRelation?.guestCount,
-          (budgetSnapshot as Record<string, unknown>).guestCount as
-            | number
-            | undefined,
+          budgetSnapshot.guestCount,
         ),
-        durationHours: this.getNumberValue(
+        durationHours: this.getNumberArrayValue(
           budgetRelation?.durationHours,
           budgetSnapshot.durationHours,
         ),
@@ -99,10 +98,10 @@ export class BuildContractPdfSnapshotService {
           budgetRelation?.advancePercentage,
           budgetSnapshot.advancePercentage,
         ),
-        displacementFee: this.getNumberValue(
+        displacementFee: this.getNumberArrayValue(
           budgetRelation?.displacementFee,
           (budgetSnapshot as Record<string, unknown>).displacementFee as
-            | number
+            | number[]
             | undefined,
         ),
         totalAmount: this.getNumberValue(
@@ -119,6 +118,7 @@ export class BuildContractPdfSnapshotService {
                   ? it.quantity
                   : Number(it.quantity) || 0,
               description: it.description ?? "",
+              eventDateIndex: it.eventDateIndex ?? 0,
             }))
           : Array.isArray((budgetSnapshot as Record<string, unknown>).items)
             ? (
@@ -133,6 +133,7 @@ export class BuildContractPdfSnapshotService {
                     ? it.quantity
                     : Number(it.quantity) || 0,
                 description: it.description ?? "",
+                eventDateIndex: it.eventDateIndex ?? 0,
               }))
             : [],
       },
@@ -143,6 +144,26 @@ export class BuildContractPdfSnapshotService {
         document: this.getStringValue(
           leadRelation?.document,
           leadSnapshot.document,
+        ),
+        legalName: this.getStringValue(
+          leadRelation?.legalName,
+          leadSnapshot.legalName,
+        ),
+        address: this.getStringValue(
+          leadRelation?.address,
+          leadSnapshot.address,
+        ),
+        addressCity: this.getStringValue(
+          leadRelation?.addressCity,
+          leadSnapshot.addressCity,
+        ),
+        addressState: this.getStringValue(
+          leadRelation?.addressState,
+          leadSnapshot.addressState,
+        ),
+        addressZipCode: this.getStringValue(
+          leadRelation?.addressZipCode,
+          leadSnapshot.addressZipCode,
         ),
       },
       contractor: contractorSnapshot,
@@ -231,6 +252,21 @@ export class BuildContractPdfSnapshotService {
     priority?: string[] | null,
     fallback?: string[] | null,
   ): string[] {
+    if (Array.isArray(priority)) {
+      return priority;
+    }
+
+    if (Array.isArray(fallback)) {
+      return fallback;
+    }
+
+    return [];
+  }
+
+  private getNumberArrayValue(
+    priority?: number[] | null,
+    fallback?: number[] | null,
+  ): number[] {
     if (Array.isArray(priority)) {
       return priority;
     }

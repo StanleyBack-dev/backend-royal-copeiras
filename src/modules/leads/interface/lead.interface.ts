@@ -7,6 +7,11 @@ export interface ILead {
   email?: string;
   phone?: string;
   document?: string;
+  legalName?: string;
+  address?: string;
+  addressCity?: string;
+  addressState?: string;
+  addressZipCode?: string;
   source?: LeadSource;
   notes?: string;
   status: LeadStatus;

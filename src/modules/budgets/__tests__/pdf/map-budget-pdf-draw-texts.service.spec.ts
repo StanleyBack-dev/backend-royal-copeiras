@@ -12,7 +12,7 @@ describe("RenderBudgetProposalTemplateService", () => {
 
     const snapshot = snapshotBuilder.buildFromEntity({
       ...budgetMock,
-      displacementFee: 250,
+      displacementFee: [250],
     });
     const payload = payloadBuilder.build(
       snapshot,

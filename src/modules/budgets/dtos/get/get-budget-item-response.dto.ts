@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { IBudgetItem } from "../../interface/budget-item.interface";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
@@ -17,6 +17,7 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
     dto.totalPrice = entity.totalPrice;
     dto.notes = entity.notes;
     dto.sortOrder = entity.sortOrder;
+    dto.eventDateIndex = entity.eventDateIndex ?? 0;
     dto.serviceGender = entity.serviceGender || null;
     dto.createdAt =
       entity.createdAt instanceof Date
@@ -55,6 +56,9 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
 
   @Field()
   sortOrder!: number;
+
+  @Field(() => Int)
+  eventDateIndex!: number;
 
   @Field(() => String, { nullable: true })
   serviceGender?: string | null;

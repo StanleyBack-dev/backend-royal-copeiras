@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { BudgetItemsEntity } from "../../../budgets/entities/budget-items.entity";
 
 @ObjectType()
@@ -11,6 +11,7 @@ export class GetEventServiceLineResponseDto {
     dto.unitPrice = Number(entity.unitPrice ?? 0);
     dto.totalPrice = Number(entity.totalPrice ?? 0);
     dto.sortOrder = entity.sortOrder;
+    dto.eventDateIndex = entity.eventDateIndex ?? 0;
     return dto;
   }
 
@@ -31,4 +32,7 @@ export class GetEventServiceLineResponseDto {
 
   @Field()
   sortOrder!: number;
+
+  @Field(() => Int)
+  eventDateIndex!: number;
 }

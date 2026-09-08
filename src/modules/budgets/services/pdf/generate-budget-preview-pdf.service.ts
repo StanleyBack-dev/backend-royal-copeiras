@@ -133,6 +133,7 @@ export class GenerateBudgetPreviewPdfService {
         totalPrice,
         notes: item.notes,
         sortOrder: item.sortOrder ?? index,
+        eventDateIndex: item.eventDateIndex ?? 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -160,7 +161,12 @@ export class GenerateBudgetPreviewPdfService {
       durationHours: draft.durationHours,
       paymentMethod: draft.paymentMethod,
       advancePercentage: draft.advancePercentage,
-      displacementFee: Number((draft.displacementFee ?? 0).toFixed(2)),
+      discountType: draft.discountType ?? [],
+      discountPercentage: draft.discountPercentage ?? [],
+      discountAmount: draft.discountAmount ?? [],
+      displacementFee: (draft.displacementFee ?? []).map((value) =>
+        Number(value.toFixed(2)),
+      ),
       notes: undefined,
       subtotal,
       totalAmount: Number((draft.totalAmount ?? subtotal).toFixed(2)),

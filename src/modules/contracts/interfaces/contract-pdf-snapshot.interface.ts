@@ -25,17 +25,18 @@ export interface ContractPdfSnapshot {
     eventDates: string[];
     eventArrivalTimes: string[];
     eventDepartureTimes: string[];
-    eventLocation?: string;
-    guestCount?: number;
-    durationHours?: number;
+    eventLocation?: string[];
+    guestCount?: number[];
+    durationHours?: number[];
     paymentMethod?: string;
     advancePercentage?: number;
-    displacementFee?: number;
+    displacementFee?: number[];
     totalAmount?: number;
     items?: Array<{
       serviceType?: string;
       quantity?: number;
       description?: string;
+      eventDateIndex?: number;
     }>;
   };
   lead?: {
@@ -43,6 +44,11 @@ export interface ContractPdfSnapshot {
     email?: string;
     phone?: string;
     document?: string;
+    legalName?: string;
+    address?: string;
+    addressCity?: string;
+    addressState?: string;
+    addressZipCode?: string;
   };
   contractor: ContractPartySnapshot;
 }

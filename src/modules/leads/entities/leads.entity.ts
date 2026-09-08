@@ -36,6 +36,36 @@ export class LeadsEntity implements ILead {
   @Column({ name: "document", type: "varchar", length: 20, nullable: true })
   document?: string;
 
+  @Column({ name: "legal_name", type: "varchar", length: 160, nullable: true })
+  legalName?: string;
+
+  @Column({ name: "address", type: "varchar", length: 255, nullable: true })
+  address?: string;
+
+  @Column({
+    name: "address_city",
+    type: "varchar",
+    length: 80,
+    nullable: true,
+  })
+  addressCity?: string;
+
+  @Column({
+    name: "address_state",
+    type: "varchar",
+    length: 2,
+    nullable: true,
+  })
+  addressState?: string;
+
+  @Column({
+    name: "address_zip_code",
+    type: "varchar",
+    length: 9,
+    nullable: true,
+  })
+  addressZipCode?: string;
+
   @Column({ name: "source", type: "varchar", length: 60, nullable: true })
   source?: LeadSource;
 

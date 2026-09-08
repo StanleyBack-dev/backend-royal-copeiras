@@ -15,9 +15,9 @@ describe("CreateBudgetsInputDto", () => {
     input.eventDates = ["2026-04-19"];
     input.eventArrivalTimes = ["08:00"];
     input.eventDepartureTimes = ["14:00"];
-    input.eventLocation = "Polo Empresarial";
-    input.guestCount = 150;
-    input.durationHours = 6;
+    input.eventLocation = ["Polo Empresarial"];
+    input.guestCount = [150];
+    input.durationHours = [6];
     input.paymentMethod = "PIX";
     input.advancePercentage = 30;
     input.items = [
@@ -27,6 +27,7 @@ describe("CreateBudgetsInputDto", () => {
         quantity: 2,
         unitPrice: 500,
         sortOrder: 0,
+        eventDateIndex: 0,
       },
     ];
 

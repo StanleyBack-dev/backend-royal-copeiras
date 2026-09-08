@@ -7,6 +7,7 @@ interface BudgetProposalItem {
   unitPrice: number;
   totalPrice: number;
   notes?: string;
+  eventDateIndex?: number;
 }
 
 interface BudgetProposalTemplateInput {
@@ -14,15 +15,15 @@ interface BudgetProposalTemplateInput {
   budgetNumber: string;
   issueDate: string;
   validUntil: string;
-  eventLocation?: string;
+  eventLocation?: string[];
   eventDates?: string[];
-  guestCount?: number;
-  durationHours?: number;
+  guestCount?: number[];
+  durationHours?: number[];
   advancePercentage?: number;
-  discountType?: "percentage" | "amount" | null;
-  discountPercentage?: number | null;
-  discountAmount?: number | null;
-  displacementFee?: number;
+  discountType?: string[];
+  discountPercentage?: number[];
+  discountAmount?: number[];
+  displacementFee?: number[];
   subtotal: number;
   totalAmount: number;
   items: BudgetProposalItem[];
@@ -73,39 +74,99 @@ function formatDate(iso: string): string {
   return `${day}/${month}/${year}`;
 }
 
+function formatPerDay<T>(
+  dates: string[] | undefined,
+  values: T[],
+  format: (value: T) => string,
+): string {
+  return values
+    .map((value, index) => {
+      const date = dates?.[index];
+      const formatted = format(value);
+      return date ? `${formatDate(date)}: ${formatted}` : formatted;
+    })
+    .join(" | ");
+}
+
+function sumArray(values?: number[]): number {
+  return Number(
+    (values ?? []).reduce((sum, value) => sum + value, 0).toFixed(2),
+  );
+}
+
+function computeDayDiscountAmount(
+  daySubtotal: number,
+  dayFee: number,
+  type: string,
+  percentage: number,
+  discountAmount: number,
+): number {
+  const baseTotal = Number((daySubtotal + dayFee).toFixed(2));
+
+  if (type === "percentage") {
+    const calculated = baseTotal * (percentage / 100);
+    return Number(Math.min(Math.max(calculated, 0), baseTotal).toFixed(2));
+  }
+
+  if (type === "amount") {
+    return Number(Math.min(Math.max(discountAmount, 0), baseTotal).toFixed(2));
+  }
+
+  return 0;
+}
+
 function resolveDiscount(input: BudgetProposalTemplateInput): {
   label?: string;
   amount: number;
 } {
-  if (input.discountType === "percentage") {
-    const percentage = Number(input.discountPercentage ?? 0);
-    if (!Number.isFinite(percentage) || percentage <= 0) {
-      return { amount: 0 };
-    }
+  const eventDayCount = input.eventDates?.length || 1;
+  const displacementFeePerDay = input.displacementFee ?? [];
+  const discountTypePerDay = input.discountType ?? [];
+  const discountPercentagePerDay = input.discountPercentage ?? [];
+  const discountAmountPerDay = input.discountAmount ?? [];
 
-    const baseTotal =
-      Number(input.subtotal ?? 0) + Number(input.displacementFee ?? 0);
-    const amount = Number((baseTotal * (percentage / 100)).toFixed(2));
+  const daySubtotals = Array.from({ length: eventDayCount }, (_, day) =>
+    Number(
+      input.items
+        .filter((item) => (item.eventDateIndex ?? 0) === day)
+        .reduce((sum, item) => sum + item.totalPrice, 0)
+        .toFixed(2),
+    ),
+  );
 
-    return {
-      label: `Desconto (${percentage}%)`,
-      amount,
-    };
+  let amount = 0;
+  for (let day = 0; day < eventDayCount; day += 1) {
+    amount += computeDayDiscountAmount(
+      daySubtotals[day] ?? 0,
+      displacementFeePerDay[day] ?? 0,
+      discountTypePerDay[day] ?? "",
+      discountPercentagePerDay[day] ?? 0,
+      discountAmountPerDay[day] ?? 0,
+    );
+  }
+  amount = Number(amount.toFixed(2));
+
+  if (amount <= 0) {
+    return { amount: 0 };
   }
 
-  if (input.discountType === "amount") {
-    const amount = Number(input.discountAmount ?? 0);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return { amount: 0 };
-    }
+  const types = new Set(discountTypePerDay.filter(Boolean));
+  const uniformType = types.size === 1 ? [...types][0] : undefined;
 
-    return {
-      label: "Desconto (Valor Fixo)",
-      amount: Number(amount.toFixed(2)),
-    };
+  if (uniformType === "percentage") {
+    const percentages = new Set(
+      (input.discountPercentage ?? []).filter((value) => value > 0),
+    );
+    if (percentages.size === 1) {
+      return { label: `Desconto (${[...percentages][0]}%)`, amount };
+    }
   }
 
-  return { amount: 0 };
+  if (uniformType === "amount") {
+    return { label: "Desconto (Valor Fixo)", amount };
+  }
+
+  return { label: "Desconto", amount };
 }
 
 function buildItemsTable(items: BudgetProposalItem[]): string {
@@ -158,26 +219,32 @@ function buildPlainText(input: BudgetProposalTemplateInput): string {
     `Validade: ${formatDate(input.validUntil)}`,
   ];
 
-  if (input.eventLocation) {
-    lines.push(`Local do evento: ${input.eventLocation}`);
+  if (input.eventLocation?.length) {
+    lines.push(
+      `Local do evento: ${formatPerDay(input.eventDates, input.eventLocation, (value) => value)}`,
+    );
   }
   if (input.eventDates?.length) {
     lines.push(
       `Datas do evento: ${input.eventDates.map(formatDate).join(", ")}`,
     );
   }
-  if (input.guestCount) {
-    lines.push(`Número de convidados: ${input.guestCount}`);
+  if (input.guestCount?.length) {
+    lines.push(
+      `Número de convidados: ${formatPerDay(input.eventDates, input.guestCount, String)}`,
+    );
   }
-  if (input.durationHours) {
-    lines.push(`Duração: ${input.durationHours}h`);
+  if (input.durationHours?.length) {
+    lines.push(
+      `Duração: ${formatPerDay(input.eventDates, input.durationHours, (value) => `${value}h`)}`,
+    );
   }
   lines.push(`Forma de pagamento: ${FIXED_PAYMENT_METHOD}`);
   if (input.advancePercentage !== undefined) {
     lines.push(`Entrada: ${input.advancePercentage}%`);
   }
   lines.push(
-    `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
+    `Taxa de deslocamento: ${formatCurrency(sumArray(input.displacementFee))}`,
   );
   if (discount.label && discount.amount > 0) {
     lines.push(`${discount.label}: -${formatCurrency(discount.amount)}`);
@@ -195,7 +262,7 @@ function buildPlainText(input: BudgetProposalTemplateInput): string {
 
   lines.push("", `Subtotal: ${formatCurrency(input.subtotal)}`);
   lines.push(
-    `Taxa de deslocamento: ${formatCurrency(input.displacementFee ?? 0)}`,
+    `Taxa de deslocamento: ${formatCurrency(sumArray(input.displacementFee))}`,
   );
   if (discount.label && discount.amount > 0) {
     lines.push(`${discount.label}: -${formatCurrency(discount.amount)}`);
@@ -226,8 +293,11 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
     buildDetailRow("Número do orçamento", input.budgetNumber),
     buildDetailRow("Data de emissão", formatDate(input.issueDate)),
     buildDetailRow("Válido até", formatDate(input.validUntil)),
-    input.eventLocation
-      ? buildDetailRow("Local do evento", input.eventLocation)
+    input.eventLocation?.length
+      ? buildDetailRow(
+          "Local do evento",
+          formatPerDay(input.eventDates, input.eventLocation, (value) => value),
+        )
       : "",
     input.eventDates?.length
       ? buildDetailRow(
@@ -235,11 +305,21 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
           input.eventDates.map(formatDate).join(", "),
         )
       : "",
-    input.guestCount
-      ? buildDetailRow("Convidados", String(input.guestCount))
+    input.guestCount?.length
+      ? buildDetailRow(
+          "Convidados",
+          formatPerDay(input.eventDates, input.guestCount, String),
+        )
       : "",
-    input.durationHours
-      ? buildDetailRow("Duração", `${input.durationHours}h`)
+    input.durationHours?.length
+      ? buildDetailRow(
+          "Duração",
+          formatPerDay(
+            input.eventDates,
+            input.durationHours,
+            (value) => `${value}h`,
+          ),
+        )
       : "",
     buildDetailRow("Forma de pagamento", FIXED_PAYMENT_METHOD),
     input.advancePercentage !== undefined
@@ -250,7 +330,7 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
       : "",
     buildDetailRow(
       "Taxa de deslocamento",
-      formatCurrency(input.displacementFee ?? 0),
+      formatCurrency(sumArray(input.displacementFee)),
     ),
   ]
     .filter(Boolean)
@@ -264,7 +344,7 @@ export function buildBudgetProposalEmail(input: BudgetProposalTemplateInput): {
       </tr>
       <tr>
         <td style="font-size:14px;color:${EMAIL_BRAND.text};padding-top:6px;">Taxa de deslocamento</td>
-        <td style="font-size:14px;color:${EMAIL_BRAND.text};text-align:right;padding-top:6px;">${formatCurrency(input.displacementFee ?? 0)}</td>
+        <td style="font-size:14px;color:${EMAIL_BRAND.text};text-align:right;padding-top:6px;">${formatCurrency(sumArray(input.displacementFee))}</td>
       </tr>
       ${
         discount.label && discount.amount > 0

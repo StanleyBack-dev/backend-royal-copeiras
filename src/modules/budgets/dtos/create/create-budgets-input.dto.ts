@@ -62,21 +62,27 @@ export class CreateBudgetsInputDto {
   @IsMilitaryTime({ each: true })
   eventDepartureTimes!: string[];
 
-  @Field()
-  @IsString()
-  @IsNotEmpty()
-  eventLocation!: string;
+  @Field(() => [String])
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  eventLocation!: string[];
 
-  @Field(() => Int)
-  @IsInt()
-  @Min(1)
-  guestCount!: number;
+  @Field(() => [Int])
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  guestCount!: number[];
 
-  @Field(() => Int)
-  @IsInt()
-  @Min(BUDGET_DURATION_HOURS_MIN)
-  @Max(BUDGET_DURATION_HOURS_MAX)
-  durationHours!: number;
+  @Field(() => [Int])
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsInt({ each: true })
+  @Min(BUDGET_DURATION_HOURS_MIN, { each: true })
+  @Max(BUDGET_DURATION_HOURS_MAX, { each: true })
+  durationHours!: number[];
 
   @Field()
   @IsString()
@@ -90,23 +96,26 @@ export class CreateBudgetsInputDto {
   @Max(100)
   advancePercentage!: number;
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => [Float], { nullable: true })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  discountPercentage?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  @Max(100, { each: true })
+  discountPercentage?: number[];
 
-  @Field(() => String, { nullable: true })
+  @Field(() => [String], { nullable: true })
   @IsOptional()
-  @IsIn(["percentage", "amount"])
-  discountType?: "percentage" | "amount" | null;
+  @IsArray()
+  @IsIn(["", "percentage", "amount"], { each: true })
+  discountType?: string[];
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => [Float], { nullable: true })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  discountAmount?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  discountAmount?: number[];
 
   @Field(() => Float, { nullable: true })
   @IsOptional()
@@ -114,10 +123,12 @@ export class CreateBudgetsInputDto {
   @Min(0)
   totalAmount?: number;
 
-  @Field(() => Float, { defaultValue: 0 })
-  @IsNumber()
-  @Min(0)
-  displacementFee: number = 0;
+  @Field(() => [Float], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  displacementFee?: number[];
 
   @Field(() => [CreateBudgetItemInputDto])
   @IsArray()

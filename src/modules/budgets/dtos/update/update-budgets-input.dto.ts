@@ -71,23 +71,29 @@ export class UpdateBudgetsInputDto {
   @IsMilitaryTime({ each: true })
   eventDepartureTimes?: string[];
 
-  @Field({ nullable: true })
+  @Field(() => [String], { nullable: true })
   @IsOptional()
-  @IsString()
-  eventLocation?: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  eventLocation?: string[];
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => [Int], { nullable: true })
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  guestCount?: number;
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  guestCount?: number[];
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => [Int], { nullable: true })
   @IsOptional()
-  @IsInt()
-  @Min(BUDGET_DURATION_HOURS_MIN)
-  @Max(BUDGET_DURATION_HOURS_MAX)
-  durationHours?: number;
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsInt({ each: true })
+  @Min(BUDGET_DURATION_HOURS_MIN, { each: true })
+  @Max(BUDGET_DURATION_HOURS_MAX, { each: true })
+  durationHours?: number[];
 
   @Field({ nullable: true })
   @IsOptional()
@@ -102,23 +108,26 @@ export class UpdateBudgetsInputDto {
   @Max(100)
   advancePercentage?: number;
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => [Float], { nullable: true })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  discountPercentage?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  @Max(100, { each: true })
+  discountPercentage?: number[];
 
-  @Field(() => String, { nullable: true })
+  @Field(() => [String], { nullable: true })
   @IsOptional()
-  @IsIn(["percentage", "amount"])
-  discountType?: "percentage" | "amount" | null;
+  @IsArray()
+  @IsIn(["", "percentage", "amount"], { each: true })
+  discountType?: string[];
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => [Float], { nullable: true })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  discountAmount?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  discountAmount?: number[];
 
   @Field(() => Float, { nullable: true })
   @IsOptional()
@@ -126,11 +135,12 @@ export class UpdateBudgetsInputDto {
   @Min(0)
   totalAmount?: number;
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => [Float], { nullable: true })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  displacementFee?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  displacementFee?: number[];
 
   @Field(() => [UpdateBudgetItemInputDto], { nullable: true })
   @IsOptional()

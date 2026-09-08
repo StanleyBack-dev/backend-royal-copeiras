@@ -4,7 +4,7 @@ import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { CreateBudgetsInputDto } from "../../dtos/create/create-budgets-input.dto";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
-import { EntityManager, In, Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import {
   BUDGET_ALLOWED_PAYMENT_METHODS,
   BUDGET_DURATION_HOURS_MAX,
@@ -17,6 +17,7 @@ import {
   inferServiceComboFromDescription,
   normalizeGenderToEnglish,
 } from "../../constants/budget-service-types.constant";
+import { generateBudgetNumber } from "../../utils/generate-budget-number.util";
 
 interface CreateBudgetResult {
   budget: BudgetsEntity;
@@ -27,35 +28,47 @@ export class CreateBudgetsValidator {
   private static readonly allowedPaymentMethods =
     BUDGET_ALLOWED_PAYMENT_METHODS as readonly string[];
 
-  private static resolveDiscountValues(input: CreateBudgetsInputDto) {
-    if (!input.discountType) {
-      return {
-        discountType: undefined,
-        discountPercentage: undefined,
-        discountAmount: undefined,
-      };
+  private static resolveDiscountValuesPerDay(
+    eventDates: string[],
+    rawType?: string[],
+    rawPercentage?: number[],
+    rawAmount?: number[],
+  ) {
+    const dayCount = eventDates.length;
+    const types = rawType?.length ? rawType : eventDates.map(() => "");
+    const percentages = rawPercentage?.length
+      ? rawPercentage
+      : eventDates.map(() => 0);
+    const amounts = rawAmount?.length ? rawAmount : eventDates.map(() => 0);
+
+    const discountType: string[] = [];
+    const discountPercentage: number[] = [];
+    const discountAmount: number[] = [];
+
+    for (let index = 0; index < dayCount; index += 1) {
+      const type =
+        types[index] === "percentage" || types[index] === "amount"
+          ? types[index]
+          : "";
+      discountType.push(type);
+      discountPercentage.push(
+        type === "percentage"
+          ? Number((percentages[index] ?? 0).toFixed(2))
+          : 0,
+      );
+      discountAmount.push(
+        type === "amount" ? Number((amounts[index] ?? 0).toFixed(2)) : 0,
+      );
     }
 
-    if (input.discountType === "percentage") {
-      return {
-        discountType: input.discountType,
-        discountPercentage: Number((input.discountPercentage ?? 0).toFixed(2)),
-        discountAmount: undefined,
-      };
-    }
-
-    return {
-      discountType: input.discountType,
-      discountPercentage: undefined,
-      discountAmount: Number((input.discountAmount ?? 0).toFixed(2)),
-    };
+    return { discountType, discountPercentage, discountAmount };
   }
 
   private static computeDiscountAmount(
     subtotal: number,
     displacementFee: number,
     discount: {
-      discountType?: "percentage" | "amount";
+      discountType?: string;
       discountPercentage?: number;
       discountAmount?: number;
     },
@@ -162,28 +175,63 @@ export class CreateBudgetsValidator {
         totalPrice,
         notes: item.notes,
         sortOrder: item.sortOrder ?? 0,
+        eventDateIndex: item.eventDateIndex ?? 0,
       };
     });
 
-    const subtotal = Number(
-      normalizedItems
-        .reduce((sum, item) => sum + item.totalPrice, 0)
-        .toFixed(2),
+    const eventDayCount = input.eventDates.length;
+
+    const daySubtotals = Array.from({ length: eventDayCount }, (_, day) =>
+      Number(
+        normalizedItems
+          .filter((item) => item.eventDateIndex === day)
+          .reduce((sum, item) => sum + item.totalPrice, 0)
+          .toFixed(2),
+      ),
     );
 
-    const displacementFee = Number((input.displacementFee ?? 0).toFixed(2));
-    const resolvedDiscount = this.resolveDiscountValues(input);
-    const discountAmount = this.computeDiscountAmount(
-      subtotal,
-      displacementFee,
-      resolvedDiscount,
+    const subtotal = Number(
+      daySubtotals.reduce((sum, value) => sum + value, 0).toFixed(2),
     );
-    const totalAmount = Number(
-      (subtotal + displacementFee - discountAmount).toFixed(2),
+
+    const displacementFeePerDay = (
+      input.displacementFee?.length
+        ? input.displacementFee
+        : input.eventDates.map(() => 0)
+    ).map((value) => Number((value ?? 0).toFixed(2)));
+
+    if (displacementFeePerDay.length !== input.eventDates.length) {
+      throw AppException.from(
+        APP_ERRORS.budgets.displacementFeeLengthMismatch,
+        undefined,
+      );
+    }
+
+    const resolvedDiscount = this.resolveDiscountValuesPerDay(
+      input.eventDates,
+      input.discountType,
+      input.discountPercentage,
+      input.discountAmount,
     );
+
+    let totalAmount = 0;
+    for (let day = 0; day < eventDayCount; day += 1) {
+      const dayDiscountAmount = this.computeDiscountAmount(
+        daySubtotals[day],
+        displacementFeePerDay[day],
+        {
+          discountType: resolvedDiscount.discountType[day],
+          discountPercentage: resolvedDiscount.discountPercentage[day],
+          discountAmount: resolvedDiscount.discountAmount[day],
+        },
+      );
+      totalAmount +=
+        daySubtotals[day] + displacementFeePerDay[day] - dayDiscountAmount;
+    }
+    totalAmount = Number(totalAmount.toFixed(2));
 
     return budgetsRepo.manager.transaction(async (manager) => {
-      const budgetNumber = await this.generateBudgetNumber(manager);
+      const budgetNumber = await generateBudgetNumber(manager);
 
       const budget = manager.create(BudgetsEntity, {
         idUsers: userId,
@@ -203,7 +251,7 @@ export class CreateBudgetsValidator {
         discountType: resolvedDiscount.discountType,
         discountPercentage: resolvedDiscount.discountPercentage,
         discountAmount: resolvedDiscount.discountAmount,
-        displacementFee,
+        displacementFee: displacementFeePerDay,
         subtotal,
         totalAmount,
       });
@@ -221,6 +269,7 @@ export class CreateBudgetsValidator {
           totalPrice: item.totalPrice,
           notes: item.notes,
           sortOrder: item.sortOrder,
+          eventDateIndex: item.eventDateIndex,
         }),
       );
 
@@ -274,7 +323,11 @@ export class CreateBudgetsValidator {
       );
     }
 
-    if (!input.eventLocation?.trim()) {
+    if (
+      !input.eventLocation?.length ||
+      input.eventLocation.length !== input.eventDates.length ||
+      input.eventLocation.some((value) => !value?.trim())
+    ) {
       throw AppException.from(
         APP_ERRORS.budgets.eventLocationRequired,
         undefined,
@@ -282,18 +335,22 @@ export class CreateBudgetsValidator {
     }
 
     if (
-      input.guestCount === undefined ||
-      !Number.isInteger(input.guestCount) ||
-      input.guestCount < 1
+      !input.guestCount?.length ||
+      input.guestCount.length !== input.eventDates.length ||
+      input.guestCount.some((value) => !Number.isInteger(value) || value < 1)
     ) {
       throw AppException.from(APP_ERRORS.budgets.guestCountRequired, undefined);
     }
 
     if (
-      input.durationHours === undefined ||
-      !Number.isInteger(input.durationHours) ||
-      input.durationHours < BUDGET_DURATION_HOURS_MIN ||
-      input.durationHours > BUDGET_DURATION_HOURS_MAX
+      !input.durationHours?.length ||
+      input.durationHours.length !== input.eventDates.length ||
+      input.durationHours.some(
+        (value) =>
+          !Number.isInteger(value) ||
+          value < BUDGET_DURATION_HOURS_MIN ||
+          value > BUDGET_DURATION_HOURS_MAX,
+      )
     ) {
       throw AppException.from(
         APP_ERRORS.budgets.durationHoursRequired,
@@ -327,43 +384,51 @@ export class CreateBudgetsValidator {
       );
     }
 
-    if (
-      input.discountType !== undefined &&
-      input.discountType !== null &&
-      input.discountType !== "percentage" &&
-      input.discountType !== "amount"
-    ) {
-      throw AppException.from(
-        APP_ERRORS.budgets.discountTypeInvalid,
-        undefined,
-      );
-    }
-
-    if (input.discountType === "percentage") {
-      if (
-        input.discountPercentage === undefined ||
-        Number.isNaN(Number(input.discountPercentage)) ||
-        input.discountPercentage <= 0 ||
-        input.discountPercentage > 100
-      ) {
+    if (input.discountType?.length) {
+      if (input.discountType.length !== input.eventDates.length) {
         throw AppException.from(
-          APP_ERRORS.budgets.discountPercentageRequired,
+          APP_ERRORS.budgets.discountLengthMismatch,
           undefined,
         );
       }
-    }
 
-    if (input.discountType === "amount") {
-      if (
-        input.discountAmount === undefined ||
-        Number.isNaN(Number(input.discountAmount)) ||
-        input.discountAmount <= 0
-      ) {
-        throw AppException.from(
-          APP_ERRORS.budgets.discountAmountRequired,
-          undefined,
-        );
-      }
+      input.discountType.forEach((type, index) => {
+        if (type !== "" && type !== "percentage" && type !== "amount") {
+          throw AppException.from(
+            APP_ERRORS.budgets.discountTypeInvalid,
+            undefined,
+          );
+        }
+
+        if (type === "percentage") {
+          const percentage = input.discountPercentage?.[index];
+          if (
+            percentage === undefined ||
+            Number.isNaN(Number(percentage)) ||
+            percentage <= 0 ||
+            percentage > 100
+          ) {
+            throw AppException.from(
+              APP_ERRORS.budgets.discountPercentageRequired,
+              undefined,
+            );
+          }
+        }
+
+        if (type === "amount") {
+          const amount = input.discountAmount?.[index];
+          if (
+            amount === undefined ||
+            Number.isNaN(Number(amount)) ||
+            amount <= 0
+          ) {
+            throw AppException.from(
+              APP_ERRORS.budgets.discountAmountRequired,
+              undefined,
+            );
+          }
+        }
+      });
     }
 
     const hasInvalidItemDescription = input.items.some(
@@ -388,6 +453,28 @@ export class CreateBudgetsValidator {
       );
     }
 
+    const eventDayCount = input.eventDates.length;
+    const hasInvalidEventDateIndex = input.items.some(
+      (item) =>
+        !Number.isInteger(item.eventDateIndex ?? 0) ||
+        (item.eventDateIndex ?? 0) < 0 ||
+        (item.eventDateIndex ?? 0) >= eventDayCount,
+    );
+
+    if (hasInvalidEventDateIndex) {
+      throw AppException.from(
+        APP_ERRORS.budgets.itemEventDateIndexInvalid,
+        undefined,
+      );
+    }
+
+    const coveredDays = new Set(
+      input.items.map((item) => item.eventDateIndex ?? 0),
+    );
+    if (coveredDays.size < eventDayCount) {
+      throw AppException.from(APP_ERRORS.budgets.dayMissingItems, undefined);
+    }
+
     const selectedPositionKeys = input.items.map((item) => {
       // Map incoming or inferred gender to canonical english key for uniqueness check
       const explicitGenderRaw = item.gender?.toString().trim();
@@ -403,11 +490,13 @@ export class CreateBudgetsValidator {
         }
       }
 
+      const dayPrefix = `${item.eventDateIndex ?? 0}`;
+
       if (genderKey) {
-        return `${item.idPositions}::${genderKey}`;
+        return `${dayPrefix}::${item.idPositions}::${genderKey}`;
       }
 
-      return `${item.idPositions}::${(item.description ?? "").trim().toLowerCase()}`;
+      return `${dayPrefix}::${item.idPositions}::${(item.description ?? "").trim().toLowerCase()}`;
     });
 
     const uniquePositionKeys = new Set(selectedPositionKeys);
@@ -417,28 +506,5 @@ export class CreateBudgetsValidator {
         undefined,
       );
     }
-  }
-
-  private static async generateBudgetNumber(
-    manager: EntityManager,
-  ): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `ORC-${year}`;
-
-    // Acquire an advisory lock per year to avoid race conditions when generating numbers
-    // This runs inside the outer transaction so the lock is released at transaction end
-    await manager.query("SELECT pg_advisory_xact_lock($1)", [Number(year)]);
-
-    // Use the maximum existing numeric suffix to avoid duplicates when rows were deleted
-    const raw = await manager.query(
-      `SELECT COALESCE(MAX(NULLIF(split_part(budget_number, '-', 3), '')::int), 0) AS max_num
-       FROM tb_budgets
-       WHERE budget_number LIKE $1`,
-      [`${prefix}-%`],
-    );
-
-    const maxNum = raw?.[0]?.max_num ?? 0;
-    const sequence = String(Number(maxNum) + 1).padStart(5, "0");
-    return `${prefix}-${sequence}`;
   }
 }

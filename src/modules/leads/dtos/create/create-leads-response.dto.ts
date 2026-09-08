@@ -15,6 +15,11 @@ export class CreateLeadsResponseDto implements ILead {
     dto.email = entity.email;
     dto.phone = entity.phone;
     dto.document = entity.document;
+    dto.legalName = entity.legalName;
+    dto.address = entity.address;
+    dto.addressCity = entity.addressCity;
+    dto.addressState = entity.addressState;
+    dto.addressZipCode = entity.addressZipCode;
     dto.source = normalizeLeadSource(entity.source);
     dto.notes = entity.notes;
     dto.status = entity.status;
@@ -44,6 +49,21 @@ export class CreateLeadsResponseDto implements ILead {
 
   @Field({ nullable: true })
   document?: string;
+
+  @Field({ nullable: true })
+  legalName?: string;
+
+  @Field({ nullable: true })
+  address?: string;
+
+  @Field({ nullable: true })
+  addressCity?: string;
+
+  @Field({ nullable: true })
+  addressState?: string;
+
+  @Field({ nullable: true })
+  addressZipCode?: string;
 
   @Field(() => LeadSource, { nullable: true })
   source?: LeadSource;

@@ -16,6 +16,71 @@ import {
 } from "../../constants/service-fragments";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
+/**
+ * Builds the CONTRATANTE identification lines for the "Partes" block of the
+ * PDF. Only overrides the default "name + document" rendering when the lead
+ * carries a razão social or address, so leads without that data keep the
+ * existing simple card.
+ */
+function buildContratantePartyLines(
+  lead: ContractPdfSnapshot["lead"],
+): string[] {
+  if (!lead) {
+    return [];
+  }
+
+  const legalName = lead.legalName?.trim();
+  const addressParts = [lead.address, lead.addressCity, lead.addressState]
+    .map((part) => part?.trim())
+    .filter((part): part is string => Boolean(part));
+  const zipCode = lead.addressZipCode?.trim();
+
+  if (!legalName && !addressParts.length && !zipCode) {
+    return [];
+  }
+
+  const lines: string[] = [];
+  const name = lead.name?.trim();
+
+  if (legalName) {
+    lines.push(`Razão Social: ${legalName}`);
+    if (name && name.toLowerCase() !== legalName.toLowerCase()) {
+      lines.push(`Nome fantasia: ${name}`);
+    }
+  } else if (name) {
+    lines.push(name);
+  }
+
+  if (lead.document?.trim()) {
+    const documentLabel =
+      lead.document.replace(/\D/g, "").length === 14 ? "CNPJ" : "CPF";
+    lines.push(`${documentLabel}: ${lead.document.trim()}`);
+  }
+
+  if (addressParts.length || zipCode) {
+    const cityState = [lead.addressCity?.trim(), lead.addressState?.trim()]
+      .filter(Boolean)
+      .join("/");
+    const addressLine = [lead.address?.trim(), cityState]
+      .filter(Boolean)
+      .join(" - ");
+    const fullAddress = [addressLine, zipCode ? `CEP ${zipCode}` : ""]
+      .filter(Boolean)
+      .join(" - ");
+    lines.push(`Endereço: ${fullAddress}`);
+  }
+
+  if (lead.email?.trim()) {
+    lines.push(`E-mail: ${lead.email.trim()}`);
+  }
+
+  if (lead.phone?.trim()) {
+    lines.push(`Telefone: ${lead.phone.trim()}`);
+  }
+
+  return lines;
+}
+
 function splitBodyIntoParagraphs(body?: string): string[] {
   if (!body) {
     return [];
@@ -145,6 +210,132 @@ function buildEventScheduleText(
   return `com a seguinte programação: ${lines.join("; ")}`;
 }
 
+function allEqual<T>(values: T[]): boolean {
+  return values.length > 0 && values.every((value) => value === values[0]);
+}
+
+function dayLabel(eventDates: string[], index: number): string {
+  return eventDates[index]
+    ? `no dia ${formatDateBR(eventDates[index])}`
+    : `no ${index + 1}º dia`;
+}
+
+function buildEventLocationText(
+  eventDates: string[],
+  locations: string[],
+): string {
+  const trimmed = locations.map((location) => location?.trim() || "");
+
+  if (!trimmed.some(Boolean)) {
+    return "local a definir";
+  }
+
+  if (allEqual(trimmed)) {
+    return trimmed[0] || "local a definir";
+  }
+
+  return trimmed
+    .map(
+      (location, index) =>
+        `${dayLabel(eventDates, index)}, no local ${location || "a definir"}`,
+    )
+    .join("; ");
+}
+
+function buildDurationClauseText(
+  eventDates: string[],
+  durations: number[],
+): string {
+  const validDurations = durations.filter(
+    (duration) => Number.isFinite(duration) && duration > 0,
+  );
+
+  if (!validDurations.length) {
+    return "Pelo período de 08 horas consecutivas.";
+  }
+
+  if (allEqual(durations)) {
+    return `Pelo período de ${String(durations[0]).padStart(2, "0")} horas consecutivas.`;
+  }
+
+  const parts = durations.map((duration, index) => {
+    const hours =
+      Number.isFinite(duration) && duration > 0
+        ? String(duration).padStart(2, "0")
+        : "08";
+    return `${dayLabel(eventDates, index)} por ${hours} horas consecutivas`;
+  });
+
+  return `Sendo ${parts.join(", ")}.`;
+}
+
+function buildGuestCountLabel(
+  eventDates: string[],
+  guestCounts: number[],
+  numberToPtWords: (n: number) => string,
+): string | null {
+  const validCounts = guestCounts.filter(
+    (count) => Number.isFinite(count) && count > 0,
+  );
+
+  if (!validCounts.length) {
+    return null;
+  }
+
+  if (allEqual(guestCounts)) {
+    return `${guestCounts[0]} (${numberToPtWords(guestCounts[0])}) convidados`;
+  }
+
+  return guestCounts
+    .map((count, index) =>
+      Number.isFinite(count) && count > 0
+        ? `${dayLabel(eventDates, index)}, ${count} (${numberToPtWords(count)}) convidados`
+        : null,
+    )
+    .filter((value): value is string => Boolean(value))
+    .join("; ");
+}
+
+interface ServiceLineItem {
+  serviceType?: string;
+  quantity?: number;
+  description?: string;
+  eventDateIndex?: number;
+}
+
+function buildServicesBlockPerDay(
+  items: ServiceLineItem[],
+  eventDates: string[],
+  buildItemLine: (item: ServiceLineItem) => string,
+): string {
+  const byDay = new Map<number, ServiceLineItem[]>();
+
+  items.forEach((item) => {
+    const day = item.eventDateIndex ?? 0;
+    const existing = byDay.get(day) ?? [];
+    existing.push(item);
+    byDay.set(day, existing);
+  });
+
+  const sortedDays = Array.from(byDay.keys()).sort(
+    (left, right) => left - right,
+  );
+  const lines: string[] = [];
+  let clauseIndex = 1;
+
+  sortedDays.forEach((day) => {
+    const label = dayLabel(eventDates, day);
+    const capitalizedLabel = `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
+    lines.push(`1.1.${clauseIndex}. ${capitalizedLabel}:`);
+    clauseIndex += 1;
+    byDay.get(day)!.forEach((item) => {
+      lines.push(`   - ${buildItemLine(item)}`);
+    });
+  });
+
+  return lines.join("\n");
+}
+
 const DEFAULT_CONTRACTOR_TRADE_NAME = "Royal Copeiras";
 const DEFAULT_CONTRACTOR_DOCUMENT = "64.062.038/0001-71";
 const DEFAULT_ISSUE_CITY = "Goiânia";
@@ -157,17 +348,21 @@ function buildContractorPaymentReference(
   const document = contractor.document?.trim();
   const pixKey = contractor.pixKey?.trim();
   const pixKeyType = contractor.pixKeyType?.trim().toLowerCase();
+  const pixKeyOwnerName = contractor.representativeName?.trim();
+  const pixKeyOwnerSuffix = pixKeyOwnerName
+    ? `, titular ${pixKeyOwnerName}`
+    : "";
 
   if (pixKey && pixKeyType === "cnpj") {
-    return `CNPJ ${pixKey}`;
+    return `CNPJ ${pixKey}${pixKeyOwnerSuffix}`;
   }
 
   if (pixKey && pixKeyType === "cpf") {
-    return `CPF ${pixKey}`;
+    return `CPF ${pixKey}${pixKeyOwnerSuffix}`;
   }
 
   if (pixKey) {
-    return `chave PIX ${pixKey}`;
+    return `chave PIX ${pixKey}${pixKeyOwnerSuffix}`;
   }
 
   if (document) {
@@ -185,18 +380,21 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     DEFAULT_CONTRACTOR_TRADE_NAME;
   const contractorPaymentReference =
     buildContractorPaymentReference(contractor);
-  const eventDatesText = buildEventDatesText(snapshot.budget?.eventDates || []);
-  const eventLocationText =
-    snapshot.budget?.eventLocation?.trim() || "local a definir";
+  const eventDates = snapshot.budget?.eventDates || [];
+  const eventDatesText = buildEventDatesText(eventDates);
+  const eventLocationText = buildEventLocationText(
+    eventDates,
+    snapshot.budget?.eventLocation || [],
+  );
   const eventScheduleText = buildEventScheduleText(
-    snapshot.budget?.eventDates || [],
+    eventDates,
     snapshot.budget?.eventArrivalTimes || [],
     snapshot.budget?.eventDepartureTimes || [],
   );
-  const eventHours =
-    snapshot.budget?.durationHours && snapshot.budget.durationHours > 0
-      ? String(snapshot.budget.durationHours).padStart(2, "0")
-      : "08";
+  const durationClauseText = buildDurationClauseText(
+    eventDates,
+    snapshot.budget?.durationHours || [],
+  );
   const totalAmountLabel =
     typeof snapshot.budget?.totalAmount === "number"
       ? formatCurrencyExtended(snapshot.budget.totalAmount)
@@ -338,32 +536,32 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     return `Prestação de serviço de ${qty} (${qtyWords}) ${lowerService} para atuação durante o evento, com foco em ${descFragment}.`;
   };
 
-  const servicesBlock = items.length
-    ? items
-        .map((item, index) => `1.1.${index + 1}. ${buildItemLine(item)}`)
-        .join("\n")
-    : `1.1.1. Prestação de serviço de 1 (um) serviço para atuação durante o evento, com foco em ${fragment}.`;
+  const servicesBlock = !items.length
+    ? `1.1.1. Prestação de serviço de 1 (um) serviço para atuação durante o evento, com foco em ${fragment}.`
+    : eventDates.length <= 1
+      ? items
+          .map((item, index) => `1.1.${index + 1}. ${buildItemLine(item)}`)
+          .join("\n")
+      : buildServicesBlockPerDay(items, eventDates, buildItemLine);
 
-  const displacementFee =
-    typeof snapshot.budget?.displacementFee === "number"
-      ? snapshot.budget.displacementFee
-      : 0;
+  const displacementFee = Array.isArray(snapshot.budget?.displacementFee)
+    ? Number(
+        snapshot.budget.displacementFee
+          .reduce((sum, value) => sum + value, 0)
+          .toFixed(2),
+      )
+    : 0;
   const displacementFeeLabel = formatCurrencyExtended(displacementFee);
   const displacementClause =
     displacementFee > 0
       ? `\n1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.`
       : "";
 
-  const guestCount =
-    typeof snapshot.budget?.guestCount === "number" &&
-    Number.isFinite(snapshot.budget.guestCount) &&
-    snapshot.budget.guestCount > 0
-      ? snapshot.budget.guestCount
-      : undefined;
-
-  const guestCountLabel = guestCount
-    ? `${guestCount} (${numberToPtWords(guestCount)}) convidados`
-    : null;
+  const guestCountLabel = buildGuestCountLabel(
+    eventDates,
+    snapshot.budget?.guestCount || [],
+    (n) => numberToPtWords(n),
+  );
 
   // build replacement clause listing actual professionals and quantities when available
   const replacementList = items.length
@@ -378,11 +576,13 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
 
   const replacementClause = `\n5.4. a contratada responsabiliza-se pela substituição de qualquer profissional contratado ${replacementList} em caso de ausência, atraso ou impossibilidade de comparecimento, sem custos adicionais à contratante.`;
 
+  const penaltyClause = `\n5.5. Em caso de descumprimento, pela CONTRATADA, das obrigações previstas nas Cláusulas 5.1 a 5.3 (pontualidade, qualidade e adequação da equipe, fornecimento dos materiais previstos na Cláusula 3ª), a CONTRATADA sujeitar-se-á à multa de 10% (dez por cento) sobre o valor total do contrato, sem prejuízo do direito da CONTRATANTE de exigir o cumprimento da obrigação ou de rescindir o contrato, bem como de pleitear indenização por perdas e danos comprovados.`;
+
   return `CLAUSULA 1a - SERVIÇOS CONTRATADOS:
 
 1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada, consistentes na disponibilização de:
 ${servicesBlock}
-1.2. Pelo período de ${eventHours} horas consecutivas.
+1.2. ${durationClauseText}
 1.3. O evento está previsto para ocorrer ${eventDatesText}, ${eventScheduleText}, ${guestCountLabel ? `com previsão de ${guestCountLabel},` : ""} no local ${eventLocationText}.${displacementClause}
 1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.
 
@@ -404,7 +604,9 @@ CLAUSULA 4a - RESPONSABILIDADES DO CONTRATANTE:
 
 CLAUSULA 5a - RESPONSABILIDADES DA CONTRATADA:
 
-5.1. A ${contractorTradeName} compromete-se a prestar os serviços contratados com equipe qualificada.${replacementClause}
+5.1. A ${contractorTradeName} compromete-se a cumprir rigorosamente os horários acordados para a prestação dos serviços, garantindo a pontualidade da equipe designada para o evento.
+5.2. A ${contractorTradeName} compromete-se a prestar os serviços contratados com equipe qualificada, assegurando a adequação técnica e comportamental dos profissionais designados.
+5.3. A contratada se responsabiliza pelo fornecimento dos materiais previstos na Cláusula 3ª, necessários à adequada execução dos serviços contratados.${replacementClause}${penaltyClause}
 
 CLAUSULA 6a - CANCELAMENTO E REEMBOLSO:
 
@@ -483,6 +685,7 @@ export class BuildContractProposalPdfPayloadService {
           document: snapshot.lead?.document,
           email: snapshot.lead?.email,
           phone: snapshot.lead?.phone,
+          lines: buildContratantePartyLines(snapshot.lead),
         },
         {
           role: "Contratada",

@@ -45,4 +45,9 @@ export class CreateBudgetItemInputDto {
   @IsInt()
   @Min(0)
   sortOrder?: number = 0;
+
+  @Field(() => Int, { defaultValue: 0 })
+  @IsInt()
+  @Min(0)
+  eventDateIndex: number = 0;
 }

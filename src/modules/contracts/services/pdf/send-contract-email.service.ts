@@ -98,7 +98,10 @@ export class SendContractEmailService {
             : contract.validUntil
               ? String(contract.validUntil)
               : undefined,
-        displacementFee: contract.budget?.displacementFee,
+        displacementFee: (contract.budget?.displacementFee ?? []).reduce(
+          (sum, value) => sum + value,
+          0,
+        ),
         totalAmount: contract.budget?.totalAmount,
       });
 
