@@ -6,6 +6,7 @@ export enum LeadSource {
   WEBSITE = "website",
   WHATSAPP = "whatsapp",
   EVENT = "event",
+  PUBLIC_FORM = "public_form",
   OTHER = "other",
 }
 

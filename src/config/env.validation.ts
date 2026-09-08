@@ -84,6 +84,8 @@ export const envValidationSchema = Joi.object({
     .min(1)
     .max(10)
     .default(5),
+  PUBLIC_INTAKE_CODE_TTL_MINUTES: Joi.number().integer().min(1).default(2880),
+  PUBLIC_INTAKE_FORM_TTL_MINUTES: Joi.number().integer().min(1).default(60),
 
   // === JWT ===
   JWT_ACCESS_SECRET: Joi.string()

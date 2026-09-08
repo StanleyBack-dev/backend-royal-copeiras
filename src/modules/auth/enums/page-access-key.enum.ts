@@ -11,6 +11,7 @@ export enum PageAccessKey {
   USERS = "USERS",
   EVENTS = "EVENTS",
   PAYMENTS = "PAYMENTS",
+  PUBLIC_INTAKE = "PUBLIC_INTAKE",
 }
 
 export const ALL_PAGE_ACCESS_KEYS: PageAccessKey[] = [
@@ -24,6 +25,7 @@ export const ALL_PAGE_ACCESS_KEYS: PageAccessKey[] = [
   PageAccessKey.USERS,
   PageAccessKey.EVENTS,
   PageAccessKey.PAYMENTS,
+  PageAccessKey.PUBLIC_INTAKE,
 ];
 
 registerEnumType(PageAccessKey, {

@@ -52,6 +52,17 @@ export const budgetsErrors = {
     message:
       "A quantidade de horários de chegada e partida deve ser igual à quantidade de datas do evento.",
   },
+  displacementFeeLengthMismatch: {
+    code: "BUDGETS_DISPLACEMENT_FEE_LENGTH_MISMATCH",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Informe a taxa de deslocamento de cada dia do evento (ou nenhuma).",
+  },
+  discountLengthMismatch: {
+    code: "BUDGETS_DISCOUNT_LENGTH_MISMATCH",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Informe o desconto de cada dia do evento (ou nenhum).",
+  },
   eventLocationRequired: {
     code: "BUDGETS_EVENT_LOCATION_REQUIRED",
     status: HttpStatus.BAD_REQUEST,
@@ -117,7 +128,18 @@ export const budgetsErrors = {
     code: "BUDGETS_ITEM_SERVICE_TYPE_DUPLICATED",
     status: HttpStatus.BAD_REQUEST,
     message:
-      "Não é permitido repetir o mesmo tipo de serviço em itens do orçamento.",
+      "Não é permitido repetir o mesmo tipo de serviço no mesmo dia do orçamento.",
+  },
+  itemEventDateIndexInvalid: {
+    code: "BUDGETS_ITEM_EVENT_DATE_INDEX_INVALID",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Um ou mais itens estão vinculados a um dia inexistente do evento.",
+  },
+  dayMissingItems: {
+    code: "BUDGETS_DAY_MISSING_ITEMS",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Cada dia do evento deve ter ao menos um serviço.",
   },
   invalidValidityRange: {
     code: "BUDGETS_INVALID_VALIDITY_RANGE",

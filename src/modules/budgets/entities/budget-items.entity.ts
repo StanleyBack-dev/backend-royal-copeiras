@@ -74,6 +74,9 @@ export class BudgetItemsEntity {
   @Column({ name: "sort_order", type: "int", default: 0 })
   sortOrder!: number;
 
+  @Column({ name: "event_date_index", type: "int", default: 0 })
+  eventDateIndex!: number;
+
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   createdAt!: Date;
 

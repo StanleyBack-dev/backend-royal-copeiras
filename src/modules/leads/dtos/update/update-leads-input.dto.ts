@@ -41,6 +41,36 @@ export class UpdateLeadsInputDto {
   })
   document?: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(2, 160)
+  legalName?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(2, 255)
+  address?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(2, 80)
+  addressCity?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  addressState?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(8, 9)
+  addressZipCode?: string;
+
   @Field(() => LeadSource, { nullable: true })
   @IsOptional()
   @IsEnum(LeadSource)

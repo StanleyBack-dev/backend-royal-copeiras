@@ -19,6 +19,12 @@ const numericTransformer = {
   from: (value: string | null) => (value === null ? null : Number(value)),
 };
 
+const numericArrayTransformer = {
+  to: (value: number[] | null | undefined) => value,
+  from: (value: string[] | null) =>
+    value === null ? [] : value.map((item) => Number(item)),
+};
+
 @Entity("tb_budgets")
 export class BudgetsEntity implements Omit<IBudget, "items"> {
   @PrimaryGeneratedColumn("uuid", { name: "idtb_budgets" })
@@ -76,17 +82,17 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
 
   @Column({
     name: "event_location",
-    type: "varchar",
-    length: 255,
-    nullable: true,
+    type: "text",
+    array: true,
+    default: "{}",
   })
-  eventLocation?: string;
+  eventLocation!: string[];
 
-  @Column({ name: "guest_count", type: "int", nullable: true })
-  guestCount?: number;
+  @Column({ name: "guest_count", type: "int", array: true, default: "{}" })
+  guestCount!: number[];
 
-  @Column({ name: "duration_hours", type: "int", nullable: true })
-  durationHours?: number;
+  @Column({ name: "duration_hours", type: "int", array: true, default: "{}" })
+  durationHours!: number[];
 
   @Column({
     name: "payment_method",
@@ -111,28 +117,31 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
     type: "numeric",
     precision: 5,
     scale: 2,
-    nullable: true,
-    transformer: numericTransformer,
+    array: true,
+    default: "{}",
+    transformer: numericArrayTransformer,
   })
-  discountPercentage?: number | null;
+  discountPercentage!: number[];
 
   @Column({
     name: "discount_type",
-    type: "enum",
-    enum: ["percentage", "amount"],
-    nullable: true,
+    type: "varchar",
+    length: 20,
+    array: true,
+    default: "{}",
   })
-  discountType?: "percentage" | "amount" | null;
+  discountType!: string[];
 
   @Column({
     name: "discount_amount",
     type: "numeric",
     precision: 12,
     scale: 2,
-    nullable: true,
-    transformer: numericTransformer,
+    array: true,
+    default: "{}",
+    transformer: numericArrayTransformer,
   })
-  discountAmount?: number | null;
+  discountAmount!: number[];
 
   @Column({ name: "notes", type: "text", nullable: true })
   notes?: string;
@@ -142,10 +151,11 @@ export class BudgetsEntity implements Omit<IBudget, "items"> {
     type: "numeric",
     precision: 12,
     scale: 2,
-    default: 0,
-    transformer: numericTransformer,
+    array: true,
+    default: "{}",
+    transformer: numericArrayTransformer,
   })
-  displacementFee!: number;
+  displacementFee!: number[];
 
   @Column({
     name: "subtotal",

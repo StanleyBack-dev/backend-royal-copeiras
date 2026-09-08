@@ -8,6 +8,7 @@ export interface IBudgetItem {
   totalPrice: number;
   notes?: string;
   sortOrder: number;
+  eventDateIndex: number;
   createdAt: Date | string;
   updatedAt: Date | string;
 }

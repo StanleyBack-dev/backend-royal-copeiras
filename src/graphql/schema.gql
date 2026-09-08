@@ -63,6 +63,7 @@ enum PageAccessKey {
   USERS
   EVENTS
   PAYMENTS
+  PUBLIC_INTAKE
 }
 
 type PageAccessMetadataResponseDto {
@@ -321,6 +322,11 @@ type CreateLeadsResponseDto {
   email: String
   phone: String
   document: String
+  legalName: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
   source: LeadSource
   notes: String
   status: LeadStatus!
@@ -335,6 +341,7 @@ enum LeadSource {
   WEBSITE
   WHATSAPP
   EVENT
+  PUBLIC_FORM
   OTHER
 }
 
@@ -351,6 +358,11 @@ type GetLeadsResponseDto {
   email: String
   phone: String
   document: String
+  legalName: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
   source: LeadSource
   notes: String
   status: LeadStatus!
@@ -365,6 +377,11 @@ type UpdateLeadsResponseDto {
   email: String
   phone: String
   document: String
+  legalName: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
   source: LeadSource
   notes: String
   status: LeadStatus!
@@ -576,6 +593,7 @@ type GetEventAssignmentResponseDto {
   isActive: Boolean!
   budgetItemDescription: String
   budgetItemQuantity: Float
+  eventDateIndex: Int!
   employeeName: String
   createdAt: String!
   updatedAt: String!
@@ -588,6 +606,7 @@ type GetEventServiceLineResponseDto {
   unitPrice: Float!
   totalPrice: Float!
   sortOrder: Float!
+  eventDateIndex: Int!
 }
 
 type GetEventsResponseDto {
@@ -605,6 +624,11 @@ type GetEventsResponseDto {
   leadName: String
   eventDates: [String!]!
   eventLocation: String
+  eventArrivalTimes: [String!]!
+  eventDepartureTimes: [String!]!
+  eventLocationPerDay: [String!]!
+  guestCountPerDay: [Int!]!
+  durationHoursPerDay: [Int!]!
   displacementFee: Float!
   discountTotal: Float!
   overtimeMinutes: Int!
@@ -885,6 +909,7 @@ type CreateBudgetItemResponseDto {
   totalPrice: Float!
   notes: String
   sortOrder: Float!
+  eventDateIndex: Int!
   createdAt: String!
   updatedAt: String!
 }
@@ -899,15 +924,15 @@ type CreateBudgetsResponseDto {
   eventDates: [String!]!
   eventArrivalTimes: [String!]!
   eventDepartureTimes: [String!]!
-  eventLocation: String
-  guestCount: Float
-  durationHours: Float
+  eventLocation: [String!]!
+  guestCount: [Int!]!
+  durationHours: [Int!]!
   paymentMethod: String
   advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
-  displacementFee: Float!
+  discountPercentage: [Float!]!
+  discountType: [String!]!
+  discountAmount: [Float!]!
+  displacementFee: [Float!]!
   subtotal: Float!
   totalAmount: Float!
   sentVia: String
@@ -937,6 +962,7 @@ type GetBudgetItemResponseDto {
   totalPrice: Float!
   notes: String
   sortOrder: Float!
+  eventDateIndex: Int!
   serviceGender: String
   createdAt: String!
   updatedAt: String!
@@ -952,15 +978,15 @@ type GetBudgetsResponseDto {
   eventDates: [String!]!
   eventArrivalTimes: [String!]!
   eventDepartureTimes: [String!]!
-  eventLocation: String
-  guestCount: Float
-  durationHours: Float
+  eventLocation: [String!]!
+  guestCount: [Int!]!
+  durationHours: [Int!]!
   paymentMethod: String
   advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
-  displacementFee: Float!
+  discountPercentage: [Float!]!
+  discountType: [String!]!
+  discountAmount: [Float!]!
+  displacementFee: [Float!]!
   subtotal: Float!
   totalAmount: Float!
   sentVia: String
@@ -980,6 +1006,7 @@ type UpdateBudgetItemResponseDto {
   totalPrice: Float!
   notes: String
   sortOrder: Float!
+  eventDateIndex: Int!
   createdAt: String!
   updatedAt: String!
 }
@@ -994,15 +1021,15 @@ type UpdateBudgetsResponseDto {
   eventDates: [String!]!
   eventArrivalTimes: [String!]!
   eventDepartureTimes: [String!]!
-  eventLocation: String
-  guestCount: Float
-  durationHours: Float
+  eventLocation: [String!]!
+  guestCount: [Int!]!
+  durationHours: [Int!]!
   paymentMethod: String
   advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
-  displacementFee: Float!
+  discountPercentage: [Float!]!
+  discountType: [String!]!
+  discountAmount: [Float!]!
+  displacementFee: [Float!]!
   subtotal: Float!
   totalAmount: Float!
   sentVia: String
@@ -1102,6 +1129,72 @@ type UpdatePositionsMutationResponseDto {
   data: UpdatePositionsResponseDto!
 }
 
+type GetPublicIntakeCodesResponseDto {
+  idPublicIntakeCodes: String!
+  code: String!
+  status: PublicIntakeCodeStatus!
+  expiresAt: String!
+  resultingLeadId: String
+  resultingBudgetId: String
+  createdAt: String!
+}
+
+enum PublicIntakeCodeStatus {
+  PENDING
+  VERIFIED
+  SUBMITTED
+  EXPIRED
+  INVALIDATED
+}
+
+type GeneratePublicIntakeCodeResponseDto {
+  code: String!
+  expiresAt: String!
+}
+
+type GeneratePublicIntakeCodeMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: GeneratePublicIntakeCodeResponseDto!
+}
+
+type VerifyPublicIntakeCodeResponseDto {
+  formToken: String!
+  expiresAt: String!
+}
+
+type VerifyPublicIntakeCodeMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: VerifyPublicIntakeCodeResponseDto!
+}
+
+type SubmitPublicIntakeResponseDto {
+  idLeads: String!
+  idBudgets: String!
+}
+
+type SubmitPublicIntakeMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: SubmitPublicIntakeResponseDto!
+}
+
+type GetPublicIntakeCodesListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetPublicIntakeCodesResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
   getPageAccessMetadata: PageAccessMetadataResponseDto!
   getUsers(input: GetUsersInputDto): GetUsersListResponseDto!
@@ -1126,6 +1219,9 @@ type Query {
   getPaymentsByEvent(idEvents: String!): [GetPaymentResponseDto!]!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
   getPositions(input: GetPositionsInputDto): GetPositionsListResponseDto!
+  getPublicIntakeCodes(
+    input: GetPublicIntakeCodesInputDto
+  ): GetPublicIntakeCodesListResponseDto!
 }
 
 input GetUsersInputDto {
@@ -1225,6 +1321,11 @@ input GetPositionsInputDto {
   isActive: Boolean
 }
 
+input GetPublicIntakeCodesInputDto {
+  page: Int = 1
+  limit: Int = 10
+}
+
 type Mutation {
   login(input: LoginInputDto!): AuthSessionResponseDto!
   refreshAuthSession: AuthSessionResponseDto!
@@ -1314,6 +1415,13 @@ type Mutation {
   updatePositions(
     input: UpdatePositionsInputDto!
   ): UpdatePositionsMutationResponseDto!
+  generatePublicIntakeCode: GeneratePublicIntakeCodeMutationResponseDto!
+  verifyPublicIntakeCode(
+    input: VerifyPublicIntakeCodeInputDto!
+  ): VerifyPublicIntakeCodeMutationResponseDto!
+  submitPublicIntake(
+    input: SubmitPublicIntakeInputDto!
+  ): SubmitPublicIntakeMutationResponseDto!
 }
 
 input LoginInputDto {
@@ -1421,6 +1529,11 @@ input CreateLeadsInputDto {
   email: String
   phone: String
   document: String
+  legalName: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
   source: LeadSource!
   notes: String
   status: LeadStatus! = NEW
@@ -1433,6 +1546,11 @@ input UpdateLeadsInputDto {
   email: String
   phone: String
   document: String
+  legalName: String
+  address: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
   source: LeadSource
   notes: String
   status: LeadStatus
@@ -1608,16 +1726,16 @@ input CreateBudgetsInputDto {
   eventDates: [String!]!
   eventArrivalTimes: [String!]!
   eventDepartureTimes: [String!]!
-  eventLocation: String!
-  guestCount: Int!
-  durationHours: Int!
+  eventLocation: [String!]!
+  guestCount: [Int!]!
+  durationHours: [Int!]!
   paymentMethod: String!
   advancePercentage: Float!
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
+  discountPercentage: [Float!]
+  discountType: [String!]
+  discountAmount: [Float!]
   totalAmount: Float
-  displacementFee: Float! = 0
+  displacementFee: [Float!]
   items: [CreateBudgetItemInputDto!]!
 }
 
@@ -1629,6 +1747,7 @@ input CreateBudgetItemInputDto {
   unitPrice: Float!
   notes: String
   sortOrder: Int = 0
+  eventDateIndex: Int! = 0
 }
 
 input UpdateBudgetsInputDto {
@@ -1640,16 +1759,16 @@ input UpdateBudgetsInputDto {
   eventDates: [String!]
   eventArrivalTimes: [String!]
   eventDepartureTimes: [String!]
-  eventLocation: String
-  guestCount: Int
-  durationHours: Int
+  eventLocation: [String!]
+  guestCount: [Int!]
+  durationHours: [Int!]
   paymentMethod: String
   advancePercentage: Float
-  discountPercentage: Float
-  discountType: String
-  discountAmount: Float
+  discountPercentage: [Float!]
+  discountType: [String!]
+  discountAmount: [Float!]
   totalAmount: Float
-  displacementFee: Float
+  displacementFee: [Float!]
   items: [UpdateBudgetItemInputDto!]
   sentVia: String
   sentAt: String
@@ -1663,6 +1782,7 @@ input UpdateBudgetItemInputDto {
   unitPrice: Float!
   notes: String
   sortOrder: Int = 0
+  eventDateIndex: Int! = 0
 }
 
 input GenerateBudgetPreviewInputDto {
@@ -1684,4 +1804,30 @@ input UpdatePositionsInputDto {
   idPositions: String!
   name: String
   isActive: Boolean
+}
+
+input VerifyPublicIntakeCodeInputDto {
+  code: String!
+}
+
+input SubmitPublicIntakeInputDto {
+  formToken: String!
+  name: String!
+  email: String
+  phone: String
+  document: String
+  eventDates: [String!]!
+  eventArrivalTimes: [String!]!
+  eventDepartureTimes: [String!]!
+  eventLocation: [String!]!
+  guestCount: [Int!]!
+  durationHours: [Int!]!
+  items: [SubmitPublicIntakeItemInputDto!]!
+}
+
+input SubmitPublicIntakeItemInputDto {
+  description: String!
+  gender: String
+  quantity: Int!
+  eventDateIndex: Int! = 0
 }

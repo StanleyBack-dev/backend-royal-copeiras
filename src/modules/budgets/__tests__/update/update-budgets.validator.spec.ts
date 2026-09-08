@@ -142,7 +142,7 @@ describe("UpdateBudgetsValidator", () => {
 
     const input = new UpdateBudgetsInputDto();
     input.idBudgets = "budget-1";
-    input.eventLocation = "Novo local do evento";
+    input.eventLocation = ["Novo local do evento"];
 
     await expect(
       UpdateBudgetsValidator.validateAndUpdate(userId, input, {
@@ -229,6 +229,7 @@ describe("UpdateBudgetsValidator", () => {
         quantity: 2,
         unitPrice: 500,
         sortOrder: 0,
+        eventDateIndex: 0,
       },
       {
         idPositions: "11f8f463-dbf4-c9f0-5f1e-42b7699e1f50",
@@ -236,6 +237,7 @@ describe("UpdateBudgetsValidator", () => {
         quantity: 1,
         unitPrice: 150,
         sortOrder: 1,
+        eventDateIndex: 0,
       },
     ];
 
@@ -260,18 +262,18 @@ describe("UpdateBudgetsValidator", () => {
     const deps = makeDeps(
       makeBudget({
         status: BudgetStatus.DRAFT,
-        discountType: "percentage",
-        discountPercentage: 10,
-        discountAmount: null,
+        discountType: ["percentage"],
+        discountPercentage: [10],
+        discountAmount: [0],
         subtotal: 1000,
-        displacementFee: 0,
+        displacementFee: [0],
         totalAmount: 900,
       }),
     );
 
     const input = new UpdateBudgetsInputDto();
     input.idBudgets = "budget-1";
-    input.discountType = null;
+    input.discountType = [""];
 
     const result = await UpdateBudgetsValidator.validateAndUpdate(
       userId,
@@ -284,9 +286,9 @@ describe("UpdateBudgetsValidator", () => {
       },
     );
 
-    expect(result.discountType).toBeNull();
-    expect(result.discountPercentage).toBeNull();
-    expect(result.discountAmount).toBeNull();
+    expect(result.discountType).toEqual([""]);
+    expect(result.discountPercentage).toEqual([0]);
+    expect(result.discountAmount).toEqual([0]);
     expect(result.totalAmount).toBe(1000);
   });
 });

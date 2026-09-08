@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { IBudget } from "../../interface/budget.interface";
 import { formatBudgetDateOnly } from "../../utils/budget-date.util";
@@ -33,6 +33,9 @@ class UpdateBudgetItemResponseDto {
   @Field()
   sortOrder!: number;
 
+  @Field(() => Int)
+  eventDateIndex!: number;
+
   @Field()
   createdAt!: string;
 
@@ -55,15 +58,15 @@ export class UpdateBudgetsResponseDto implements IBudget {
     dto.eventDates = entity.eventDates ?? [];
     dto.eventArrivalTimes = entity.eventArrivalTimes ?? [];
     dto.eventDepartureTimes = entity.eventDepartureTimes ?? [];
-    dto.eventLocation = entity.eventLocation;
-    dto.guestCount = entity.guestCount;
-    dto.durationHours = entity.durationHours;
+    dto.eventLocation = entity.eventLocation ?? [];
+    dto.guestCount = entity.guestCount ?? [];
+    dto.durationHours = entity.durationHours ?? [];
     dto.paymentMethod = entity.paymentMethod;
     dto.advancePercentage = entity.advancePercentage;
-    dto.discountPercentage = entity.discountPercentage;
-    dto.discountType = entity.discountType;
-    dto.discountAmount = entity.discountAmount;
-    dto.displacementFee = entity.displacementFee ?? 0;
+    dto.discountPercentage = entity.discountPercentage ?? [];
+    dto.discountType = entity.discountType ?? [];
+    dto.discountAmount = entity.discountAmount ?? [];
+    dto.displacementFee = entity.displacementFee ?? [];
     dto.subtotal = entity.subtotal;
     dto.totalAmount = entity.totalAmount;
     dto.sentVia = entity.sentVia;
@@ -83,6 +86,7 @@ export class UpdateBudgetsResponseDto implements IBudget {
       totalPrice: item.totalPrice,
       notes: item.notes,
       sortOrder: item.sortOrder,
+      eventDateIndex: item.eventDateIndex ?? 0,
       createdAt:
         item.createdAt instanceof Date
           ? formatLocalDateTime(item.createdAt) || String(item.createdAt)
@@ -131,14 +135,14 @@ export class UpdateBudgetsResponseDto implements IBudget {
   @Field(() => [String])
   eventDepartureTimes!: string[];
 
-  @Field({ nullable: true })
-  eventLocation?: string;
+  @Field(() => [String])
+  eventLocation!: string[];
 
-  @Field({ nullable: true })
-  guestCount?: number;
+  @Field(() => [Int])
+  guestCount!: number[];
 
-  @Field({ nullable: true })
-  durationHours?: number;
+  @Field(() => [Int])
+  durationHours!: number[];
 
   @Field({ nullable: true })
   paymentMethod?: string;
@@ -146,17 +150,17 @@ export class UpdateBudgetsResponseDto implements IBudget {
   @Field(() => Float, { nullable: true })
   advancePercentage?: number;
 
-  @Field(() => Float, { nullable: true })
-  discountPercentage?: number | null;
+  @Field(() => [Float])
+  discountPercentage!: number[];
 
-  @Field(() => String, { nullable: true })
-  discountType?: "percentage" | "amount" | null;
+  @Field(() => [String])
+  discountType!: string[];
 
-  @Field(() => Float, { nullable: true })
-  discountAmount?: number | null;
+  @Field(() => [Float])
+  discountAmount!: number[];
 
-  @Field(() => Float)
-  displacementFee!: number;
+  @Field(() => [Float])
+  displacementFee!: number[];
 
   @Field(() => Float)
   subtotal!: number;

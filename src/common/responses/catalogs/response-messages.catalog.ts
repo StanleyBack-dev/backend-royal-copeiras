@@ -204,6 +204,24 @@ export const RESPONSE_MESSAGES = {
       message: "Perfil da empresa atualizado com sucesso.",
     },
   },
+  publicIntake: {
+    listed: {
+      code: "PUBLIC_INTAKE_CODES_LISTED",
+      message: "Códigos carregados com sucesso.",
+    },
+    codeGenerated: {
+      code: "PUBLIC_INTAKE_CODE_GENERATED",
+      message: "Código gerado com sucesso.",
+    },
+    codeVerified: {
+      code: "PUBLIC_INTAKE_CODE_VERIFIED",
+      message: "Código verificado com sucesso.",
+    },
+    submitted: {
+      code: "PUBLIC_INTAKE_SUBMITTED",
+      message: "Informações recebidas com sucesso.",
+    },
+  },
   payments: {
     created: {
       code: "PAYMENT_CREATED",
