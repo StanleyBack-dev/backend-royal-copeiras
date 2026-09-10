@@ -11,6 +11,7 @@ import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
 import { PositionsEntity } from "../../../positions/entities/positions.entity";
+import { SuppliesEntity } from "../../../supplies/entities/supplies.entity";
 
 @Injectable()
 export class UpdateBudgetsService {
@@ -23,6 +24,8 @@ export class UpdateBudgetsService {
     private readonly leadsRepository: Repository<LeadsEntity>,
     @InjectRepository(PositionsEntity)
     private readonly positionsRepository: Repository<PositionsEntity>,
+    @InjectRepository(SuppliesEntity)
+    private readonly suppliesRepository: Repository<SuppliesEntity>,
     private readonly authorizationService: AuthorizationService,
   ) {}
 
@@ -43,6 +46,7 @@ export class UpdateBudgetsService {
         budgetItemsRepo: this.budgetItemsRepository,
         leadsRepo: this.leadsRepository,
         positionsRepo: this.positionsRepository,
+        suppliesRepo: this.suppliesRepository,
       },
     );
 

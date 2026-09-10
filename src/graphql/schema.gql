@@ -60,6 +60,7 @@ enum PageAccessKey {
   CLIENTS
   EMPLOYEES
   POSITIONS
+  SUPPLIES
   USERS
   EVENTS
   PAYMENTS
@@ -324,6 +325,10 @@ type CreateLeadsResponseDto {
   document: String
   legalName: String
   address: String
+  addressStreet: String
+  addressNumber: String
+  addressComplement: String
+  addressNeighborhood: String
   addressCity: String
   addressState: String
   addressZipCode: String
@@ -360,6 +365,10 @@ type GetLeadsResponseDto {
   document: String
   legalName: String
   address: String
+  addressStreet: String
+  addressNumber: String
+  addressComplement: String
+  addressNeighborhood: String
   addressCity: String
   addressState: String
   addressZipCode: String
@@ -379,6 +388,10 @@ type UpdateLeadsResponseDto {
   document: String
   legalName: String
   address: String
+  addressStreet: String
+  addressNumber: String
+  addressComplement: String
+  addressNeighborhood: String
   addressCity: String
   addressState: String
   addressZipCode: String
@@ -901,8 +914,12 @@ type GenerateContractPreviewMutationResponseDto {
 
 type CreateBudgetItemResponseDto {
   idBudgetItems: String!
+  itemType: BudgetItemType!
   idPositions: String
   position: String
+  idSupplies: String
+  supply: String
+  unit: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -910,8 +927,14 @@ type CreateBudgetItemResponseDto {
   notes: String
   sortOrder: Float!
   eventDateIndex: Int!
+  serviceGender: String
   createdAt: String!
   updatedAt: String!
+}
+
+enum BudgetItemType {
+  LABOR
+  SUPPLY
 }
 
 type CreateBudgetsResponseDto {
@@ -954,8 +977,12 @@ enum BudgetStatus {
 
 type GetBudgetItemResponseDto {
   idBudgetItems: String!
+  itemType: BudgetItemType!
   idPositions: String
   position: String
+  idSupplies: String
+  supply: String
+  unit: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -998,8 +1025,12 @@ type GetBudgetsResponseDto {
 
 type UpdateBudgetItemResponseDto {
   idBudgetItems: String!
+  itemType: BudgetItemType!
   idPositions: String
   position: String
+  idSupplies: String
+  supply: String
+  unit: String
   description: String!
   quantity: Float!
   unitPrice: Float!
@@ -1007,6 +1038,7 @@ type UpdateBudgetItemResponseDto {
   notes: String
   sortOrder: Float!
   eventDateIndex: Int!
+  serviceGender: String
   createdAt: String!
   updatedAt: String!
 }
@@ -1129,6 +1161,62 @@ type UpdatePositionsMutationResponseDto {
   data: UpdatePositionsResponseDto!
 }
 
+type CreateSuppliesResponseDto {
+  idSupplies: String!
+  name: String!
+  defaultUnit: String
+  suggestedUnitPrice: Float
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type GetSuppliesResponseDto {
+  idSupplies: String!
+  name: String!
+  defaultUnit: String
+  suggestedUnitPrice: Float
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UpdateSuppliesResponseDto {
+  idSupplies: String!
+  name: String!
+  defaultUnit: String
+  suggestedUnitPrice: Float
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type CreateSuppliesMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: CreateSuppliesResponseDto!
+}
+
+type GetSuppliesListResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  items: [GetSuppliesResponseDto!]!
+  total: Int!
+  currentPage: Int!
+  limit: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+}
+
+type UpdateSuppliesMutationResponseDto {
+  success: Boolean!
+  message: String
+  code: String
+  data: UpdateSuppliesResponseDto!
+}
+
 type GetPublicIntakeCodesResponseDto {
   idPublicIntakeCodes: String!
   code: String!
@@ -1159,9 +1247,16 @@ type GeneratePublicIntakeCodeMutationResponseDto {
   data: GeneratePublicIntakeCodeResponseDto!
 }
 
+type PublicIntakeSupplyDto {
+  idSupplies: String!
+  name: String!
+  defaultUnit: String
+}
+
 type VerifyPublicIntakeCodeResponseDto {
   formToken: String!
   expiresAt: String!
+  supplies: [PublicIntakeSupplyDto!]!
 }
 
 type VerifyPublicIntakeCodeMutationResponseDto {
@@ -1219,6 +1314,7 @@ type Query {
   getPaymentsByEvent(idEvents: String!): [GetPaymentResponseDto!]!
   getBudgets(input: GetBudgetsInputDto): GetBudgetsListResponseDto!
   getPositions(input: GetPositionsInputDto): GetPositionsListResponseDto!
+  getSupplies(input: GetSuppliesInputDto): GetSuppliesListResponseDto!
   getPublicIntakeCodes(
     input: GetPublicIntakeCodesInputDto
   ): GetPublicIntakeCodesListResponseDto!
@@ -1321,6 +1417,14 @@ input GetPositionsInputDto {
   isActive: Boolean
 }
 
+input GetSuppliesInputDto {
+  page: Int = 1
+  limit: Int = 10
+  idSupplies: String
+  search: String
+  isActive: Boolean
+}
+
 input GetPublicIntakeCodesInputDto {
   page: Int = 1
   limit: Int = 10
@@ -1415,6 +1519,12 @@ type Mutation {
   updatePositions(
     input: UpdatePositionsInputDto!
   ): UpdatePositionsMutationResponseDto!
+  createSupplies(
+    input: CreateSuppliesInputDto!
+  ): CreateSuppliesMutationResponseDto!
+  updateSupplies(
+    input: UpdateSuppliesInputDto!
+  ): UpdateSuppliesMutationResponseDto!
   generatePublicIntakeCode: GeneratePublicIntakeCodeMutationResponseDto!
   verifyPublicIntakeCode(
     input: VerifyPublicIntakeCodeInputDto!
@@ -1531,6 +1641,10 @@ input CreateLeadsInputDto {
   document: String
   legalName: String
   address: String
+  addressStreet: String
+  addressNumber: String
+  addressComplement: String
+  addressNeighborhood: String
   addressCity: String
   addressState: String
   addressZipCode: String
@@ -1548,6 +1662,10 @@ input UpdateLeadsInputDto {
   document: String
   legalName: String
   address: String
+  addressStreet: String
+  addressNumber: String
+  addressComplement: String
+  addressNeighborhood: String
   addressCity: String
   addressState: String
   addressZipCode: String
@@ -1740,7 +1858,10 @@ input CreateBudgetsInputDto {
 }
 
 input CreateBudgetItemInputDto {
-  idPositions: String!
+  itemType: BudgetItemType! = LABOR
+  idPositions: String
+  idSupplies: String
+  unit: String
   description: String!
   gender: String
   quantity: Int!
@@ -1775,7 +1896,10 @@ input UpdateBudgetsInputDto {
 }
 
 input UpdateBudgetItemInputDto {
-  idPositions: String!
+  itemType: BudgetItemType! = LABOR
+  idPositions: String
+  idSupplies: String
+  unit: String
   description: String!
   gender: String
   quantity: Int!
@@ -1806,6 +1930,21 @@ input UpdatePositionsInputDto {
   isActive: Boolean
 }
 
+input CreateSuppliesInputDto {
+  name: String!
+  defaultUnit: String
+  suggestedUnitPrice: Float
+  isActive: Boolean! = true
+}
+
+input UpdateSuppliesInputDto {
+  idSupplies: String!
+  name: String
+  defaultUnit: String
+  suggestedUnitPrice: Float
+  isActive: Boolean
+}
+
 input VerifyPublicIntakeCodeInputDto {
   code: String!
 }
@@ -1816,6 +1955,13 @@ input SubmitPublicIntakeInputDto {
   email: String
   phone: String
   document: String
+  addressStreet: String
+  addressNumber: String
+  addressComplement: String
+  addressNeighborhood: String
+  addressCity: String
+  addressState: String
+  addressZipCode: String
   eventDates: [String!]!
   eventArrivalTimes: [String!]!
   eventDepartureTimes: [String!]!
@@ -1826,8 +1972,11 @@ input SubmitPublicIntakeInputDto {
 }
 
 input SubmitPublicIntakeItemInputDto {
+  itemType: BudgetItemType! = LABOR
   description: String!
+  idSupplies: String
   gender: String
+  unit: String
   quantity: Int!
   eventDateIndex: Int! = 0
 }

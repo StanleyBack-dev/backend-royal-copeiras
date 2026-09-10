@@ -1,6 +1,7 @@
 import { BudgetsEntity } from "../entities/budgets.entity";
 import { BudgetItemsEntity } from "../entities/budgetItems.entity";
 import { BudgetStatus } from "../enums/budget-status.enum";
+import { BudgetItemType } from "../enums/budget-item-type.enum";
 import { UserEntity } from "../../users/entities/user.entity";
 import { LeadsEntity } from "../../leads/entities/leads.entity";
 
@@ -8,6 +9,7 @@ export const budgetItemMock: BudgetItemsEntity = {
   idBudgetItems: "item-1",
   idBudgets: "budget-1",
   budget: { idBudgets: "budget-1" } as BudgetsEntity,
+  itemType: BudgetItemType.LABOR,
   description: "Item antigo",
   quantity: 1,
   unitPrice: 1000,

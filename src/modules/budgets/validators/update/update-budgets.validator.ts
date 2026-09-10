@@ -1,4 +1,4 @@
-import { In, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { AppException } from "../../../../common/exceptions/app-exception";
 import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
@@ -13,10 +13,16 @@ import {
 } from "../../constants/budget-form-rules.constant";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 import { PositionsEntity } from "../../../positions/entities/positions.entity";
+import { SuppliesEntity } from "../../../supplies/entities/supplies.entity";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import {
-  inferServiceComboFromDescription,
-  normalizeGenderToEnglish,
-} from "../../constants/budget-service-types.constant";
+  assertItemsNotDuplicated,
+  assertItemsShape,
+  loadAndAssertPositions,
+  loadAndAssertSupplies,
+  normalizeBudgetItems,
+} from "../base/budget-items.util";
+import { assertBudgetReadyForContract } from "../base/budget-completeness.util";
 
 const BUDGET_ALLOWED_TRANSITIONS: Record<BudgetStatus, BudgetStatus[]> = {
   [BudgetStatus.DRAFT]: [
@@ -49,6 +55,7 @@ interface UpdateBudgetDeps {
   budgetItemsRepo: Repository<BudgetItemsEntity>;
   leadsRepo: Repository<LeadsEntity>;
   positionsRepo: Repository<PositionsEntity>;
+  suppliesRepo: Repository<SuppliesEntity>;
 }
 
 interface BudgetRulesSnapshot {
@@ -65,8 +72,11 @@ interface BudgetRulesSnapshot {
   discountPercentage?: number[] | null;
   discountAmount?: number[] | null;
   items?: Array<{
+    itemType?: BudgetItemType | null;
     description?: string | null;
     idPositions?: string | null;
+    idSupplies?: string | null;
+    unit?: string | null;
     gender?: string | null;
     eventDateIndex?: number | null;
   }>;
@@ -152,6 +162,12 @@ export class UpdateBudgetsValidator {
       throw AppException.from(APP_ERRORS.budgets.notFound, undefined);
     }
 
+    const previousStatus = current.status;
+    const leavingDraft =
+      previousStatus === BudgetStatus.DRAFT &&
+      input.status !== undefined &&
+      input.status !== BudgetStatus.DRAFT;
+
     const hasUpdateData = Object.entries(input).some(
       ([key, value]) => key !== "idBudgets" && value !== undefined,
     );
@@ -191,8 +207,11 @@ export class UpdateBudgetsValidator {
           discountAmount: input.discountAmount ?? current.discountAmount,
           items:
             input.items?.map((item) => ({
+              itemType: item.itemType,
               description: item.description,
               idPositions: item.idPositions,
+              idSupplies: item.idSupplies,
+              unit: item.unit,
               eventDateIndex: item.eventDateIndex ?? 0,
             })) ?? current.items,
         },
@@ -295,65 +314,13 @@ export class UpdateBudgetsValidator {
       }
 
       if (input.items?.length) {
-        const positionIds = Array.from(
-          new Set(input.items.map((item) => item.idPositions)),
-        );
-        const positions = await deps.positionsRepo.find({
-          where: { idPositions: In(positionIds) },
-        });
-        const positionsById = new Map(
-          positions.map((position) => [position.idPositions, position]),
+        await loadAndAssertPositions(input.items, deps.positionsRepo);
+        const suppliesById = await loadAndAssertSupplies(
+          input.items,
+          deps.suppliesRepo,
         );
 
-        const hasMissingPosition = positionIds.some(
-          (idPositions) => !positionsById.has(idPositions),
-        );
-
-        if (hasMissingPosition) {
-          throw AppException.from(APP_ERRORS.positions.notFound, undefined);
-        }
-
-        const hasInactivePosition = positionIds.some((idPositions) => {
-          const position = positionsById.get(idPositions);
-          return !position?.isActive;
-        });
-
-        if (hasInactivePosition) {
-          throw AppException.from(APP_ERRORS.positions.inactive, undefined);
-        }
-
-        const normalizedItems = input.items.map((item) => {
-          const totalPrice = Number(
-            (item.quantity * item.unitPrice).toFixed(2),
-          );
-
-          const explicitGenderRaw = item.gender?.toString().trim();
-          let serviceGender = normalizeGenderToEnglish(explicitGenderRaw);
-
-          if (!serviceGender) {
-            const inferred = inferServiceComboFromDescription(
-              item.description ?? undefined,
-            );
-            if (inferred) {
-              const parts = inferred.split(":");
-              serviceGender = normalizeGenderToEnglish(
-                parts.length > 1 ? parts[1] : undefined,
-              );
-            }
-          }
-
-          return {
-            idPositions: item.idPositions,
-            description: item.description,
-            serviceGender: serviceGender ?? null,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice,
-            notes: item.notes,
-            sortOrder: item.sortOrder ?? 0,
-            eventDateIndex: item.eventDateIndex ?? 0,
-          };
-        });
+        const normalizedItems = normalizeBudgetItems(input.items, suppliesById);
 
         const eventDayCount = current.eventDates.length;
         const daySubtotals = Array.from({ length: eventDayCount }, (_, day) =>
@@ -393,7 +360,10 @@ export class UpdateBudgetsValidator {
         const newItems = normalizedItems.map((item) =>
           manager.create(BudgetItemsEntity, {
             idBudgets: current.idBudgets,
+            itemType: item.itemType,
             idPositions: item.idPositions,
+            idSupplies: item.idSupplies,
+            unit: item.unit,
             description: item.description,
             serviceGender: item.serviceGender ?? null,
             quantity: item.quantity,
@@ -408,7 +378,7 @@ export class UpdateBudgetsValidator {
         await manager.save(BudgetItemsEntity, newItems);
         current.items = await manager.find(BudgetItemsEntity, {
           where: { idBudgets: current.idBudgets },
-          relations: { position: true },
+          relations: { position: true, supply: true },
           order: { sortOrder: "ASC" },
         });
       } else if (!isStatusOnlyUpdate) {
@@ -445,9 +415,15 @@ export class UpdateBudgetsValidator {
       if (!saved.items) {
         saved.items = await deps.budgetItemsRepo.find({
           where: { idBudgets: saved.idBudgets },
-          relations: { position: true },
+          relations: { position: true, supply: true },
           order: { sortOrder: "ASC" },
         });
+      }
+
+      // A budget can only leave DRAFT once it is fully filled in and priced —
+      // otherwise the contract generated from it reaches the client with holes.
+      if (leavingDraft) {
+        assertBudgetReadyForContract(saved);
       }
 
       return saved;
@@ -638,73 +614,32 @@ export class UpdateBudgetsValidator {
       );
     }
 
-    if (
-      enforceItemPositions &&
-      data.items.some((item) => !item.idPositions?.trim())
-    ) {
+    if (!enforceItemPositions) {
+      return;
+    }
+
+    assertItemsShape(data.items);
+
+    const eventDayCount = data.eventDates?.length ?? 0;
+    const hasInvalidEventDateIndex = data.items.some((item) => {
+      const index = item.eventDateIndex ?? 0;
+      return !Number.isInteger(index) || index < 0 || index >= eventDayCount;
+    });
+
+    if (hasInvalidEventDateIndex) {
       throw AppException.from(
-        APP_ERRORS.budgets.itemServiceTypeInvalid,
+        APP_ERRORS.budgets.itemEventDateIndexInvalid,
         undefined,
       );
     }
 
-    if (enforceItemPositions) {
-      const eventDayCount = data.eventDates?.length ?? 0;
-      const hasInvalidEventDateIndex = data.items.some((item) => {
-        const index = item.eventDateIndex ?? 0;
-        return !Number.isInteger(index) || index < 0 || index >= eventDayCount;
-      });
-
-      if (hasInvalidEventDateIndex) {
-        throw AppException.from(
-          APP_ERRORS.budgets.itemEventDateIndexInvalid,
-          undefined,
-        );
-      }
-
-      const coveredDays = new Set(
-        data.items.map((item) => item.eventDateIndex ?? 0),
-      );
-      if (coveredDays.size < eventDayCount) {
-        throw AppException.from(APP_ERRORS.budgets.dayMissingItems, undefined);
-      }
-
-      const selectedPositionKeys = data.items.map((item) => {
-        const explicitGenderRaw = item.gender?.toString().trim();
-        let genderKey = normalizeGenderToEnglish(explicitGenderRaw) ?? "";
-        if (!genderKey) {
-          const inferred = inferServiceComboFromDescription(
-            item.description ?? undefined,
-          );
-          if (inferred) {
-            const parts = inferred.split(":");
-            genderKey =
-              normalizeGenderToEnglish(
-                parts.length > 1 ? parts[1] : undefined,
-              ) ?? "";
-          }
-        }
-
-        const dayPrefix = `${item.eventDateIndex ?? 0}`;
-
-        if (genderKey) {
-          return `${dayPrefix}::${item.idPositions || ""}::${genderKey}`;
-        }
-
-        return `${dayPrefix}::${item.idPositions || ""}::${(item.description ?? "").trim().toLowerCase()}`;
-      });
-      const uniquePositionKeys = new Set(selectedPositionKeys);
-
-      if (selectedPositionKeys.length !== uniquePositionKeys.size) {
-        throw AppException.from(
-          APP_ERRORS.budgets.itemServiceTypeDuplicated,
-          undefined,
-        );
-      }
+    const coveredDays = new Set(
+      data.items.map((item) => item.eventDateIndex ?? 0),
+    );
+    if (coveredDays.size < eventDayCount) {
+      throw AppException.from(APP_ERRORS.budgets.dayMissingItems, undefined);
     }
 
-    if (!enforceItemPositions) {
-      return;
-    }
+    assertItemsNotDuplicated(data.items);
   }
 }

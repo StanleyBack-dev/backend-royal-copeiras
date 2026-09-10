@@ -9,6 +9,10 @@ export interface BudgetProposalPdfPayloadItem {
   unitPrice: string;
   totalPrice: string;
   notes?: string;
+  // "dayHeader" / "daySubtotal" rows are drawn as full-width bands to break the
+  // items table into per-day blocks on multi-day budgets. Absent means a normal
+  // item row.
+  kind?: "item" | "dayHeader" | "daySubtotal";
 }
 
 export interface BudgetProposalPdfPayloadFooter {

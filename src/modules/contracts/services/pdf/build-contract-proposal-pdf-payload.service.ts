@@ -16,6 +16,25 @@ import {
 } from "../../constants/service-fragments";
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
+// Joins "Logradouro, Número, Complemento, Bairro" from the structured lead
+// fields, falling back to the legacy free-text `address` for leads registered
+// before the structured address existed.
+function buildContratanteStreetLine(lead: ContractPdfSnapshot["lead"]): string {
+  const street = lead?.addressStreet?.trim();
+  if (street) {
+    return [
+      street,
+      lead?.addressNumber?.trim(),
+      lead?.addressComplement?.trim(),
+      lead?.addressNeighborhood?.trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  return lead?.address?.trim() ?? "";
+}
+
 /**
  * Builds the CONTRATANTE identification lines for the "Partes" block of the
  * PDF. Only overrides the default "name + document" rendering when the lead
@@ -30,12 +49,13 @@ function buildContratantePartyLines(
   }
 
   const legalName = lead.legalName?.trim();
-  const addressParts = [lead.address, lead.addressCity, lead.addressState]
-    .map((part) => part?.trim())
-    .filter((part): part is string => Boolean(part));
+  const streetLine = buildContratanteStreetLine(lead);
+  const cityState = [lead.addressCity?.trim(), lead.addressState?.trim()]
+    .filter(Boolean)
+    .join("/");
   const zipCode = lead.addressZipCode?.trim();
 
-  if (!legalName && !addressParts.length && !zipCode) {
+  if (!legalName && !streetLine && !cityState && !zipCode) {
     return [];
   }
 
@@ -57,14 +77,8 @@ function buildContratantePartyLines(
     lines.push(`${documentLabel}: ${lead.document.trim()}`);
   }
 
-  if (addressParts.length || zipCode) {
-    const cityState = [lead.addressCity?.trim(), lead.addressState?.trim()]
-      .filter(Boolean)
-      .join("/");
-    const addressLine = [lead.address?.trim(), cityState]
-      .filter(Boolean)
-      .join(" - ");
-    const fullAddress = [addressLine, zipCode ? `CEP ${zipCode}` : ""]
+  if (streetLine || cityState || zipCode) {
+    const fullAddress = [streetLine, cityState, zipCode ? `CEP ${zipCode}` : ""]
       .filter(Boolean)
       .join(" - ");
     lines.push(`Endereço: ${fullAddress}`);
@@ -341,35 +355,89 @@ const DEFAULT_CONTRACTOR_DOCUMENT = "64.062.038/0001-71";
 const DEFAULT_ISSUE_CITY = "Goiânia";
 
 // Human readable payment reference used in the payment clause of the contract
-// body (e.g. "CNPJ 64.062.038/0001-71" or "chave PIX contato@empresa.com").
+// body (e.g. "CNPJ 64.062.038/0001-71 - Estevam Barros Rodrigues" or
+// "chave PIX contato@empresa.com - Fulano"). The name of the PIX key holder
+// (representante / titular, falling back to the razão social) is always shown
+// after the key value.
 function buildContractorPaymentReference(
   contractor: ContractPartySnapshot,
 ): string {
   const document = contractor.document?.trim();
   const pixKey = contractor.pixKey?.trim();
   const pixKeyType = contractor.pixKeyType?.trim().toLowerCase();
-  const pixKeyOwnerName = contractor.representativeName?.trim();
-  const pixKeyOwnerSuffix = pixKeyOwnerName
-    ? `, titular ${pixKeyOwnerName}`
-    : "";
+  const ownerName =
+    contractor.representativeName?.trim() || contractor.legalName?.trim();
+  const ownerSuffix = ownerName ? ` - ${ownerName}` : "";
 
   if (pixKey && pixKeyType === "cnpj") {
-    return `CNPJ ${pixKey}${pixKeyOwnerSuffix}`;
+    return `CNPJ ${pixKey}${ownerSuffix}`;
   }
 
   if (pixKey && pixKeyType === "cpf") {
-    return `CPF ${pixKey}${pixKeyOwnerSuffix}`;
+    return `CPF ${pixKey}${ownerSuffix}`;
   }
 
   if (pixKey) {
-    return `chave PIX ${pixKey}${pixKeyOwnerSuffix}`;
+    return `chave PIX ${pixKey}${ownerSuffix}`;
   }
 
   if (document) {
-    return `CNPJ ${document}`;
+    return `CNPJ ${document}${ownerSuffix}`;
   }
 
-  return `CNPJ ${DEFAULT_CONTRACTOR_DOCUMENT}`;
+  return `CNPJ ${DEFAULT_CONTRACTOR_DOCUMENT}${ownerSuffix}`;
+}
+
+const FEMININE_SUPPLY_UNITS = new Set([
+  "unidade",
+  "caixa",
+  "dúzia",
+  "duzia",
+  "resma",
+  "cartela",
+  "ampola",
+  "barra",
+  "lata",
+  "bombona",
+  "bisnaga",
+  "peça",
+  "sacola",
+]);
+
+// Best-effort pluralization of a Portuguese unit of measure so the material
+// lines in the contract read naturally for any unit ("2 rolos", "3 caixas",
+// "4 pacotes", "5 litros"). Abbreviations (kg, ml, un…) are left untouched.
+function pluralizeSupplyUnit(unit: string, quantity: number): string {
+  const trimmed = unit.trim();
+  if (!trimmed || quantity <= 1) {
+    return trimmed;
+  }
+
+  const lower = trimmed.toLowerCase();
+  const irregular: Record<string, string> = {
+    par: "pares",
+    galão: "galões",
+    galao: "galões",
+    sachê: "sachês",
+    sache: "sachês",
+    cartão: "cartões",
+  };
+  if (irregular[lower]) {
+    return irregular[lower];
+  }
+  if (/^(kg|g|mg|ml|l|cm|m|un|pct|cx)$/i.test(trimmed)) {
+    return trimmed;
+  }
+  if (/(ã)o$/i.test(trimmed)) {
+    return trimmed.replace(/ão$/i, "ões");
+  }
+  if (/[rsz]$/i.test(trimmed)) {
+    return `${trimmed}es`;
+  }
+  if (/l$/i.test(trimmed)) {
+    return `${trimmed.slice(0, -1)}is`;
+  }
+  return `${trimmed}s`;
 }
 
 function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
@@ -403,15 +471,17 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
     typeof snapshot.budget?.advancePercentage === "number"
       ? snapshot.budget.advancePercentage
       : 30;
-  // choose primary service type from budget items (first defined)
-  const primaryServiceType =
-    snapshot.budget?.items && snapshot.budget.items.length
-      ? String(snapshot.budget.items[0].serviceType || "").trim()
-      : "";
+  // Staffing lines feed Cláusula 1ª; supply/material lines feed Cláusula 3ª.
+  const allItems = snapshot.budget?.items || [];
+  const items = allItems.filter((item) => item.itemType !== "SUPPLY");
+  const supplyItems = allItems.filter((item) => item.itemType === "SUPPLY");
+
+  // choose primary service type from staffing items (first defined)
+  const primaryServiceType = items.length
+    ? String(items[0].serviceType || "").trim()
+    : "";
 
   const fragment = getFragmentForServiceType(primaryServiceType);
-  // build a services block listing each budget item as a separate line
-  const items = snapshot.budget?.items || [];
 
   function numberToPtWords(
     n: number,
@@ -544,17 +614,27 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
           .join("\n")
       : buildServicesBlockPerDay(items, eventDates, buildItemLine);
 
-  const displacementFee = Array.isArray(snapshot.budget?.displacementFee)
-    ? Number(
-        snapshot.budget.displacementFee
-          .reduce((sum, value) => sum + value, 0)
-          .toFixed(2),
-      )
-    : 0;
+  const displacementPerDay = Array.isArray(snapshot.budget?.displacementFee)
+    ? snapshot.budget.displacementFee.map((value) => Number(value) || 0)
+    : [];
+  const displacementFee = Number(
+    displacementPerDay.reduce((sum, value) => sum + value, 0).toFixed(2),
+  );
   const displacementFeeLabel = formatCurrencyExtended(displacementFee);
+  const displacementPerDayParts = displacementPerDay
+    .map((value, index) => ({ value, day: index + 1 }))
+    .filter((entry) => entry.value > 0)
+    .map(
+      (entry) =>
+        `${formatCurrencyExtended(entry.value)} referente ao ${entry.day}º dia`,
+    );
+  const displacementValueText =
+    displacementPerDayParts.length > 1
+      ? `no valor total de ${displacementFeeLabel}, sendo ${displacementPerDayParts.join(", ")}`
+      : `no valor de ${displacementFeeLabel}`;
   const displacementClause =
     displacementFee > 0
-      ? `\n1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.`
+      ? `\n1.4. O presente contrato inclui uma taxa de deslocamento ${displacementValueText}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.`
       : "";
 
   const guestCountLabel = buildGuestCountLabel(
@@ -578,13 +658,49 @@ function buildDefaultBody(snapshot: ContractPdfSnapshot): string {
 
   const penaltyClause = `\n5.5. Em caso de descumprimento, pela CONTRATADA, das obrigações previstas nas Cláusulas 5.1 a 5.3 (pontualidade, qualidade e adequação da equipe, fornecimento dos materiais previstos na Cláusula 3ª), a CONTRATADA sujeitar-se-á à multa de 10% (dez por cento) sobre o valor total do contrato, sem prejuízo do direito da CONTRATANTE de exigir o cumprimento da obrigação ou de rescindir o contrato, bem como de pleitear indenização por perdas e danos comprovados.`;
 
+  // Cláusula 3.2 — when the budget carries explicit material/supply lines they
+  // are listed here as included in the total; otherwise keep the default
+  // "charged separately" wording.
+  // Reads as "4 (quatro) rolos de papel higiênico" / "2 (duas) unidades de
+  // álcool em gel" — a standard phrase that fits any material, so the clause no
+  // longer shows the bare catalog name.
+  const buildSupplyLine = (it: {
+    quantity?: number;
+    description?: string;
+    unit?: string | null;
+    supplyName?: string | null;
+  }): string => {
+    const qty =
+      it.quantity && Number.isFinite(it.quantity) && it.quantity > 0
+        ? it.quantity
+        : 1;
+    const name = (it.supplyName || it.description || "material")
+      .trim()
+      .toLowerCase();
+    const rawUnit = it.unit?.trim() || "unidade";
+    const isFeminine = FEMININE_SUPPLY_UNITS.has(rawUnit.toLowerCase());
+    const qtyWords = numberToPtWords(
+      qty,
+      isFeminine ? "feminine" : "masculine",
+    );
+    const unitLabel = pluralizeSupplyUnit(rawUnit, qty);
+    return `${qty} (${qtyWords}) ${unitLabel} de ${name}`;
+  };
+
+  const suppliesClause = supplyItems.length
+    ? `3.2. A CONTRATADA fornecerá ainda os seguintes materiais, cujos valores já estão incluídos no valor total deste contrato: ${supplyItems
+        .map((it) => buildSupplyLine(it))
+        .join(
+          "; ",
+        )}. Ressalta-se que os materiais mencionados serão utilizados exclusivamente para a manutenção da organização, higiene e limpeza dos ambientes relacionados ao serviço contratado.`
+    : `3.2. Caso o contratante deseje a inclusão de papel toalha e papel higiênico, este valor será cobrado à parte e adicionado ao valor total do serviço. Ressalta-se que os materiais mencionados acima serão utilizados exclusivamente para a manutenção da organização, higiene e limpeza dos ambientes relacionados ao serviço contratado.`;
+
   return `CLAUSULA 1a - SERVIÇOS CONTRATADOS:
 
 1.1. O presente contrato tem por objeto a prestação de serviços por parte da contratada, consistentes na disponibilização de:
 ${servicesBlock}
 1.2. ${durationClauseText}
 1.3. O evento está previsto para ocorrer ${eventDatesText}, ${eventScheduleText}, ${guestCountLabel ? `com previsão de ${guestCountLabel},` : ""} no local ${eventLocationText}.${displacementClause}
-1.4. O presente contrato inclui uma taxa de deslocamento no valor de ${displacementFeeLabel}, referente ao deslocamento da equipe ao local do evento, conforme acordado entre as partes.
 
 CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 
@@ -595,7 +711,7 @@ CLAUSULA 2a - VALOR DO SERVIÇO E FORMA DE PAGAMENTO:
 CLAUSULA 3a - DOS MATERIAIS DE LIMPEZA:
 
 3.1. A contratada se responsabiliza por disponibilizar, para a adequada execução dos serviços durante o evento, os seguintes materiais de limpeza: desinfetante, aromatizante de ambiente (cheirinho de banheiro), pano de chão, rodo, vassoura, pá de lixo, sacos de lixo, luvas e álcool.
-3.2. Caso o contratante deseje a inclusão de papel toalha e papel higiênico, este valor será cobrado à parte e adicionado ao valor total do serviço. Ressalta-se que os materiais mencionados acima serão utilizados exclusivamente para a manutenção da organização, higiene e limpeza dos ambientes relacionados ao serviço contratado.
+${suppliesClause}
 
 CLAUSULA 4a - RESPONSABILIDADES DO CONTRATANTE:
 

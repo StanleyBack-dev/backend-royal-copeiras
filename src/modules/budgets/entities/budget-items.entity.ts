@@ -9,6 +9,8 @@ import {
 } from "typeorm";
 import { BudgetsEntity } from "./budgets.entity";
 import { PositionsEntity } from "../../positions/entities/positions.entity";
+import { SuppliesEntity } from "../../supplies/entities/supplies.entity";
+import { BudgetItemType } from "../enums/budget-item-type.enum";
 
 const numericTransformer = {
   to: (value: number | null | undefined) => value,
@@ -29,12 +31,30 @@ export class BudgetItemsEntity {
   @Column({ name: "idtb_budgets", type: "uuid" })
   idBudgets!: string;
 
+  @Column({
+    name: "item_type",
+    type: "varchar",
+    length: 16,
+    default: BudgetItemType.LABOR,
+  })
+  itemType!: BudgetItemType;
+
   @ManyToOne(() => PositionsEntity, { onDelete: "RESTRICT", nullable: true })
   @JoinColumn({ name: "idtb_positions" })
   position?: PositionsEntity;
 
   @Column({ name: "idtb_positions", type: "uuid", nullable: true })
   idPositions?: string | null;
+
+  @ManyToOne(() => SuppliesEntity, { onDelete: "RESTRICT", nullable: true })
+  @JoinColumn({ name: "idtb_supplies" })
+  supply?: SuppliesEntity;
+
+  @Column({ name: "idtb_supplies", type: "uuid", nullable: true })
+  idSupplies?: string | null;
+
+  @Column({ name: "unit", type: "varchar", length: 32, nullable: true })
+  unit?: string | null;
 
   @Column({ name: "description", type: "varchar", length: 255 })
   description!: string;

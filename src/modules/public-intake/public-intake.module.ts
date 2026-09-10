@@ -8,6 +8,7 @@ import { MailModule } from "../mails/mail.module";
 import { PublicIntakeCodeEntity } from "./entities/public-intake-code.entity";
 import { LeadsEntity } from "../leads/entities/leads.entity";
 import { BudgetsEntity } from "../budgets/entities/budgets.entity";
+import { SuppliesEntity } from "../supplies/entities/supplies.entity";
 
 // SERVICES
 import { PublicIntakeCodesService } from "./services/public-intake-codes.service";
@@ -30,6 +31,7 @@ import { GetPublicIntakeCodesResolver } from "./resolvers/get/get-public-intake-
       PublicIntakeCodeEntity,
       LeadsEntity,
       BudgetsEntity,
+      SuppliesEntity,
     ]),
   ],
   providers: [

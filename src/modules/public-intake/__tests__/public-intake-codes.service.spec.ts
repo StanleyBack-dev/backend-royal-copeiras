@@ -1,10 +1,5 @@
 import { ConfigService } from "@nestjs/config";
-import { toDbLocalTimestampString } from "../../../common/utils/to-db-local-timestamp.util";
 import { PublicIntakeCodesService } from "../services/public-intake-codes.service";
-
-function nowAsDbLocalString(): string {
-  return toDbLocalTimestampString(new Date());
-}
 
 function makeConfigService(): ConfigService {
   return {
@@ -25,18 +20,23 @@ describe("PublicIntakeCodesService", () => {
       makeConfigService(),
     );
 
+    const before = Date.now();
     const issued = await service.issueCode("user-1");
 
     expect(repo.update).toHaveBeenCalledWith(
       expect.objectContaining({ idUsers: "user-1" }),
-      expect.objectContaining({ invalidatedAt: expect.any(String) }),
+      expect.objectContaining({ invalidatedAt: expect.any(Date) }),
     );
     expect(issued.code).toMatch(/^\d{6}$/);
-    expect(issued.expiresAt > nowAsDbLocalString()).toBe(true);
     expect(repo.save).toHaveBeenCalled();
+
+    // The saved entity carries a Date roughly one code-TTL in the future.
+    const savedEntity = repo.create.mock.calls[0][0] as { expiresAt: Date };
+    expect(savedEntity.expiresAt).toBeInstanceOf(Date);
+    expect(savedEntity.expiresAt.getTime()).toBeGreaterThan(before);
   });
 
-  it("marks a code verified and issues a form token", async () => {
+  it("marks a code verified and issues a form token with a future expiry", async () => {
     const repo = {
       update: jest.fn().mockResolvedValue(undefined),
     };
@@ -46,22 +46,26 @@ describe("PublicIntakeCodesService", () => {
       makeConfigService(),
     );
 
-    const codeEntity = {
+    const before = Date.now();
+    const result = await service.markVerified({
       idPublicIntakeCodes: "code-1",
-    } as never;
-
-    const result = await service.markVerified(codeEntity);
+    } as never);
 
     expect(result.formToken).toBeTruthy();
-    expect(result.expiresAt > nowAsDbLocalString()).toBe(true);
     expect(repo.update).toHaveBeenCalledWith(
       { idPublicIntakeCodes: "code-1" },
       expect.objectContaining({
-        verifiedAt: expect.any(String),
+        verifiedAt: expect.any(Date),
         formToken: result.formToken,
-        formTokenExpiresAt: expect.any(String),
+        formTokenExpiresAt: expect.any(Date),
       }),
     );
+
+    const [, patch] = repo.update.mock.calls[0] as [
+      unknown,
+      { formTokenExpiresAt: Date },
+    ];
+    expect(patch.formTokenExpiresAt.getTime()).toBeGreaterThan(before);
   });
 
   it("records the resulting lead/budget when consuming a code", async () => {
@@ -82,7 +86,7 @@ describe("PublicIntakeCodesService", () => {
     expect(repo.update).toHaveBeenCalledWith(
       { idPublicIntakeCodes: "code-1" },
       expect.objectContaining({
-        consumedAt: expect.any(String),
+        consumedAt: expect.any(Date),
         resultingLeadId: "lead-1",
         resultingBudgetId: "budget-1",
       }),

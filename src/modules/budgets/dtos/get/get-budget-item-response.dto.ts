@@ -1,5 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { IBudgetItem } from "../../interface/budget-item.interface";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
@@ -9,8 +10,12 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
   ): GetBudgetItemResponseDto {
     const dto = new GetBudgetItemResponseDto();
     dto.idBudgetItems = entity.idBudgetItems;
+    dto.itemType = entity.itemType ?? BudgetItemType.LABOR;
     dto.idPositions = entity.idPositions;
     dto.position = entity.position?.name || null;
+    dto.idSupplies = entity.idSupplies ?? null;
+    dto.supply = entity.supply?.name || null;
+    dto.unit = entity.unit ?? null;
     dto.description = entity.description;
     dto.quantity = entity.quantity;
     dto.unitPrice = entity.unitPrice;
@@ -33,11 +38,23 @@ export class GetBudgetItemResponseDto implements IBudgetItem {
   @Field()
   idBudgetItems!: string;
 
+  @Field(() => BudgetItemType)
+  itemType!: BudgetItemType;
+
   @Field(() => String, { nullable: true })
   idPositions?: string | null;
 
   @Field(() => String, { nullable: true })
   position?: string | null;
+
+  @Field(() => String, { nullable: true })
+  idSupplies?: string | null;
+
+  @Field(() => String, { nullable: true })
+  supply?: string | null;
+
+  @Field(() => String, { nullable: true })
+  unit?: string | null;
 
   @Field()
   description!: string;

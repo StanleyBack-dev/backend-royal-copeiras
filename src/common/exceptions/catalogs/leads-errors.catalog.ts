@@ -11,6 +11,11 @@ export const leadsErrors = {
     status: HttpStatus.NOT_FOUND,
     message: "Lead não encontrado.",
   },
+  duplicate: {
+    code: "LEADS_DUPLICATE",
+    status: HttpStatus.CONFLICT,
+    message: "Já existe um lead cadastrado com este mesmo nome e documento.",
+  },
   noneFound: {
     code: "LEADS_NONE_FOUND",
     status: HttpStatus.NOT_FOUND,

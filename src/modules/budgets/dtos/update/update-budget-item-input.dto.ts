@@ -1,5 +1,6 @@
 import { Field, Float, InputType, Int } from "@nestjs/graphql";
 import {
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -8,12 +9,28 @@ import {
   IsUUID,
   Min,
 } from "class-validator";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 
 @InputType()
 export class UpdateBudgetItemInputDto {
-  @Field()
+  @Field(() => BudgetItemType, { defaultValue: BudgetItemType.LABOR })
+  @IsEnum(BudgetItemType)
+  itemType: BudgetItemType = BudgetItemType.LABOR;
+
+  @Field({ nullable: true })
+  @IsOptional()
   @IsUUID()
-  idPositions!: string;
+  idPositions?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsUUID()
+  idSupplies?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  unit?: string;
 
   @Field()
   @IsString()

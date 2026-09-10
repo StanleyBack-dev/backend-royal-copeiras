@@ -9,6 +9,10 @@ export interface ILead {
   document?: string;
   legalName?: string;
   address?: string;
+  addressStreet?: string;
+  addressNumber?: string;
+  addressComplement?: string;
+  addressNeighborhood?: string;
   addressCity?: string;
   addressState?: string;
   addressZipCode?: string;

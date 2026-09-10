@@ -28,7 +28,7 @@ const LOGO_BOX_HEIGHT = 48;
 const META_BOX_WIDTH = 180;
 const HEADER_DIVIDER_Y = PDF_LAYOUT.pageHeight - 126;
 const CONTENT_START_Y = HEADER_DIVIDER_Y - 22;
-const FOOTER_RESERVED_HEIGHT = 68;
+const FOOTER_RESERVED_HEIGHT = 92;
 const SECTION_TITLE_SIZE = 9;
 const SECTION_TITLE_GAP = 11;
 const PARTY_CARD_GAP = 8;
@@ -43,9 +43,6 @@ const PARAGRAPH_GAP = 2;
 const BODY_INSET_X = 12;
 const BODY_FIRST_PARAGRAPH_GAP = 7;
 const FINAL_SECTION_TOP_GAP = 10;
-const FINAL_SECTION_PADDING_X = 12;
-const FINAL_SECTION_PADDING_Y = 10;
-const FINAL_SECTION_LINE_GAP = 3;
 const LOGO_IMAGE_PATH = resolve(process.cwd(), "src/assets/images/logo.png");
 
 interface FontSet {
@@ -528,7 +525,12 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     const wordWidths = words.map((w) => font.widthOfTextAtSize(w, size));
     const totalWordWidth = wordWidths.reduce((acc, w) => acc + w, 0);
     const totalGap = availableWidth - totalWordWidth;
-    const gapWidth = totalGap / (words.length - 1);
+    const spaceWidth = font.widthOfTextAtSize(" ", size) || size * 0.25;
+    // Never let the inter-word gap collapse below a normal space — when
+    // wrapText packs a line to (or past) the full width the raw justification
+    // gap goes to ~0/negative and adjacent words render glued together
+    // ("CONTRATADAfornecerá").
+    const gapWidth = Math.max(totalGap / (words.length - 1), spaceWidth);
 
     let curX = x;
     for (let i = 0; i < words.length; i += 1) {
@@ -571,68 +573,41 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     fonts: FontSet,
     paragraphs: string[],
   ) {
+    // Rendered like every other section: title + gold underline, then plain
+    // body text. No bordered card — the box read as a stray mark ("risco").
     state.cursorY -= FINAL_SECTION_TOP_GAP;
     this.drawSectionTitle(state, fonts, "Disposições Finais");
 
     const wrappedParagraphs = paragraphs.map((paragraph) =>
       wrapText(
         paragraph,
-        PDF_LAYOUT.contentWidth - FINAL_SECTION_PADDING_X * 2,
+        PDF_LAYOUT.contentWidth - BODY_INSET_X * 2,
         fonts.regular,
         BODY_TEXT_SIZE,
       ),
     );
 
-    const textHeight = wrappedParagraphs.reduce(
-      (total, lines) => total + lines.length * BODY_LINE_HEIGHT,
-      0,
-    );
-    const interParagraphSpacing =
-      Math.max(wrappedParagraphs.length - 1, 0) * FINAL_SECTION_LINE_GAP;
-    const boxHeight =
-      textHeight + interParagraphSpacing + FINAL_SECTION_PADDING_Y * 2;
-
-    this.ensureSpace(state, boxHeight + 4);
-
-    const boxX = PDF_LAYOUT.marginX + BODY_INSET_X;
-    const boxWidth = PDF_LAYOUT.contentWidth - BODY_INSET_X * 2;
-    const boxY = state.cursorY - boxHeight + 2;
-
-    state.page.drawRectangle({
-      x: boxX,
-      y: boxY,
-      width: boxWidth,
-      height: boxHeight,
-      borderColor: PDF_COLORS.gold,
-      borderWidth: 1,
-      color: PDF_COLORS.rowAlt,
-      opacity: 0.95,
-    });
-
-    let currentY = state.cursorY - FINAL_SECTION_PADDING_Y;
     wrappedParagraphs.forEach((lines, paragraphIndex) => {
       const font =
         paragraphIndex === wrappedParagraphs.length - 1
           ? fonts.bold
           : fonts.regular;
+      const requiredHeight = lines.length * BODY_LINE_HEIGHT + PARAGRAPH_GAP;
+      this.ensureSpace(state, requiredHeight);
 
       for (const line of lines) {
         state.page.drawText(line, {
-          x: boxX + FINAL_SECTION_PADDING_X,
-          y: currentY,
+          x: PDF_LAYOUT.marginX + BODY_INSET_X,
+          y: state.cursorY,
           font,
           size: BODY_TEXT_SIZE,
           color: PDF_COLORS.text,
         });
-        currentY -= BODY_LINE_HEIGHT;
+        state.cursorY -= BODY_LINE_HEIGHT;
       }
 
-      if (paragraphIndex < wrappedParagraphs.length - 1) {
-        currentY -= FINAL_SECTION_LINE_GAP;
-      }
+      state.cursorY -= PARAGRAPH_GAP;
     });
-
-    state.cursorY = boxY - 4;
   }
 
   private drawFooter(
@@ -642,13 +617,6 @@ export class RenderContractTemplateService implements PdfTemplateRenderer<Contra
     pageCounter: string,
   ) {
     const startY = 62;
-
-    page.drawLine({
-      start: { x: PDF_LAYOUT.marginX, y: startY + 28 },
-      end: { x: PDF_LAYOUT.pageWidth - PDF_LAYOUT.marginX, y: startY + 28 },
-      thickness: 1,
-      color: PDF_COLORS.border,
-    });
 
     page.drawText(payload.footer.cityAndIssueDate, {
       x: PDF_LAYOUT.marginX,

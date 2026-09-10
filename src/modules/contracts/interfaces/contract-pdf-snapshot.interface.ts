@@ -33,9 +33,12 @@ export interface ContractPdfSnapshot {
     displacementFee?: number[];
     totalAmount?: number;
     items?: Array<{
+      itemType?: string;
       serviceType?: string;
       quantity?: number;
       description?: string;
+      unit?: string | null;
+      supplyName?: string | null;
       eventDateIndex?: number;
     }>;
   };
@@ -46,6 +49,10 @@ export interface ContractPdfSnapshot {
     document?: string;
     legalName?: string;
     address?: string;
+    addressStreet?: string;
+    addressNumber?: string;
+    addressComplement?: string;
+    addressNeighborhood?: string;
     addressCity?: string;
     addressState?: string;
     addressZipCode?: string;

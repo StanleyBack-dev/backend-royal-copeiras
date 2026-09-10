@@ -50,6 +50,30 @@ export class CreateLeadsInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
+  @Length(1, 160)
+  addressStreet?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 20)
+  addressNumber?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 120)
+  addressComplement?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 120)
+  addressNeighborhood?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
   @Length(2, 80)
   addressCity?: string;
 
@@ -63,6 +87,9 @@ export class CreateLeadsInputDto {
   @IsOptional()
   @IsString()
   @Length(8, 9)
+  @Matches(/^\d{8}$|^\d{5}-\d{3}$/, {
+    message: "CEP deve ter 8 dígitos (NNNNN-NNN)",
+  })
   addressZipCode?: string;
 
   @Field(() => LeadSource)

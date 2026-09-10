@@ -25,10 +25,13 @@ describe("SubmitPublicIntakeService", () => {
         send: jest.fn().mockResolvedValue(undefined),
       };
 
+    const suppliesRepository = { find: jest.fn().mockResolvedValue([]) };
+
     const service = new SubmitPublicIntakeService(
       leadsRepository as never,
       codesService as never,
       notificationEmailService as never,
+      suppliesRepository as never,
     );
 
     await expect(
@@ -82,7 +85,13 @@ describe("SubmitPublicIntakeService", () => {
       create: jest.fn((value: unknown) => value),
       save: jest.fn().mockResolvedValue(undefined),
     };
-    const leadsRepoTx = {};
+    const leadsRepoTx = {
+      createQueryBuilder: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      })),
+    };
 
     const manager = {
       getRepository: jest.fn((entity: unknown) => {
@@ -111,16 +120,25 @@ describe("SubmitPublicIntakeService", () => {
         send: jest.fn().mockResolvedValue(undefined),
       };
 
+    const suppliesRepository = { find: jest.fn().mockResolvedValue([]) };
+
     const service = new SubmitPublicIntakeService(
       leadsRepository as never,
       codesService as never,
       notificationEmailService as never,
+      suppliesRepository as never,
     );
 
     const result = await service.execute({
       formToken: "valid-token",
       name: "Cliente Teste",
       email: "cliente@example.com",
+      addressStreet: "Rua 6",
+      addressNumber: "SN",
+      addressNeighborhood: "Polo Empresarial",
+      addressCity: "Aparecida de Goiânia",
+      addressState: "go",
+      addressZipCode: "74985-105",
       eventDates: ["2026-10-10"],
       eventArrivalTimes: ["18:00"],
       eventDepartureTimes: ["23:00"],
@@ -142,6 +160,11 @@ describe("SubmitPublicIntakeService", () => {
       expect.objectContaining({
         name: "Cliente Teste",
         source: LeadSource.PUBLIC_FORM,
+        addressStreet: "Rua 6",
+        addressNumber: "SN",
+        addressState: "GO",
+        addressZipCode: "74985-105",
+        address: "Rua 6, SN, Polo Empresarial",
       }),
       leadsRepoTx,
     );
@@ -152,6 +175,8 @@ describe("SubmitPublicIntakeService", () => {
         budgetNumber: "ORC-2026-00099",
         eventLocation: ["Salão de festas"],
         guestCount: [80],
+        paymentMethod: "PIX",
+        advancePercentage: 30,
       }),
     );
     expect(budgetItemsRepoTx.create).toHaveBeenCalledWith(
@@ -186,5 +211,102 @@ describe("SubmitPublicIntakeService", () => {
       }),
     );
     expect(result).toEqual({ idLeads: "lead-1", idBudgets: "budget-1" });
+  });
+
+  it("takes the material name and unit from the catalog for SUPPLY items", async () => {
+    const activeForm = { idPublicIntakeCodes: "code-1", idUsers: "operator-1" };
+    const createdLead = { idLeads: "lead-1", name: "Cliente" };
+    const createdBudget = { idBudgets: "budget-1", budgetNumber: "ORC-1" };
+
+    jest
+      .spyOn(CreateLeadsValidator, "validateAndCreate")
+      .mockResolvedValue(createdLead as never);
+    jest
+      .spyOn(generateBudgetNumberUtil, "generateBudgetNumber")
+      .mockResolvedValue("ORC-1");
+
+    const budgetItemsRepoTx = {
+      create: jest.fn((value: unknown) => value),
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    const manager = {
+      getRepository: jest.fn((entity: unknown) => {
+        if (entity === BudgetsEntity)
+          return {
+            create: jest.fn((value: unknown) => value),
+            save: jest.fn().mockResolvedValue(createdBudget),
+          };
+        if (entity === BudgetItemsEntity) return budgetItemsRepoTx;
+        if (entity === LeadsEntity)
+          return {
+            createQueryBuilder: jest.fn(() => ({
+              where: jest.fn().mockReturnThis(),
+              andWhere: jest.fn().mockReturnThis(),
+              getOne: jest.fn().mockResolvedValue(null),
+            })),
+          };
+        throw new Error(`Unexpected repository: ${String(entity)}`);
+      }),
+    };
+
+    const suppliesRepository = {
+      find: jest.fn().mockResolvedValue([
+        {
+          idSupplies: "s1",
+          idUsers: "operator-1",
+          name: "Papel higiênico",
+          defaultUnit: "rolo",
+          isActive: true,
+        },
+      ]),
+    };
+
+    const service = new SubmitPublicIntakeService(
+      {
+        manager: {
+          transaction: jest.fn(async (run: (m: unknown) => Promise<unknown>) =>
+            run(manager),
+          ),
+        },
+      } as never,
+      {
+        findByFormToken: jest.fn().mockResolvedValue(activeForm),
+        consume: jest.fn().mockResolvedValue(undefined),
+      } as never,
+      { send: jest.fn().mockResolvedValue(undefined) } as never,
+      suppliesRepository as never,
+    );
+
+    await service.execute({
+      formToken: "valid-token",
+      name: "Cliente",
+      eventDates: ["2026-10-10"],
+      eventArrivalTimes: ["18:00"],
+      eventDepartureTimes: ["23:00"],
+      eventLocation: ["Salão"],
+      guestCount: [80],
+      durationHours: [5],
+      items: [
+        {
+          itemType: "SUPPLY",
+          idSupplies: "s1",
+          description: "digitado pelo cliente",
+          unit: "caixa",
+          quantity: 4,
+          eventDateIndex: 0,
+        },
+      ],
+    } as never);
+
+    expect(suppliesRepository.find).toHaveBeenCalled();
+    expect(budgetItemsRepoTx.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        itemType: "SUPPLY",
+        idSupplies: "s1",
+        description: "Papel higiênico",
+        unit: "rolo",
+        quantity: 4,
+      }),
+    );
   });
 });

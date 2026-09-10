@@ -14,6 +14,7 @@ import { positionsErrors } from "./catalogs/positions-errors.catalog";
 import { profilesErrors } from "./catalogs/profiles-errors.catalog";
 import { publicIntakeErrors } from "./catalogs/public-intake-errors.catalog";
 import { signaturesErrors } from "./catalogs/signatures-errors.catalog";
+import { suppliesErrors } from "./catalogs/supplies-errors.catalog";
 import { usersErrors } from "./catalogs/users-errors.catalog";
 import { validationErrors } from "./catalogs/validation-errors.catalog";
 import { paymentsErrors } from "./catalogs/payments-errors.catalog";
@@ -33,6 +34,7 @@ export const APP_ERRORS = {
   events: eventsErrors,
   mails: mailsErrors,
   positions: positionsErrors,
+  supplies: suppliesErrors,
   signatures: signaturesErrors,
   pdf: pdfErrors,
   validation: validationErrors,

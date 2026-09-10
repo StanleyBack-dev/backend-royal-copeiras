@@ -4,7 +4,7 @@ import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { CreateBudgetsInputDto } from "../../dtos/create/create-budgets-input.dto";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
-import { In, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import {
   BUDGET_ALLOWED_PAYMENT_METHODS,
   BUDGET_DURATION_HOURS_MAX,
@@ -13,11 +13,15 @@ import {
 import { BudgetStatus } from "../../enums/budget-status.enum";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 import { PositionsEntity } from "../../../positions/entities/positions.entity";
-import {
-  inferServiceComboFromDescription,
-  normalizeGenderToEnglish,
-} from "../../constants/budget-service-types.constant";
+import { SuppliesEntity } from "../../../supplies/entities/supplies.entity";
 import { generateBudgetNumber } from "../../utils/generate-budget-number.util";
+import {
+  assertItemsNotDuplicated,
+  assertItemsShape,
+  loadAndAssertPositions,
+  loadAndAssertSupplies,
+  normalizeBudgetItems,
+} from "../base/budget-items.util";
 
 interface CreateBudgetResult {
   budget: BudgetsEntity;
@@ -95,6 +99,7 @@ export class CreateBudgetsValidator {
     budgetsRepo: Repository<BudgetsEntity>,
     leadsRepo: Repository<LeadsEntity>,
     positionsRepo: Repository<PositionsEntity>,
+    suppliesRepo: Repository<SuppliesEntity>,
   ): Promise<CreateBudgetResult> {
     this.validateBusinessRules(input);
 
@@ -120,64 +125,10 @@ export class CreateBudgetsValidator {
       throw AppException.from(APP_ERRORS.budgets.leadInactive, undefined);
     }
 
-    const positionIds = Array.from(
-      new Set(input.items.map((item) => item.idPositions)),
-    );
-    const positions = await positionsRepo.find({
-      where: { idPositions: In(positionIds) },
-    });
-    const positionsById = new Map(
-      positions.map((position) => [position.idPositions, position]),
-    );
+    await loadAndAssertPositions(input.items, positionsRepo);
+    const suppliesById = await loadAndAssertSupplies(input.items, suppliesRepo);
 
-    const hasMissingPosition = positionIds.some(
-      (idPositions) => !positionsById.has(idPositions),
-    );
-
-    if (hasMissingPosition) {
-      throw AppException.from(APP_ERRORS.positions.notFound, undefined);
-    }
-
-    const hasInactivePosition = positionIds.some((idPositions) => {
-      const position = positionsById.get(idPositions);
-      return !position?.isActive;
-    });
-
-    if (hasInactivePosition) {
-      throw AppException.from(APP_ERRORS.positions.inactive, undefined);
-    }
-
-    const normalizedItems = input.items.map((item) => {
-      const totalPrice = Number((item.quantity * item.unitPrice).toFixed(2));
-
-      // Normalize incoming gender (UI may send Portuguese labels) to canonical English
-      const explicitGenderRaw = (item as { gender?: unknown }).gender
-        ?.toString()
-        .trim();
-      let serviceGender = normalizeGenderToEnglish(explicitGenderRaw);
-
-      if (!serviceGender) {
-        const inferred = inferServiceComboFromDescription(item.description);
-        if (inferred) {
-          const parts = inferred.split(":");
-          serviceGender = normalizeGenderToEnglish(
-            parts.length > 1 ? parts[1] : undefined,
-          );
-        }
-      }
-
-      return {
-        idPositions: item.idPositions,
-        description: item.description,
-        serviceGender: serviceGender ?? null,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        totalPrice,
-        notes: item.notes,
-        sortOrder: item.sortOrder ?? 0,
-        eventDateIndex: item.eventDateIndex ?? 0,
-      };
-    });
+    const normalizedItems = normalizeBudgetItems(input.items, suppliesById);
 
     const eventDayCount = input.eventDates.length;
 
@@ -261,9 +212,12 @@ export class CreateBudgetsValidator {
       const budgetItems = normalizedItems.map((item) =>
         manager.create(BudgetItemsEntity, {
           idBudgets: savedBudget.idBudgets,
+          itemType: item.itemType,
           idPositions: item.idPositions,
+          idSupplies: item.idSupplies,
+          unit: item.unit,
           description: item.description,
-          serviceGender: item.serviceGender ?? null,
+          serviceGender: item.serviceGender,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           totalPrice: item.totalPrice,
@@ -275,14 +229,14 @@ export class CreateBudgetsValidator {
 
       await manager.save(BudgetItemsEntity, budgetItems);
 
-      const itemsWithPositions = await manager.find(BudgetItemsEntity, {
+      const itemsWithRelations = await manager.find(BudgetItemsEntity, {
         where: { idBudgets: savedBudget.idBudgets },
-        relations: { position: true },
+        relations: { position: true, supply: true },
         order: { sortOrder: "ASC" },
       });
 
-      savedBudget.items = itemsWithPositions;
-      return { budget: savedBudget, items: itemsWithPositions };
+      savedBudget.items = itemsWithRelations;
+      return { budget: savedBudget, items: itemsWithRelations };
     });
   }
 
@@ -442,16 +396,7 @@ export class CreateBudgetsValidator {
       );
     }
 
-    const hasInvalidItemPosition = input.items.some(
-      (item) => !item.idPositions,
-    );
-
-    if (hasInvalidItemPosition) {
-      throw AppException.from(
-        APP_ERRORS.budgets.itemServiceTypeInvalid,
-        undefined,
-      );
-    }
+    assertItemsShape(input.items);
 
     const eventDayCount = input.eventDates.length;
     const hasInvalidEventDateIndex = input.items.some(
@@ -475,36 +420,6 @@ export class CreateBudgetsValidator {
       throw AppException.from(APP_ERRORS.budgets.dayMissingItems, undefined);
     }
 
-    const selectedPositionKeys = input.items.map((item) => {
-      // Map incoming or inferred gender to canonical english key for uniqueness check
-      const explicitGenderRaw = item.gender?.toString().trim();
-      let genderKey = normalizeGenderToEnglish(explicitGenderRaw) ?? "";
-
-      if (!genderKey) {
-        const inferred = inferServiceComboFromDescription(item.description);
-        if (inferred) {
-          const parts = inferred.split(":");
-          genderKey =
-            normalizeGenderToEnglish(parts.length > 1 ? parts[1] : undefined) ??
-            "";
-        }
-      }
-
-      const dayPrefix = `${item.eventDateIndex ?? 0}`;
-
-      if (genderKey) {
-        return `${dayPrefix}::${item.idPositions}::${genderKey}`;
-      }
-
-      return `${dayPrefix}::${item.idPositions}::${(item.description ?? "").trim().toLowerCase()}`;
-    });
-
-    const uniquePositionKeys = new Set(selectedPositionKeys);
-    if (uniquePositionKeys.size !== selectedPositionKeys.length) {
-      throw AppException.from(
-        APP_ERRORS.budgets.itemServiceTypeDuplicated,
-        undefined,
-      );
-    }
+    assertItemsNotDuplicated(input.items);
   }
 }
