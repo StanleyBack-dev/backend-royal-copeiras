@@ -76,6 +76,29 @@ export class GetUsersService {
       AuthPermission.READ_USERS,
     );
 
+    if (input?.idUsers) {
+      const record = await this.repo.findOne({
+        where: { idUsers: input.idUsers },
+      });
+
+      if (!record) {
+        throw AppException.from(APP_ERRORS.users.notFound, undefined);
+      }
+
+      const credential = await this.authCredentialRepo.findOne({
+        where: { idUsers: record.idUsers },
+      });
+
+      return {
+        items: [GetUserResponseDto.fromEntity(record, credential)],
+        total: 1,
+        currentPage: 1,
+        limit: 1,
+        totalPages: 1,
+        hasNextPage: false,
+      };
+    }
+
     const { page, limit, skip } = resolvePagination(input?.page, input?.limit);
     const [records, total] = await this.repo.findAndCount({
       order: { createdAt: "DESC" },
