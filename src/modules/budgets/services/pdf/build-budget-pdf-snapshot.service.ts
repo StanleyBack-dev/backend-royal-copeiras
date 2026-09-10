@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { BudgetPdfSnapshot } from "../../interfaces/budget-pdf-snapshot.interface";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import { formatBudgetDateOnly } from "../../utils/budget-date.util";
 
 @Injectable()
@@ -34,7 +35,10 @@ export class BuildBudgetPdfSnapshotService {
         totalAmount: entity.totalAmount,
       },
       items: (entity.items ?? []).map((item) => ({
+        itemType: item.itemType ?? BudgetItemType.LABOR,
         description: item.description,
+        unit: item.unit ?? null,
+        supplyName: item.supply?.name ?? null,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         totalPrice: item.totalPrice,

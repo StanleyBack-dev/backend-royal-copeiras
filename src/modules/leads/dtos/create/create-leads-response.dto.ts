@@ -17,6 +17,10 @@ export class CreateLeadsResponseDto implements ILead {
     dto.document = entity.document;
     dto.legalName = entity.legalName;
     dto.address = entity.address;
+    dto.addressStreet = entity.addressStreet;
+    dto.addressNumber = entity.addressNumber;
+    dto.addressComplement = entity.addressComplement;
+    dto.addressNeighborhood = entity.addressNeighborhood;
     dto.addressCity = entity.addressCity;
     dto.addressState = entity.addressState;
     dto.addressZipCode = entity.addressZipCode;
@@ -55,6 +59,18 @@ export class CreateLeadsResponseDto implements ILead {
 
   @Field({ nullable: true })
   address?: string;
+
+  @Field({ nullable: true })
+  addressStreet?: string;
+
+  @Field({ nullable: true })
+  addressNumber?: string;
+
+  @Field({ nullable: true })
+  addressComplement?: string;
+
+  @Field({ nullable: true })
+  addressNeighborhood?: string;
 
   @Field({ nullable: true })
   addressCity?: string;

@@ -1,18 +1,16 @@
-import { dbLocalNow } from "../../../common/utils/to-db-local-timestamp.util";
 import { PublicIntakeCodeEntity } from "../entities/public-intake-code.entity";
 import { PublicIntakeCodeStatus } from "../enums/public-intake-code-status.enum";
 
 /**
  * The code's lifecycle is fully described by its timestamps; there is no
- * separate persisted status column to keep in sync with them. "now" must
- * be built via dbLocalNow (see to-db-local-timestamp.util) so it's
- * comparable against these naive-column values regardless of which OS
- * timezone this process happens to run under — a raw Date.now() is not.
+ * separate persisted status column to keep in sync with them. Expiry is
+ * compared against `Date.now()`, matching how the rest of the project checks
+ * token/code expiry (sessions, password-recovery).
  */
 export function derivePublicIntakeCodeStatus(
   entity: PublicIntakeCodeEntity,
 ): PublicIntakeCodeStatus {
-  const now = dbLocalNow().getTime();
+  const now = Date.now();
 
   if (entity.invalidatedAt) {
     return PublicIntakeCodeStatus.INVALIDATED;

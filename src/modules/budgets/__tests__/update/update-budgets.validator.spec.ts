@@ -3,10 +3,12 @@ import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { BudgetStatus } from "../../enums/budget-status.enum";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import { UpdateBudgetsValidator } from "../../validators/update/update-budgets.validator";
 import { UpdateBudgetsInputDto } from "../../dtos/update/update-budgets-input.dto";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
 import { PositionsEntity } from "../../../positions/entities/positions.entity";
+import { SuppliesEntity } from "../../../supplies/entities/supplies.entity";
 import { budgetMock } from "../../__mocks__/budget.mock";
 
 interface MockManager {
@@ -102,6 +104,9 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo as unknown as Repository<BudgetItemsEntity>,
       leadsRepo: leadsRepo as unknown as Repository<LeadsEntity>,
       positionsRepo: positionsRepo as unknown as Repository<PositionsEntity>,
+      suppliesRepo: {
+        find: jest.fn().mockResolvedValue([]),
+      } as unknown as Repository<SuppliesEntity>,
       managerImpl,
     };
   }
@@ -116,6 +121,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       }),
     ).rejects.toThrow(APP_ERRORS.budgets.idRequired.message as string);
   });
@@ -133,6 +139,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       }),
     ).rejects.toThrow(APP_ERRORS.budgets.notFound.message as string);
   });
@@ -150,6 +157,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       }),
     ).rejects.toThrow(APP_ERRORS.budgets.editForbidden.message as string);
   });
@@ -167,6 +175,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       }),
     ).rejects.toThrow(
       APP_ERRORS.budgets.invalidStatusTransition.message as string,
@@ -188,6 +197,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       },
     );
 
@@ -210,6 +220,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       },
     );
 
@@ -224,6 +235,7 @@ describe("UpdateBudgetsValidator", () => {
     input.idBudgets = "budget-1";
     input.items = [
       {
+        itemType: BudgetItemType.LABOR,
         idPositions: "95d227b4-f731-4a80-8902-2e92a056bf44",
         description: "2 copeiras",
         quantity: 2,
@@ -232,6 +244,7 @@ describe("UpdateBudgetsValidator", () => {
         eventDateIndex: 0,
       },
       {
+        itemType: BudgetItemType.LABOR,
         idPositions: "11f8f463-dbf4-c9f0-5f1e-42b7699e1f50",
         description: "1 porteiro",
         quantity: 1,
@@ -249,6 +262,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       },
     );
 
@@ -283,6 +297,7 @@ describe("UpdateBudgetsValidator", () => {
         budgetItemsRepo: deps.budgetItemsRepo,
         leadsRepo: deps.leadsRepo,
         positionsRepo: deps.positionsRepo,
+        suppliesRepo: deps.suppliesRepo,
       },
     );
 

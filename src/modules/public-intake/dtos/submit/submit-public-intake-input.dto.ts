@@ -5,31 +5,51 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
   Matches,
   Max,
   Min,
   ValidateNested,
 } from "class-validator";
+import { BudgetItemType } from "../../../budgets/enums/budget-item-type.enum";
 
 const EVENT_TIME_PATTERN = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 
 @InputType()
 export class SubmitPublicIntakeItemInputDto {
+  @Field(() => BudgetItemType, { defaultValue: BudgetItemType.LABOR })
+  @IsEnum(BudgetItemType)
+  itemType: BudgetItemType = BudgetItemType.LABOR;
+
   @Field()
   @IsString()
   @IsNotEmpty()
   description!: string;
 
+  // Set for SUPPLY items picked from the operator's materials catalog. The
+  // name and unit are then taken from the catalog, not from the client.
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsUUID()
+  idSupplies?: string;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsIn(["Masculino", "Feminino"])
   gender?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 32)
+  unit?: string;
 
   @Field(() => Int)
   @IsInt()
@@ -69,6 +89,54 @@ export class SubmitPublicIntakeInputDto {
     message: "Documento deve ser CPF (11 dígitos) ou CNPJ (14 dígitos)",
   })
   document?: string;
+
+  // Optional address of the responsible party, saved onto the lead so the
+  // contract can be issued once the budget is approved. Mirrors the lead
+  // module's structured address fields.
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 160)
+  addressStreet?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 20)
+  addressNumber?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 120)
+  addressComplement?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 120)
+  addressNeighborhood?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(2, 80)
+  addressCity?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  addressState?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(8, 9)
+  @Matches(/^\d{8}$|^\d{5}-\d{3}$/, {
+    message: "CEP deve ter 8 dígitos (NNNNN-NNN)",
+  })
+  addressZipCode?: string;
 
   @Field(() => [String])
   @IsArray()

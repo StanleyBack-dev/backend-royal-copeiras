@@ -23,6 +23,7 @@ import { PdfGeneratorModule } from "./modules/pdf-generator/pdf-generator.module
 import { SignatureModule } from "./modules/signature/signature.module";
 import { EventsModule } from "./modules/events/events.module";
 import { PositionsModule } from "./modules/positions/positions.module";
+import { SuppliesModule } from "./modules/supplies/supplies.module";
 import { PublicIntakeModule } from "./modules/public-intake/public-intake.module";
 import { AppController } from "./app.controller";
 
@@ -56,6 +57,7 @@ import { RateLimitGuard } from "./common/guards/rate-limit.guard";
     SignatureModule,
     EventsModule,
     PositionsModule,
+    SuppliesModule,
     PaymentsModule,
     PublicIntakeModule,
   ],

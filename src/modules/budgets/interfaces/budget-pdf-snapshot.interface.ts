@@ -1,7 +1,11 @@
 import { BudgetStatus } from "../enums/budget-status.enum";
+import { BudgetItemType } from "../enums/budget-item-type.enum";
 
 export interface BudgetPdfSnapshotItem {
+  itemType: BudgetItemType;
   description: string;
+  unit?: string | null;
+  supplyName?: string | null;
   quantity: number;
   unitPrice: number;
   totalPrice: number;

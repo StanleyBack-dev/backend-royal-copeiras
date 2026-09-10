@@ -64,6 +64,17 @@ export class CreateContractsValidator {
       );
     }
 
+    // Defense in depth: never let a hollow budget become a contract, even if it
+    // somehow reached APPROVED without going through the DRAFT completeness gate.
+    const budgetIsPriced =
+      Number(budget.totalAmount) > 0 && Boolean(budget.paymentMethod?.trim());
+    if (!budgetIsPriced) {
+      throw AppException.from(
+        APP_ERRORS.budgets.incompleteForContract,
+        undefined,
+      );
+    }
+
     const existing = await contractsRepo.findOne({
       where: { idBudgets: budget.idBudgets },
     });
@@ -132,6 +143,15 @@ export class CreateContractsValidator {
                 email: budget.lead.email,
                 phone: budget.lead.phone,
                 document: budget.lead.document,
+                legalName: budget.lead.legalName,
+                address: budget.lead.address,
+                addressStreet: budget.lead.addressStreet,
+                addressNumber: budget.lead.addressNumber,
+                addressComplement: budget.lead.addressComplement,
+                addressNeighborhood: budget.lead.addressNeighborhood,
+                addressCity: budget.lead.addressCity,
+                addressState: budget.lead.addressState,
+                addressZipCode: budget.lead.addressZipCode,
               }
             : undefined,
         },

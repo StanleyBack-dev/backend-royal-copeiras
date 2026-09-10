@@ -10,6 +10,7 @@ import { AuthPermission } from "../../../auth/enums/auth-permission.enum";
 import { AuthorizationService } from "../../../auth/services/authorization.service";
 import { LeadsEntity } from "../../../leads/entities/leads.entity";
 import { PositionsEntity } from "../../../positions/entities/positions.entity";
+import { SuppliesEntity } from "../../../supplies/entities/supplies.entity";
 
 @Injectable()
 export class CreateBudgetsService {
@@ -20,6 +21,8 @@ export class CreateBudgetsService {
     private readonly leadsRepository: Repository<LeadsEntity>,
     @InjectRepository(PositionsEntity)
     private readonly positionsRepository: Repository<PositionsEntity>,
+    @InjectRepository(SuppliesEntity)
+    private readonly suppliesRepository: Repository<SuppliesEntity>,
     private readonly authorizationService: AuthorizationService,
   ) {}
 
@@ -38,6 +41,7 @@ export class CreateBudgetsService {
       this.budgetsRepository,
       this.leadsRepository,
       this.positionsRepository,
+      this.suppliesRepository,
     );
 
     return CreateBudgetsResponseDto.fromEntity(saved.budget);

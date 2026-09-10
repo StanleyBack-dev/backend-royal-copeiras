@@ -1,5 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { BudgetStatus } from "../../enums/budget-status.enum";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import { IBudget } from "../../interface/budget.interface";
 import { formatBudgetDateOnly } from "../../utils/budget-date.util";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
@@ -9,11 +10,23 @@ class UpdateBudgetItemResponseDto {
   @Field()
   idBudgetItems!: string;
 
+  @Field(() => BudgetItemType)
+  itemType!: BudgetItemType;
+
   @Field(() => String, { nullable: true })
   idPositions?: string | null;
 
   @Field(() => String, { nullable: true })
   position?: string | null;
+
+  @Field(() => String, { nullable: true })
+  idSupplies?: string | null;
+
+  @Field(() => String, { nullable: true })
+  supply?: string | null;
+
+  @Field(() => String, { nullable: true })
+  unit?: string | null;
 
   @Field()
   description!: string;
@@ -35,6 +48,9 @@ class UpdateBudgetItemResponseDto {
 
   @Field(() => Int)
   eventDateIndex!: number;
+
+  @Field(() => String, { nullable: true })
+  serviceGender?: string | null;
 
   @Field()
   createdAt!: string;
@@ -78,8 +94,12 @@ export class UpdateBudgetsResponseDto implements IBudget {
           : undefined;
     dto.items = (entity.items ?? []).map((item) => ({
       idBudgetItems: item.idBudgetItems,
+      itemType: item.itemType ?? BudgetItemType.LABOR,
       idPositions: item.idPositions,
       position: item.position?.name || null,
+      idSupplies: item.idSupplies ?? null,
+      supply: item.supply?.name || null,
+      unit: item.unit ?? null,
       description: item.description,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
@@ -87,6 +107,7 @@ export class UpdateBudgetsResponseDto implements IBudget {
       notes: item.notes,
       sortOrder: item.sortOrder,
       eventDateIndex: item.eventDateIndex ?? 0,
+      serviceGender: item.serviceGender ?? null,
       createdAt:
         item.createdAt instanceof Date
           ? formatLocalDateTime(item.createdAt) || String(item.createdAt)

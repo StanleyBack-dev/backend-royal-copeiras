@@ -1,6 +1,13 @@
 import { Injectable } from "@nestjs/common";
-import { BudgetProposalPdfPayload } from "../../../pdf-generator/templates/budgets/interfaces/budget-proposal-pdf-payload.interface";
-import { BudgetPdfSnapshot } from "../../interfaces/budget-pdf-snapshot.interface";
+import {
+  BudgetProposalPdfPayload,
+  BudgetProposalPdfPayloadItem,
+} from "../../../pdf-generator/templates/budgets/interfaces/budget-proposal-pdf-payload.interface";
+import {
+  BudgetPdfSnapshot,
+  BudgetPdfSnapshotItem,
+} from "../../interfaces/budget-pdf-snapshot.interface";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import {
   formatCurrencyBRL,
   formatDateBR,
@@ -117,17 +124,14 @@ function parseTimeToMinutes(time?: string): number | undefined {
   return hours * 60 + minutes;
 }
 
-function addOneDayIsoDate(date: string): string {
-  const parsed = new Date(`${date}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) {
-    return date;
-  }
-
-  parsed.setDate(parsed.getDate() + 1);
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const day = String(parsed.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+function buildSupplyItemDescription(item: {
+  description: string;
+  supplyName?: string | null;
+  unit?: string | null;
+}): string {
+  const base = (item.supplyName || item.description || "Material").trim();
+  const unit = item.unit?.trim();
+  return unit ? `${base} (${unit})` : base;
 }
 
 function sanitizeBudgetItemDescription(description: string): string {
@@ -158,6 +162,7 @@ export class BuildBudgetProposalPdfPayloadService {
     snapshotHash: string,
   ): BudgetProposalPdfPayload {
     const today = new Date();
+    const isMultiDay = snapshot.budget.eventDates.length > 1;
     const displacementFee = sumArray(snapshot.budget.displacementFee ?? []);
     const hasDisplacementFee = displacementFee > 0;
     const discount = resolveDiscountSummary(snapshot);
@@ -167,11 +172,9 @@ export class BuildBudgetProposalPdfPayloadService {
           .join(" | ")
       : "A definir";
     const eventArrivalTimes = this.buildEventTimesLabel(
-      snapshot.budget.eventDates,
       snapshot.budget.eventArrivalTimes,
     );
     const eventDepartureTimes = this.buildEventTimesLabel(
-      snapshot.budget.eventDates,
       snapshot.budget.eventDepartureTimes,
       snapshot.budget.eventArrivalTimes,
     );
@@ -205,7 +208,6 @@ export class BuildBudgetProposalPdfPayloadService {
         {
           label: "Local",
           value: this.buildPerDayLabel(
-            snapshot.budget.eventDates,
             snapshot.budget.eventLocation,
             (value) => value || "A definir",
           ),
@@ -214,16 +216,13 @@ export class BuildBudgetProposalPdfPayloadService {
         { label: "Horário de partida", value: eventDepartureTimes },
         {
           label: "Convidados",
-          value: this.buildPerDayLabel(
-            snapshot.budget.eventDates,
-            snapshot.budget.guestCount,
-            (value) => (value ? String(value) : "Nao informado"),
+          value: this.buildPerDayLabel(snapshot.budget.guestCount, (value) =>
+            value ? String(value) : "Nao informado",
           ),
         },
         {
           label: "Duração",
           value: this.buildPerDayLabel(
-            snapshot.budget.eventDates,
             snapshot.budget.durationHours,
             (value) => (value ? `${value} horas` : "Não informada"),
           ),
@@ -240,7 +239,6 @@ export class BuildBudgetProposalPdfPayloadService {
               {
                 label: "Taxa de deslocamento",
                 value: this.buildPerDayLabel(
-                  snapshot.budget.eventDates,
                   snapshot.budget.displacementFee ?? [],
                   (value) => formatCurrencyBRL(value),
                 ),
@@ -257,16 +255,8 @@ export class BuildBudgetProposalPdfPayloadService {
           : []),
       ],
       items: [
-        ...[...snapshot.items]
-          .sort((left, right) => left.sortOrder - right.sortOrder)
-          .map((item) => ({
-            description: sanitizeBudgetItemDescription(item.description),
-            quantity: String(item.quantity),
-            unitPrice: formatCurrencyBRL(item.unitPrice),
-            totalPrice: formatCurrencyBRL(item.totalPrice),
-            notes: item.notes,
-          })),
-        ...(hasDisplacementFee
+        ...this.buildItemRows(snapshot),
+        ...(hasDisplacementFee && !isMultiDay
           ? [
               {
                 description: DISPLACEMENT_FEE_DESCRIPTION,
@@ -309,8 +299,100 @@ export class BuildBudgetProposalPdfPayloadService {
     };
   }
 
+  // Per-day cards ("Local", "Convidados", "Duração"…) only get a day prefix
+  // when the event spans more than one day, and it is a plain "Dia N:" label
+  // (no ordinal glyph, which the PDF base font renders poorly) — the calendar
+  // dates live solely in the "Datas do evento" card.
+  private mapItemRow(
+    item: BudgetPdfSnapshotItem,
+  ): BudgetProposalPdfPayloadItem {
+    return {
+      kind: "item",
+      description:
+        item.itemType === BudgetItemType.SUPPLY
+          ? buildSupplyItemDescription(item)
+          : sanitizeBudgetItemDescription(item.description),
+      quantity: String(item.quantity),
+      unitPrice: formatCurrencyBRL(item.unitPrice),
+      totalPrice: formatCurrencyBRL(item.totalPrice),
+      notes: item.notes,
+    };
+  }
+
+  /**
+   * Flat list of item rows. Single-day budgets stay a plain list; multi-day
+   * budgets are split into "Dia N" blocks, each closed by a "Subtotal Dia N"
+   * band, so the reader sees each day's cost before the combined total. On
+   * multi-day budgets the displacement fee is folded into each day's block
+   * (and its subtotal) rather than shown as one lump line.
+   */
+  private buildItemRows(
+    snapshot: BudgetPdfSnapshot,
+  ): BudgetProposalPdfPayloadItem[] {
+    const sorted = [...snapshot.items].sort(
+      (left, right) => left.sortOrder - right.sortOrder,
+    );
+
+    if (snapshot.budget.eventDates.length <= 1) {
+      return sorted.map((item) => this.mapItemRow(item));
+    }
+
+    const days = Array.from(
+      new Set(sorted.map((item) => item.eventDateIndex ?? 0)),
+    ).sort((left, right) => left - right);
+
+    const displacementPerDay = snapshot.budget.displacementFee ?? [];
+
+    const rows: BudgetProposalPdfPayloadItem[] = [];
+    for (const day of days) {
+      const dayItems = sorted.filter(
+        (item) => (item.eventDateIndex ?? 0) === day,
+      );
+      const dayFee = Number((displacementPerDay[day] ?? 0).toFixed(2));
+      const daySubtotal = Number(
+        (
+          dayItems.reduce((sum, item) => sum + item.totalPrice, 0) + dayFee
+        ).toFixed(2),
+      );
+      const date = snapshot.budget.eventDates[day];
+      const dateLabel = date ? formatDateBR(date) : "";
+
+      rows.push({
+        kind: "dayHeader",
+        description: dateLabel
+          ? `Dia ${day + 1} - ${dateLabel}`
+          : `Dia ${day + 1}`,
+        quantity: "",
+        unitPrice: "",
+        totalPrice: "",
+      });
+      rows.push(...dayItems.map((item) => this.mapItemRow(item)));
+      if (dayFee > 0) {
+        rows.push({
+          kind: "item",
+          description: `Taxa de deslocamento (Dia ${day + 1})`,
+          quantity: "1",
+          unitPrice: formatCurrencyBRL(dayFee),
+          totalPrice: formatCurrencyBRL(dayFee),
+        });
+      }
+      rows.push({
+        kind: "daySubtotal",
+        description: `Subtotal Dia ${day + 1}`,
+        quantity: "",
+        unitPrice: "",
+        totalPrice: formatCurrencyBRL(daySubtotal),
+      });
+    }
+
+    return rows;
+  }
+
+  private dayPrefix(index: number, multiDay: boolean): string {
+    return multiDay ? `Dia ${index + 1}: ` : "";
+  }
+
   private buildEventTimesLabel(
-    dates: string[],
     times: string[],
     referenceTimes: string[] = [],
   ): string {
@@ -318,34 +400,25 @@ export class BuildBudgetProposalPdfPayloadService {
       return "A definir";
     }
 
+    const multiDay = times.length > 1;
+
     return times
       .map((time, index) => {
-        const arrival = referenceTimes[index];
-        const departure = times[index];
-        const arrivalMinutes = parseTimeToMinutes(arrival);
-        const departureMinutes = parseTimeToMinutes(departure);
+        const arrivalMinutes = parseTimeToMinutes(referenceTimes[index]);
+        const departureMinutes = parseTimeToMinutes(time);
         const isNextDay =
           arrivalMinutes !== undefined &&
           departureMinutes !== undefined &&
           departureMinutes > 0 &&
           departureMinutes < arrivalMinutes;
+        const suffix = isNextDay ? " (dia seguinte)" : "";
 
-        const date = dates[index];
-        if (!date) {
-          return `${index + 1}o dia: ${time}`;
-        }
-
-        if (isNextDay) {
-          return `${formatDateBR(addOneDayIsoDate(date))}: ${time} (dia seguinte)`;
-        }
-
-        return `${formatDateBR(date)}: ${time}`;
+        return `${this.dayPrefix(index, multiDay)}${time}${suffix}`;
       })
       .join(" | ");
   }
 
   private buildPerDayLabel<T>(
-    dates: string[],
     values: T[],
     format: (value: T) => string,
   ): string {
@@ -353,11 +426,11 @@ export class BuildBudgetProposalPdfPayloadService {
       return "A definir";
     }
 
+    const multiDay = values.length > 1;
+
     return values
       .map((value, index) => {
-        const date = dates[index];
-        const formatted = format(value);
-        return date ? `${formatDateBR(date)}: ${formatted}` : formatted;
+        return `${this.dayPrefix(index, multiDay)}${format(value)}`;
       })
       .join(" | ");
   }

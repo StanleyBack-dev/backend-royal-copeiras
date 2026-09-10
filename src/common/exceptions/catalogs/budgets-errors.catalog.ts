@@ -130,6 +130,34 @@ export const budgetsErrors = {
     message:
       "Não é permitido repetir o mesmo tipo de serviço no mesmo dia do orçamento.",
   },
+  itemSupplyInvalid: {
+    code: "BUDGETS_ITEM_SUPPLY_INVALID",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Um ou mais itens de material estão sem material do catálogo ou descrição.",
+  },
+  itemSupplyNotFound: {
+    code: "BUDGETS_ITEM_SUPPLY_NOT_FOUND",
+    status: HttpStatus.NOT_FOUND,
+    message: "Um ou mais materiais informados no orçamento não existem.",
+  },
+  itemSupplyInactive: {
+    code: "BUDGETS_ITEM_SUPPLY_INACTIVE",
+    status: HttpStatus.BAD_REQUEST,
+    message: "Um ou mais materiais informados no orçamento estão inativos.",
+  },
+  itemSupplyDuplicated: {
+    code: "BUDGETS_ITEM_SUPPLY_DUPLICATED",
+    status: HttpStatus.BAD_REQUEST,
+    message:
+      "Não é permitido repetir o mesmo material no mesmo dia do orçamento.",
+  },
+  incompleteForContract: {
+    code: "BUDGETS_INCOMPLETE_FOR_CONTRACT",
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    message:
+      "O orçamento precisa estar com todos os dados obrigatórios preenchidos e valores lançados antes de ser gerado ou aprovado.",
+  },
   itemEventDateIndexInvalid: {
     code: "BUDGETS_ITEM_EVENT_DATE_INDEX_INVALID",
     status: HttpStatus.BAD_REQUEST,

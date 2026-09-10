@@ -3,10 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { randomInt, randomUUID } from "crypto";
 import { IsNull, MoreThan, Not, Repository } from "typeorm";
-import {
-  dbLocalNow,
-  toDbLocalTimestampString,
-} from "../../../common/utils/to-db-local-timestamp.util";
+import { formatLocalDateTime } from "../../../common/responses/format-local-datetime.util";
 import { PublicIntakeCodeEntity } from "../entities/public-intake-code.entity";
 
 export interface IssuedPublicIntakeCode {
@@ -19,6 +16,16 @@ export interface IssuedFormToken {
   expiresAt: string;
 }
 
+function toResponseTimestamp(value: Date): string {
+  return formatLocalDateTime(value) ?? value.toISOString();
+}
+
+/**
+ * Timestamps here follow the same convention as the rest of the project
+ * (sessions, password-recovery, `@CreateDateColumn`): plain `Date` values
+ * written straight to naive `timestamp` columns and expiry checked with
+ * `MoreThan(new Date())` — no bespoke timezone shifting.
+ */
 @Injectable()
 export class PublicIntakeCodesService {
   constructor(
@@ -31,19 +38,19 @@ export class PublicIntakeCodesService {
     await this.invalidateOpenCodesForUser(idUsers);
 
     const code = randomInt(0, 1000000).toString().padStart(6, "0");
-    const expiresAt = this.toDbTimestampString(
+    const expiresAt = new Date(
       Date.now() + this.getCodeTtlMinutes() * 60 * 1000,
     );
 
     const entity = this.codesRepository.create({
       idUsers,
       code,
-      expiresAt: this.asDate(expiresAt),
+      expiresAt,
     });
 
     await this.codesRepository.save(entity);
 
-    return { code, expiresAt };
+    return { code, expiresAt: toResponseTimestamp(expiresAt) };
   }
 
   async findActiveByCode(code: string): Promise<PublicIntakeCodeEntity | null> {
@@ -52,7 +59,7 @@ export class PublicIntakeCodesService {
         code,
         invalidatedAt: IsNull(),
         consumedAt: IsNull(),
-        expiresAt: MoreThan(this.dbNow()),
+        expiresAt: MoreThan(new Date()),
       },
       order: { createdAt: "DESC" },
     });
@@ -60,20 +67,20 @@ export class PublicIntakeCodesService {
 
   async markVerified(code: PublicIntakeCodeEntity): Promise<IssuedFormToken> {
     const formToken = randomUUID();
-    const expiresAt = this.toDbTimestampString(
+    const formTokenExpiresAt = new Date(
       Date.now() + this.getFormTtlMinutes() * 60 * 1000,
     );
 
     await this.codesRepository.update(
       { idPublicIntakeCodes: code.idPublicIntakeCodes },
       {
-        verifiedAt: this.asDate(this.toDbTimestampString(Date.now())),
+        verifiedAt: new Date(),
         formToken,
-        formTokenExpiresAt: this.asDate(expiresAt),
+        formTokenExpiresAt,
       },
     );
 
-    return { formToken, expiresAt };
+    return { formToken, expiresAt: toResponseTimestamp(formTokenExpiresAt) };
   }
 
   async findByFormToken(
@@ -85,7 +92,7 @@ export class PublicIntakeCodesService {
         invalidatedAt: IsNull(),
         consumedAt: IsNull(),
         verifiedAt: Not(IsNull()),
-        formTokenExpiresAt: MoreThan(this.dbNow()),
+        formTokenExpiresAt: MoreThan(new Date()),
       },
       order: { createdAt: "DESC" },
     });
@@ -98,7 +105,7 @@ export class PublicIntakeCodesService {
     await this.codesRepository.update(
       { idPublicIntakeCodes: code.idPublicIntakeCodes },
       {
-        consumedAt: this.asDate(this.toDbTimestampString(Date.now())),
+        consumedAt: new Date(),
         resultingLeadId: result.resultingLeadId,
         resultingBudgetId: result.resultingBudgetId,
       },
@@ -108,7 +115,7 @@ export class PublicIntakeCodesService {
   private async invalidateOpenCodesForUser(idUsers: string): Promise<void> {
     await this.codesRepository.update(
       { idUsers, invalidatedAt: IsNull(), consumedAt: IsNull() },
-      { invalidatedAt: this.asDate(this.toDbTimestampString(Date.now())) },
+      { invalidatedAt: new Date() },
     );
   }
 
@@ -121,35 +128,5 @@ export class PublicIntakeCodesService {
 
   private getFormTtlMinutes(): number {
     return this.configService.get<number>("PUBLIC_INTAKE_FORM_TTL_MINUTES", 60);
-  }
-
-  private getDbTimezone(): string {
-    return this.configService.get<string>("DB_TIMEZONE") ?? "America/Sao_Paulo";
-  }
-
-  /**
-   * "Now", self-consistent with how TypeORM reads naive `timestamp`
-   * columns back (see dbLocalNow's doc) — safe to bind directly into
-   * MoreThan()/LessThan() comparisons against those columns.
-   */
-  private dbNow(): Date {
-    return dbLocalNow(this.getDbTimezone());
-  }
-
-  private toDbTimestampString(epochMillis: number): string {
-    return toDbLocalTimestampString(
-      new Date(epochMillis),
-      this.getDbTimezone(),
-    );
-  }
-
-  /**
-   * Entity columns are typed as Date, but we deliberately write the naive
-   * wall-clock string instead (see toDbLocalTimestampString's doc) — pg
-   * forwards a string parameter unchanged for a timestamp column, which a
-   * Date object would not.
-   */
-  private asDate(naiveTimestampString: string): Date {
-    return naiveTimestampString as unknown as Date;
   }
 }

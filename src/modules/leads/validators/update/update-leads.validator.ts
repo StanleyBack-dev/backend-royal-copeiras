@@ -4,6 +4,7 @@ import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { LeadsEntity } from "../../entities/leads.entity";
 import { UpdateLeadsInputDto } from "../../dtos/update/update-leads-input.dto";
 import { LeadStatus } from "../../enums/lead-status.enum";
+import { findDuplicateLead } from "../base/lead-duplicate.util";
 
 const LEAD_ALLOWED_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
   [LeadStatus.NEW]: [LeadStatus.QUALIFIED, LeadStatus.WON, LeadStatus.LOST],
@@ -36,6 +37,24 @@ export class UpdateLeadsValidator {
 
     if (!hasUpdateData) {
       throw AppException.from(APP_ERRORS.leads.noUpdateData, undefined);
+    }
+
+    const nextName = input.name ?? record.name;
+    const nextDocument =
+      input.document !== undefined ? input.document : record.document;
+    const touchesIdentity =
+      input.name !== undefined || input.document !== undefined;
+
+    if (touchesIdentity) {
+      const duplicate = await findDuplicateLead(leadsRepo, {
+        name: nextName,
+        document: nextDocument,
+        excludeId: record.idLeads,
+      });
+
+      if (duplicate) {
+        throw AppException.from(APP_ERRORS.leads.duplicate, undefined);
+      }
     }
 
     if (input.status && input.status !== record.status) {

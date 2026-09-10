@@ -20,6 +20,7 @@ import { MailModule } from "../mails/mail.module";
 import { SendBudgetEmailService } from "./services/pdf/send-budget-email.service";
 import { SendBudgetEmailResolver } from "./resolvers/pdf/send-budget-email.resolver";
 import { PositionsEntity } from "../positions/entities/positions.entity";
+import { SuppliesEntity } from "../supplies/entities/supplies.entity";
 import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
@@ -33,6 +34,7 @@ import { PaymentsModule } from "../payments/payments.module";
       BudgetItemsEntity,
       LeadsEntity,
       PositionsEntity,
+      SuppliesEntity,
     ]),
   ],
   providers: [

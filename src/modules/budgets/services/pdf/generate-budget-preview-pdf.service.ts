@@ -10,6 +10,7 @@ import { GenerateBudgetPreviewInputDto } from "../../dtos/pdf/generate-budget-pr
 import { BudgetsEntity } from "../../entities/budgets.entity";
 import { BudgetItemsEntity } from "../../entities/budgetItems.entity";
 import { BudgetStatus } from "../../enums/budget-status.enum";
+import { BudgetItemType } from "../../enums/budget-item-type.enum";
 import { buildBudgetPdfFileName } from "../../utils/build-budget-pdf-file-name.util";
 import { parseBudgetDateOnly } from "../../utils/budget-date.util";
 import { GenerateBudgetProposalPdfDocumentService } from "./generate-budget-proposal-pdf-document.service";
@@ -125,8 +126,12 @@ export class GenerateBudgetPreviewPdfService {
         idBudgetItems: `preview-item-${index + 1}`,
         idBudgets: "preview-budget",
         budget: undefined as never,
-        idPositions: item.idPositions,
+        itemType: item.itemType ?? BudgetItemType.LABOR,
+        idPositions: item.idPositions ?? null,
         position: undefined,
+        idSupplies: item.idSupplies ?? null,
+        supply: undefined,
+        unit: item.unit ?? null,
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,

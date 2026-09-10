@@ -174,6 +174,20 @@ export const RESPONSE_MESSAGES = {
       message: "Cargos carregados com sucesso.",
     },
   },
+  supplies: {
+    created: {
+      code: "SUPPLY_CREATED",
+      message: "Material criado com sucesso.",
+    },
+    updated: {
+      code: "SUPPLY_UPDATED",
+      message: "Material atualizado com sucesso.",
+    },
+    listed: {
+      code: "SUPPLIES_LISTED",
+      message: "Materiais carregados com sucesso.",
+    },
+  },
   events: {
     listed: {
       code: "EVENTS_LISTED",

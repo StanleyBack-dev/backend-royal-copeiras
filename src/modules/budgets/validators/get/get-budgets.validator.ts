@@ -19,7 +19,7 @@ export class GetBudgetsValidator {
     if (input.idBudgets) {
       const record = await repo.findOne({
         where: { idBudgets: input.idBudgets },
-        relations: { items: { position: true } },
+        relations: { items: { position: true, supply: true } },
       });
 
       if (!record) {
@@ -41,7 +41,8 @@ export class GetBudgetsValidator {
     const queryBuilder = repo
       .createQueryBuilder("budget")
       .leftJoinAndSelect("budget.items", "item")
-      .leftJoinAndSelect("item.position", "position");
+      .leftJoinAndSelect("item.position", "position")
+      .leftJoinAndSelect("item.supply", "supply");
 
     if (input.idLeads) {
       queryBuilder.andWhere("budget.idLeads = :idLeads", {

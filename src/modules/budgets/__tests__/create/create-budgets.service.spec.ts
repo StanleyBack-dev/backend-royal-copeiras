@@ -37,6 +37,7 @@ describe("CreateBudgetsService", () => {
       displacementFee: [0],
       items: [
         {
+          itemType: "LABOR" as never,
           idPositions: "95d227b4-f731-4a80-8902-2e92a056bf44",
           description: "2 copeiras",
           quantity: 2,
@@ -71,6 +72,7 @@ describe("CreateBudgetsService", () => {
         displacementFee: [0],
         items: [
           {
+            itemType: "LABOR" as never,
             idPositions: "95d227b4-f731-4a80-8902-2e92a056bf44",
             description: "2 copeiras",
             quantity: 2,

@@ -625,6 +625,10 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
   }
 
   private measureItemRow(item: BudgetProposalPdfPayloadItem, fonts: FontSet) {
+    if (item.kind === "dayHeader" || item.kind === "daySubtotal") {
+      return 22;
+    }
+
     const descriptionLines = wrapText(
       item.description,
       TABLE_DESCRIPTION_WIDTH,
@@ -635,6 +639,54 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     return 14 + descriptionLines.length * 11 + 6;
   }
 
+  private drawItemBandRow(
+    page: PDFPage,
+    fonts: FontSet,
+    item: BudgetProposalPdfPayloadItem,
+    topY: number,
+    height: number,
+  ) {
+    const x = PDF_LAYOUT.marginX;
+    const bottomY = topY - height;
+    const isSubtotal = item.kind === "daySubtotal";
+
+    page.drawRectangle({
+      x,
+      y: bottomY,
+      width: PDF_LAYOUT.contentWidth,
+      height,
+      color: isSubtotal ? PDF_COLORS.rowAlt : PDF_COLORS.bgLight,
+      borderColor: PDF_COLORS.border,
+      borderWidth: 0.6,
+    });
+
+    page.drawText(item.description, {
+      x: x + 10,
+      y: topY - 15,
+      font: fonts.bold,
+      size: PDF_FONT_SIZES.small,
+      color: isSubtotal ? PDF_COLORS.text : PDF_COLORS.goldDark,
+    });
+
+    if (isSubtotal && item.totalPrice) {
+      const totalCenterX =
+        x +
+        TABLE_DESCRIPTION_WIDTH +
+        TABLE_QTY_WIDTH +
+        TABLE_UNIT_WIDTH +
+        TABLE_TOTAL_WIDTH / 2;
+      this.drawCenteredText(
+        page,
+        fonts.bold,
+        item.totalPrice,
+        totalCenterX,
+        topY - 15,
+        PDF_FONT_SIZES.body,
+        PDF_COLORS.text,
+      );
+    }
+  }
+
   private drawItemRow(
     page: PDFPage,
     fonts: FontSet,
@@ -643,6 +695,11 @@ export class RenderBudgetProposalTemplateService implements PdfTemplateRenderer<
     topY: number,
     height: number,
   ) {
+    if (item.kind === "dayHeader" || item.kind === "daySubtotal") {
+      this.drawItemBandRow(page, fonts, item, topY, height);
+      return;
+    }
+
     const x = PDF_LAYOUT.marginX;
     const bottomY = topY - height;
     const descriptionLines = wrapText(

@@ -11,10 +11,14 @@ import { COMPANY_PROFILE_DEFAULTS } from "../../../company-profile/constants/com
 import { formatContractDateOnly } from "../../utils/contract-date.util";
 
 type BudgetItemLike = {
+  itemType?: string;
   serviceType?: string;
   quantity?: number | string;
   description?: string;
-  position?: { idPositions?: string } | null;
+  unit?: string | null;
+  position?: { idPositions?: string; name?: string } | null;
+  supply?: { name?: string } | null;
+  supplyName?: string | null;
   serviceGender?: string | null;
   eventDateIndex?: number;
 };
@@ -109,32 +113,14 @@ export class BuildContractPdfSnapshotService {
           budgetSnapshot.totalAmount,
         ),
         items: Array.isArray(budgetRelation?.items)
-          ? (budgetRelation.items as unknown as BudgetItemLike[]).map((it) => ({
-              serviceType:
-                it.serviceType ??
-                (it.position ? it.position.idPositions : undefined),
-              quantity:
-                typeof it.quantity === "number"
-                  ? it.quantity
-                  : Number(it.quantity) || 0,
-              description: it.description ?? "",
-              eventDateIndex: it.eventDateIndex ?? 0,
-            }))
+          ? (budgetRelation.items as unknown as BudgetItemLike[]).map((it) =>
+              this.mapBudgetItem(it),
+            )
           : Array.isArray((budgetSnapshot as Record<string, unknown>).items)
             ? (
                 (budgetSnapshot as Record<string, unknown>)
                   .items as BudgetItemLike[]
-              ).map((it) => ({
-                serviceType:
-                  it.serviceType ??
-                  (it.position ? it.position.idPositions : undefined),
-                quantity:
-                  typeof it.quantity === "number"
-                    ? it.quantity
-                    : Number(it.quantity) || 0,
-                description: it.description ?? "",
-                eventDateIndex: it.eventDateIndex ?? 0,
-              }))
+              ).map((it) => this.mapBudgetItem(it))
             : [],
       },
       lead: {
@@ -153,6 +139,22 @@ export class BuildContractPdfSnapshotService {
           leadRelation?.address,
           leadSnapshot.address,
         ),
+        addressStreet: this.getStringValue(
+          leadRelation?.addressStreet,
+          leadSnapshot.addressStreet,
+        ),
+        addressNumber: this.getStringValue(
+          leadRelation?.addressNumber,
+          leadSnapshot.addressNumber,
+        ),
+        addressComplement: this.getStringValue(
+          leadRelation?.addressComplement,
+          leadSnapshot.addressComplement,
+        ),
+        addressNeighborhood: this.getStringValue(
+          leadRelation?.addressNeighborhood,
+          leadSnapshot.addressNeighborhood,
+        ),
         addressCity: this.getStringValue(
           leadRelation?.addressCity,
           leadSnapshot.addressCity,
@@ -167,6 +169,26 @@ export class BuildContractPdfSnapshotService {
         ),
       },
       contractor: contractorSnapshot,
+    };
+  }
+
+  private mapBudgetItem(it: BudgetItemLike) {
+    const isSupply = it.itemType === "SUPPLY";
+    return {
+      itemType: isSupply ? "SUPPLY" : "LABOR",
+      // Prefer the human-readable cargo name so the clause fragment and the
+      // grammatical gender resolve correctly (the id would never match).
+      serviceType: isSupply
+        ? undefined
+        : (it.position?.name ?? it.serviceType ?? undefined),
+      quantity:
+        typeof it.quantity === "number"
+          ? it.quantity
+          : Number(it.quantity) || 0,
+      description: it.description ?? "",
+      unit: it.unit ?? null,
+      supplyName: it.supply?.name ?? it.supplyName ?? null,
+      eventDateIndex: it.eventDateIndex ?? 0,
     };
   }
 
