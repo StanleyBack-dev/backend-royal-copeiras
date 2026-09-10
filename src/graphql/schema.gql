@@ -1323,6 +1323,7 @@ type Query {
 input GetUsersInputDto {
   page: Int = 1
   limit: Int = 10
+  idUsers: String
 }
 
 input GetUserInputDto {
