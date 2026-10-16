@@ -113,8 +113,19 @@ export class UpdateEventAssignmentService {
       );
     }
 
+    await this.assertEmployeeNotAssignedOnSameDay(record, employee.idEmployees);
+
     record.idEmployees = employee.idEmployees;
     record.employeePayment = Number(input.employeePayment.toFixed(2));
+
+    if (
+      input.overtimeHourlyPayment !== undefined &&
+      input.overtimeHourlyPayment !== null
+    ) {
+      record.overtimeHourlyPayment = Number(
+        input.overtimeHourlyPayment.toFixed(2),
+      );
+    }
 
     if (input.isActive !== undefined) {
       record.isActive = input.isActive;
@@ -128,5 +139,34 @@ export class UpdateEventAssignmentService {
     });
 
     return UpdateEventAssignmentResponseDto.fromEntity(complete || saved);
+  }
+
+  /**
+   * The same employee may work several days of one event, but can hold only
+   * one active allocation per event day.
+   */
+  private async assertEmployeeNotAssignedOnSameDay(
+    record: EventAssignmentEntity,
+    idEmployees: string,
+  ): Promise<void> {
+    const eventDateIndex = record.budgetItem?.eventDateIndex ?? 0;
+
+    const employeeAssignments = await this.eventAssignmentsRepository.find({
+      where: { idEvents: record.idEvents, idEmployees, isActive: true },
+      relations: { budgetItem: true },
+    });
+
+    const hasConflict = employeeAssignments.some(
+      (assignment) =>
+        assignment.idEventAssignments !== record.idEventAssignments &&
+        (assignment.budgetItem?.eventDateIndex ?? 0) === eventDateIndex,
+    );
+
+    if (hasConflict) {
+      throw AppException.from(
+        APP_ERRORS.events.employeeAlreadyAssignedOnDay,
+        undefined,
+      );
+    }
   }
 }

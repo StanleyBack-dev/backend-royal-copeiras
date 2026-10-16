@@ -4,6 +4,7 @@ import { EntityManager, Repository } from "typeorm";
 import { ContractsEntity } from "../../../contracts/entities/contracts.entity";
 import { ContractStatus } from "../../../contracts/enums/contract-status.enum";
 import { BudgetsEntity } from "../../../budgets/entities/budgets.entity";
+import { BudgetItemType } from "../../../budgets/enums/budget-item-type.enum";
 import { EventEntity } from "../../entities/event.entity";
 import { EventStatus } from "../../enums/event-status.enum";
 import { EventAssignmentEntity } from "../../entities/event-assignment.entity";
@@ -103,9 +104,11 @@ export class CreateEventFromSignedContractService {
     );
 
     const assignments: EventAssignmentEntity[] = [];
-    const sortedItems = [...(budget.items ?? [])].sort(
-      (left, right) => left.sortOrder - right.sortOrder,
-    );
+    // Only staffing lines need people on the event; material/consumable lines
+    // (SUPPLY) are billed to the client but never get an allocation slot.
+    const sortedItems = (budget.items ?? [])
+      .filter((item) => item.itemType !== BudgetItemType.SUPPLY)
+      .sort((left, right) => left.sortOrder - right.sortOrder);
 
     for (const item of sortedItems) {
       const quantity =

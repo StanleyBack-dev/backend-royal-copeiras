@@ -603,6 +603,7 @@ type GetEventAssignmentResponseDto {
   idEmployees: String
   allocationIndex: Float!
   employeePayment: Float!
+  overtimeHourlyPayment: Float!
   isActive: Boolean!
   budgetItemDescription: String
   budgetItemQuantity: Float
@@ -620,6 +621,21 @@ type GetEventServiceLineResponseDto {
   totalPrice: Float!
   sortOrder: Float!
   eventDateIndex: Int!
+}
+
+type GetEventExtraExpenseResponseDto {
+  category: EventExtraExpenseCategory!
+  amount: Float!
+}
+
+enum EventExtraExpenseCategory {
+  FOOD
+  TRANSPORT
+  FUEL
+  PARKING
+  TOLL
+  SUPPLIES
+  OTHER
 }
 
 type GetEventsResponseDto {
@@ -645,7 +661,11 @@ type GetEventsResponseDto {
   displacementFee: Float!
   discountTotal: Float!
   overtimeMinutes: Int!
+  overtimeHourlyRate: Float!
   overtimeAmount: Float!
+  overtimeCost: Float!
+  extraExpenses: [GetEventExtraExpenseResponseDto!]!
+  extraExpensesTotal: Float!
   serviceBreakdown: [GetEventServiceLineResponseDto!]!
   totalRevenue: Float!
   totalCost: Float!
@@ -669,6 +689,7 @@ type UpdateEventAssignmentResponseDto {
   idEmployees: String
   allocationIndex: Float!
   employeePayment: Float!
+  overtimeHourlyPayment: Float!
   isActive: Boolean!
   employeeName: String
   budgetItemDescription: String
@@ -679,6 +700,8 @@ type UpdateEventsResponseDto {
   idEvents: String!
   status: EventStatus!
   overtimeMinutes: Int!
+  overtimeHourlyRate: Float!
+  extraExpenses: [GetEventExtraExpenseResponseDto!]!
   updatedAt: String!
 }
 
@@ -1782,12 +1805,20 @@ input UpdateEventsInputDto {
   idEvents: String!
   status: EventStatus
   overtimeMinutes: Int
+  overtimeHourlyRate: Float
+  extraExpenses: [UpdateEventExtraExpenseInputDto!]
+}
+
+input UpdateEventExtraExpenseInputDto {
+  category: EventExtraExpenseCategory!
+  amount: Float!
 }
 
 input UpdateEventAssignmentInputDto {
   idEventAssignments: String!
   idEmployees: String!
   employeePayment: Float!
+  overtimeHourlyPayment: Float
   isActive: Boolean
 }
 

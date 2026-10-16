@@ -16,6 +16,12 @@ export class UpdateEventAssignmentInputDto {
   @Min(0)
   employeePayment!: number;
 
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  overtimeHourlyPayment?: number;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsBoolean()

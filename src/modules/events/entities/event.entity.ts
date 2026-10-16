@@ -15,6 +15,13 @@ import { LeadsEntity } from "../../leads/entities/leads.entity";
 import { CustomersEntity } from "../../customers/entities/customers.entity";
 import { EventStatus } from "../enums/event-status.enum";
 import { EventAssignmentEntity } from "./event-assignment.entity";
+import { IEventExtraExpense } from "../interface/event-extra-expense.interface";
+import { EVENT_OVERTIME_DEFAULT_HOURLY_RATE } from "../constants/event-overtime.constant";
+
+const numericTransformer = {
+  to: (value: number | null | undefined) => value,
+  from: (value: string | null) => (value === null ? null : Number(value)),
+};
 
 @Entity("tb_events")
 export class EventEntity {
@@ -78,6 +85,23 @@ export class EventEntity {
 
   @Column({ name: "overtime_minutes", type: "int", default: 0 })
   overtimeMinutes!: number;
+
+  @Column({
+    name: "overtime_hourly_rate",
+    type: "numeric",
+    precision: 12,
+    scale: 2,
+    default: EVENT_OVERTIME_DEFAULT_HOURLY_RATE,
+    transformer: numericTransformer,
+  })
+  overtimeHourlyRate!: number;
+
+  @Column({
+    name: "extra_expenses",
+    type: "jsonb",
+    default: () => "'[]'::jsonb",
+  })
+  extraExpenses!: IEventExtraExpense[];
 
   @OneToMany(() => EventAssignmentEntity, (assignment) => assignment.event)
   assignments?: EventAssignmentEntity[];
