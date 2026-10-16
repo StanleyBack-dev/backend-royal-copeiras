@@ -48,6 +48,12 @@ export const eventsErrors = {
     message:
       "O sexo do funcionário selecionado não é compatível com o tipo de serviço desta alocação.",
   },
+  employeeAlreadyAssignedOnDay: {
+    code: "EVENT_EMPLOYEE_ALREADY_ASSIGNED_ON_DAY",
+    status: HttpStatus.CONFLICT,
+    message:
+      "Este funcionário já está escalado em outra alocação no mesmo dia do evento.",
+  },
   forbiddenEventAccess: {
     code: "EVENT_FORBIDDEN_ACCESS",
     status: HttpStatus.FORBIDDEN,

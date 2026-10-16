@@ -10,6 +10,7 @@ import {
 import { EventEntity } from "./event.entity";
 import { BudgetItemsEntity } from "../../budgets/entities/budget-items.entity";
 import { EmployeesEntity } from "../../employees/entities/employees.entity";
+import { EVENT_ASSIGNMENT_OVERTIME_DEFAULT_HOURLY_PAYMENT } from "../constants/event-overtime.constant";
 
 const numericTransformer = {
   to: (value: number | null | undefined) => value,
@@ -56,6 +57,16 @@ export class EventAssignmentEntity {
     transformer: numericTransformer,
   })
   employeePayment!: number;
+
+  @Column({
+    name: "overtime_hourly_payment",
+    type: "numeric",
+    precision: 12,
+    scale: 2,
+    default: EVENT_ASSIGNMENT_OVERTIME_DEFAULT_HOURLY_PAYMENT,
+    transformer: numericTransformer,
+  })
+  overtimeHourlyPayment!: number;
 
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive!: boolean;

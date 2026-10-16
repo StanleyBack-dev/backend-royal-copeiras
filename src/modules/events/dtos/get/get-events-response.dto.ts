@@ -4,6 +4,7 @@ import { IEvent } from "../../interface/event.interface";
 import { EventEntity } from "../../entities/event.entity";
 import { GetEventAssignmentResponseDto } from "./get-event-assignment-response.dto";
 import { GetEventServiceLineResponseDto } from "./get-event-service-line-response.dto";
+import { GetEventExtraExpenseResponseDto } from "./get-event-extra-expense-response.dto";
 import { formatLocalDateTime } from "../../../../common/responses/format-local-datetime.util";
 
 @ObjectType()
@@ -48,6 +49,10 @@ export class GetEventsResponseDto implements IEvent {
       ).toFixed(2),
     );
     dto.overtimeMinutes = Number(entity.overtimeMinutes ?? 0);
+    dto.overtimeHourlyRate = Number(entity.overtimeHourlyRate ?? 0);
+    dto.extraExpenses = (entity.extraExpenses ?? []).map(
+      GetEventExtraExpenseResponseDto.fromValue,
+    );
 
     dto.serviceBreakdown = [...(entity.budget?.items ?? [])]
       .sort((left, right) => left.sortOrder - right.sortOrder)
@@ -60,18 +65,29 @@ export class GetEventsResponseDto implements IEvent {
         0,
       ),
     );
-    const allocatedEmployeesCount = (entity.assignments ?? []).reduce(
-      (count, assignment) => (assignment.isActive ? count + 1 : count),
+    const activeAssignments = (entity.assignments ?? []).filter(
+      (assignment) => assignment.isActive,
+    );
+    const overtimeHours = dto.overtimeMinutes / 60;
+    const overtimeAmount =
+      activeAssignments.length * overtimeHours * dto.overtimeHourlyRate;
+    const overtimeCost = activeAssignments.reduce(
+      (sum, assignment) =>
+        sum + overtimeHours * Number(assignment.overtimeHourlyPayment ?? 0),
       0,
     );
-    const overtimeAmount =
-      allocatedEmployeesCount * (dto.overtimeMinutes / 60) * 90;
+    const extraExpensesTotal = dto.extraExpenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0,
+    );
     const finalTotalRevenue = totalRevenue + overtimeAmount;
-    const totalCost = assignmentCost;
+    const totalCost = assignmentCost + overtimeCost + extraExpensesTotal;
 
     dto.totalRevenue = Number(finalTotalRevenue.toFixed(2));
     dto.totalCost = Number(totalCost.toFixed(2));
     dto.overtimeAmount = Number(overtimeAmount.toFixed(2));
+    dto.overtimeCost = Number(overtimeCost.toFixed(2));
+    dto.extraExpensesTotal = Number(extraExpensesTotal.toFixed(2));
     dto.companyReceivable = Number((finalTotalRevenue - totalCost).toFixed(2));
 
     dto.assignments = (entity.assignments ?? []).map(
@@ -152,7 +168,19 @@ export class GetEventsResponseDto implements IEvent {
   overtimeMinutes!: number;
 
   @Field(() => Float)
+  overtimeHourlyRate!: number;
+
+  @Field(() => Float)
   overtimeAmount!: number;
+
+  @Field(() => Float)
+  overtimeCost!: number;
+
+  @Field(() => [GetEventExtraExpenseResponseDto])
+  extraExpenses!: GetEventExtraExpenseResponseDto[];
+
+  @Field(() => Float)
+  extraExpensesTotal!: number;
 
   @Field(() => [GetEventServiceLineResponseDto])
   serviceBreakdown!: GetEventServiceLineResponseDto[];

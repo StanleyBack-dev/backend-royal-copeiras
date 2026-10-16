@@ -8,6 +8,7 @@ import { APP_ERRORS } from "../../../../common/exceptions/app-errors.catalog";
 import { EventEntity } from "../../entities/event.entity";
 import { UpdateEventsInputDto } from "../../dtos/update/update-events-input.dto";
 import { UpdateEventsResponseDto } from "../../dtos/update/update-events-response.dto";
+import { EVENT_OVERTIME_INTERVAL_MINUTES } from "../../constants/event-overtime.constant";
 
 @Injectable()
 export class UpdateEventsService {
@@ -43,7 +44,7 @@ export class UpdateEventsService {
     }
 
     if (input.overtimeMinutes !== undefined) {
-      if (input.overtimeMinutes % 30 !== 0) {
+      if (input.overtimeMinutes % EVENT_OVERTIME_INTERVAL_MINUTES !== 0) {
         throw AppException.from(
           APP_ERRORS.events.overtimeInvalidInterval,
           undefined,
@@ -51,6 +52,17 @@ export class UpdateEventsService {
       }
 
       event.overtimeMinutes = input.overtimeMinutes;
+    }
+
+    if (input.overtimeHourlyRate !== undefined) {
+      event.overtimeHourlyRate = Number(input.overtimeHourlyRate.toFixed(2));
+    }
+
+    if (input.extraExpenses !== undefined) {
+      event.extraExpenses = input.extraExpenses.map((expense) => ({
+        category: expense.category,
+        amount: Number(expense.amount.toFixed(2)),
+      }));
     }
 
     if (input.status !== undefined) {

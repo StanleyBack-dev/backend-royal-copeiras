@@ -14,6 +14,7 @@ export class UpdateEventAssignmentResponseDto {
     dto.idEmployees = entity.idEmployees;
     dto.allocationIndex = entity.allocationIndex;
     dto.employeePayment = entity.employeePayment;
+    dto.overtimeHourlyPayment = entity.overtimeHourlyPayment;
     dto.isActive = entity.isActive;
     dto.employeeName = entity.employee?.name;
     dto.budgetItemDescription = entity.budgetItem?.description;
@@ -39,6 +40,9 @@ export class UpdateEventAssignmentResponseDto {
 
   @Field(() => Float)
   employeePayment!: number;
+
+  @Field(() => Float)
+  overtimeHourlyPayment!: number;
 
   @Field()
   isActive!: boolean;
